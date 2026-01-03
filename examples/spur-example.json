@@ -1,0 +1,23 @@
+{
+  "name": "Standard Spur Gear",
+  "type": "spur",
+  "parameters": {
+    "number_of_teeth": 20,
+    "module": 2.0,
+    "pressure_angle": 20,
+    "face_width": 10.0,
+    "bore_diameter": 5.0,
+    "addendum": 2.0,
+    "dedendum": 2.5
+  },
+  "material": {
+    "type": "steel",
+    "grade": "AISI 1045"
+  },
+  "tolerances": {
+    "tooth_thickness": 0.1,
+    "pitch_diameter": 0.05
+  },
+  "manufacturing_process": "machining",
+  "notes": "This is a standard spur gear used in various mechanical applications."
+}
