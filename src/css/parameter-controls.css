@@ -1,0 +1,277 @@
+/* Premium Parameter Controls */
+
+/* Parameter Card Layout */
+.parameter-card {
+    background: #fff;
+    border: 1px solid #e1e8ed;
+    border-radius: 12px;
+    padding: 16px;
+    margin-bottom: 16px;
+    transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
+}
+
+.parameter-card:hover {
+    box-shadow: 0 8px 15px rgba(0, 0, 0, 0.1);
+    border-color: #3498db;
+    transform: translateY(-2px);
+}
+
+.parameter-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: 12px;
+}
+
+.parameter-label {
+    display: flex;
+    flex-direction: column;
+}
+
+.parameter-title {
+    font-weight: 700;
+    color: #2c3e50;
+    font-size: 0.95rem;
+    margin-bottom: 2px;
+}
+
+.parameter-desc {
+    font-size: 0.75rem;
+    color: #7f8c8d;
+}
+
+/* Dual Control Layout */
+.parameter-controls-row {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+}
+
+.slider-group {
+    flex: 1;
+    position: relative;
+    padding: 10px 0;
+}
+
+.input-group {
+    display: flex;
+    align-items: center;
+    background: #f8f9fa;
+    border: 1px solid #dee2e6;
+    border-radius: 8px;
+    padding: 2px;
+}
+
+/* Step Buttons */
+.step-btn {
+    width: 32px;
+    height: 32px;
+    border: none;
+    background: transparent;
+    color: #3498db;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 6px;
+    transition: all 0.2s;
+    font-size: 1rem;
+}
+
+.step-btn:hover {
+    background: #3498db;
+    color: white;
+}
+
+.step-btn:active {
+    transform: scale(0.9);
+}
+
+/* Custom Number Input */
+.parameter-number-input input[type="number"] {
+    width: 50px;
+    border: none;
+    background: transparent;
+    text-align: center;
+    font-weight: 700;
+    color: #2c3e50;
+    font-size: 0.9rem;
+    padding: 4px;
+    outline: none;
+}
+
+/* Remove arrows from number input */
+.parameter-number-input input::-webkit-outer-spin-button,
+.parameter-number-input input::-webkit-inner-spin-button {
+    -webkit-appearance: none;
+    margin: 0;
+}
+
+/* Premium Slider */
+.parameter-controls-row input[type="range"] {
+    -webkit-appearance: none;
+    appearance: none;
+    width: 100%;
+    height: 6px;
+    border-radius: 3px;
+    background: #e1e8ed;
+    outline: none;
+    cursor: pointer;
+}
+
+.parameter-controls-row input[type="range"]::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    width: 18px;
+    height: 18px;
+    border-radius: 50%;
+    background: #3498db;
+    cursor: pointer;
+    box-shadow: 0 0 0 0 rgba(52, 152, 219, 0.2);
+    transition: all 0.2s cubic-bezier(0.1, 0.7, 1.0, 0.1);
+    border: 2px solid white;
+}
+
+.parameter-controls-row input[type="range"]:active::-webkit-slider-thumb {
+    box-shadow: 0 0 0 10px rgba(52, 152, 219, 0.1);
+    transform: scale(1.2);
+}
+
+/* Preset Chips */
+.preset-chips {
+    display: flex;
+    gap: 8px;
+    margin-top: 12px;
+    flex-wrap: wrap;
+}
+
+.preset-chip {
+    padding: 4px 10px;
+    background: #f0f3f5;
+    border: 1px solid #e1e8ed;
+    border-radius: 100px;
+    font-size: 0.75rem;
+    font-weight: 600;
+    color: #7f8c8d;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.preset-chip:hover {
+    background: #e1e8ed;
+    color: #2c3e50;
+}
+
+.preset-chip.active {
+    background: #3498db;
+    color: white;
+    border-color: #3498db;
+}
+
+/* Calculated Results Styling */
+.calculated-info-premium {
+    background: #f8faff;
+    border: 1px solid #e1f0fa;
+    border-radius: 12px;
+    padding: 15px;
+    margin-top: 20px;
+}
+
+.calc-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 8px 0;
+    border-bottom: 1px solid #e1f0fa;
+}
+
+.calc-row:last-child {
+    border-bottom: none;
+}
+
+.calc-tag {
+    font-size: 0.75rem;
+    font-weight: 700;
+    color: #3498db;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.calc-val {
+    font-weight: 800;
+    color: #2c3e50;
+    font-family: 'Inter', system-ui, -apple-system, sans-serif;
+}
+
+/* Section Reset Button */
+.group-reset-btn {
+    font-size: 0.75rem;
+    color: #bdc3c7;
+    background: none;
+    border: none;
+    cursor: pointer;
+    transition: color 0.2s;
+    display: flex;
+    align-items: center;
+    gap: 5px;
+}
+
+.group-reset-btn:hover {
+    color: #e74c3c;
+}
+
+/* Responsive Adjustments */
+@media (max-width: 576px) {
+    .parameter-controls-row {
+        flex-direction: column;
+        align-items: stretch;
+    }
+
+    .input-group {
+        width: 100%;
+        justify-content: space-between;
+    }
+
+    .parameter-number-input {
+        flex: 1;
+    }
+
+    .parameter-number-input input {
+        width: 100% !important;
+    }
+}
+
+/* RTL Support */
+[dir="rtl"] .group-reset-btn {
+    margin-right: auto;
+}
+
+[dir="rtl"] .parameter-controls-row {
+    flex-direction: row-reverse;
+}
+
+@media (max-width: 576px) {
+    [dir="rtl"] .parameter-controls-row {
+        flex-direction: column;
+    }
+}
+
+/* Visual Feedback Animations */
+.pulse {
+    animation: parameter-pulse 0.2s ease-out;
+}
+
+@keyframes parameter-pulse {
+    0% {
+        transform: scale(1);
+    }
+
+    50% {
+        transform: scale(1.05);
+        color: #3498db;
+    }
+
+    100% {
+        transform: scale(1);
+    }
+}

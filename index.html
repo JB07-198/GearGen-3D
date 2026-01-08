@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -7,21 +8,46 @@
     <link rel="stylesheet" href="./src/css/main.css">
     <link rel="stylesheet" href="./src/css/theme.css">
     <link rel="stylesheet" href="./src/css/responsive.css">
+    <link rel="stylesheet" href="./src/css/language-switcher.css">
+    <link rel="stylesheet" href="./src/css/parameter-controls.css">
+    <link rel="stylesheet" href="./src/css/modals.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/exporters/STLExporter.js"></script>
 </head>
+
 <body>
     <header class="header">
         <div class="container">
             <div class="logo">
-                <i class="fas fa-cogs"></i>
+                <img src="./assets/images/GearGen_logo.png" alt="GearGen Logo" class="logo-img" style="height: 40px;">
                 <h1>GearGen</h1>
                 <span class="tagline">3D Gear Generator</span>
             </div>
             <div class="header-actions">
+                <div class="language-switcher">
+                    <button class="language-btn">
+                        <i class="fas fa-globe"></i>
+                        <span>English</span>
+                        <i class="fas fa-chevron-down"></i>
+                    </button>
+                    <div class="language-dropdown">
+                        <div class="language-option" data-lang="en">
+                            <span class="lang-flag">🇺🇸</span>
+                            <span class="lang-name">English</span>
+                        </div>
+                        <div class="language-option" data-lang="fr">
+                            <span class="lang-flag">🇫🇷</span>
+                            <span class="lang-name">Français</span>
+                        </div>
+                        <div class="language-option" data-lang="ar">
+                            <span class="lang-flag">🇲🇦</span>
+                            <span class="lang-name">العربية</span>
+                        </div>
+                    </div>
+                </div>
                 <button id="help-btn" class="btn btn-secondary">
-                    <i class="fas fa-question-circle"></i> Help
+                    <i class="fas fa-question-circle"></i> <span data-i18n="btn.help">Help</span>
                 </button>
                 <button id="github-btn" class="btn btn-secondary">
                     <i class="fab fa-github"></i> GitHub
@@ -34,71 +60,74 @@
         <div class="app-layout">
             <!-- Left Panel: Gear Type Selection -->
             <div class="panel left-panel">
+                <div class="mobile-drawer-handle"></div>
                 <div class="panel-header">
-                    <h2><i class="fas fa-filter"></i> Gear Type</h2>
+                    <h2><img src="./assets/icons/icon-gear-type.png" alt=""
+                            style="height: 20px; vertical-align: middle; margin-right: 8px;"><span
+                            data-i18n="section.gearType">Gear Type</span></h2>
                 </div>
                 <div class="gear-types">
                     <div class="gear-type-card active" data-type="spur">
                         <div class="gear-icon">
-                            <i class="fas fa-cog"></i>
+                            <img src="./assets/icons/icon-spur-gear.png" alt="Spur Gear" style="width: 30px;">
                         </div>
-                        <h3>Spur Gear</h3>
-                        <p>Straight teeth parallel to axis</p>
-                        <span class="status-badge status-active">Available</span>
+                        <h3 data-i18n="gear.spur">Spur Gear</h3>
+                        <p data-i18n="gear.spur.desc">Straight teeth parallel to axis</p>
+                        <span class="status-badge status-active" data-i18n="status.available">Available</span>
                     </div>
-                    
+
                     <div class="gear-type-card" data-type="helical">
                         <div class="gear-icon">
-                            <i class="fas fa-project-diagram"></i>
+                            <img src="./assets/icons/icon-helical-gear.png" alt="Helical Gear" style="width: 30px;">
                         </div>
-                        <h3>Helical Gear</h3>
-                        <p>Angled teeth for smoother operation</p>
-                        <span class="status-badge status-coming">Coming Soon</span>
+                        <h3 data-i18n="gear.helical">Helical Gear</h3>
+                        <p data-i18n="gear.helical.desc">Angled teeth for smoother operation</p>
+                        <span class="status-badge status-coming" data-i18n="status.comingSoon">Coming Soon</span>
                     </div>
-                    
+
                     <div class="gear-type-card" data-type="bevel">
                         <div class="gear-icon">
-                            <i class="fas fa-concierge-bell"></i>
+                            <img src="./assets/icons/icon-bevel-gear.png" alt="Bevel Gear" style="width: 30px;">
                         </div>
-                        <h3>Bevel Gear</h3>
-                        <p>Conical shape for right-angle drive</p>
-                        <span class="status-badge status-coming">Coming Soon</span>
+                        <h3 data-i18n="gear.bevel">Bevel Gear</h3>
+                        <p data-i18n="gear.bevel.desc">Conical shape for right-angle drive</p>
+                        <span class="status-badge status-coming" data-i18n="status.comingSoon">Coming Soon</span>
                     </div>
-                    
+
                     <div class="gear-type-card" data-type="worm">
                         <div class="gear-icon">
-                            <i class="fas fa-worm"></i>
+                            <img src="./assets/icons/icon-worm-gear.png" alt="Worm Gear" style="width: 30px;">
                         </div>
-                        <h3>Worm Gear</h3>
-                        <p>Screw-like gear for high reduction</p>
-                        <span class="status-badge status-coming">Coming Soon</span>
+                        <h3 data-i18n="gear.worm">Worm Gear</h3>
+                        <p data-i18n="gear.worm.desc">Screw-like gear for high reduction</p>
+                        <span class="status-badge status-coming" data-i18n="status.comingSoon">Coming Soon</span>
                     </div>
-                    
+
                     <div class="gear-type-card" data-type="rack">
                         <div class="gear-icon">
-                            <i class="fas fa-sliders-h"></i>
+                            <img src="./assets/icons/icon-rack-gear.png" alt="Rack Gear" style="width: 30px;">
                         </div>
-                        <h3>Rack Gear</h3>
-                        <p>Linear gear for conversion</p>
-                        <span class="status-badge status-coming">Coming Soon</span>
+                        <h3 data-i18n="gear.rack">Rack Gear</h3>
+                        <p data-i18n="gear.rack.desc">Linear gear for conversion</p>
+                        <span class="status-badge status-coming" data-i18n="status.comingSoon">Coming Soon</span>
                     </div>
-                    
+
                     <div class="gear-type-card" data-type="internal">
                         <div class="gear-icon">
-                            <i class="fas fa-circle-notch"></i>
+                            <img src="./assets/icons/icon-internal-gear.png" alt="Internal Gear" style="width: 30px;">
                         </div>
-                        <h3>Internal Gear</h3>
-                        <p>Teeth on the inside surface</p>
-                        <span class="status-badge status-coming">Coming Soon</span>
+                        <h3 data-i18n="gear.internal">Internal Gear</h3>
+                        <p data-i18n="gear.internal.desc">Teeth on the inside surface</p>
+                        <span class="status-badge status-coming" data-i18n="status.comingSoon">Coming Soon</span>
                     </div>
-                    
+
                     <div class="gear-type-card" data-type="planetary">
                         <div class="gear-icon">
-                            <i class="fas fa-globe-americas"></i>
+                            <img src="./assets/icons/icon-planetary-gear.png" alt="Planetary Gear" style="width: 30px;">
                         </div>
-                        <h3>Planetary Gear</h3>
-                        <p>Multiple gears in planetary system</p>
-                        <span class="status-badge status-coming">Coming Soon</span>
+                        <h3 data-i18n="gear.planetary">Planetary Gear</h3>
+                        <p data-i18n="gear.planetary.desc">Multiple gears in planetary system</p>
+                        <span class="status-badge status-coming" data-i18n="status.comingSoon">Coming Soon</span>
                     </div>
                 </div>
             </div>
@@ -106,19 +135,21 @@
             <!-- Center Panel: 3D Preview -->
             <div class="panel center-panel">
                 <div class="panel-header">
-                    <h2><i class="fas fa-eye"></i> 3D Preview</h2>
+                    <h2><img src="./assets/icons/icon-3D-Preview.png" alt=""
+                            style="height: 20px; vertical-align: middle; margin-right: 8px;"><span
+                            data-i18n="section.preview">3D Preview</span></h2>
                     <div class="preview-controls">
                         <button id="reset-view" class="btn btn-small">
-                            <i class="fas fa-redo"></i> Reset View
+                            <i class="fas fa-redo"></i> <span data-i18n="btn.resetView">Reset View</span>
                         </button>
                         <button id="toggle-grid" class="btn btn-small">
-                            <i class="fas fa-th"></i> Grid
+                            <i class="fas fa-th"></i> <span data-i18n="btn.grid">Grid</span>
                         </button>
                         <button id="toggle-axis" class="btn btn-small">
-                            <i class="fas fa-arrows-alt"></i> Axis
+                            <i class="fas fa-arrows-alt"></i> <span data-i18n="btn.axis">Axis</span>
                         </button>
                         <button id="toggle-wireframe" class="btn btn-small">
-                            <i class="fas fa-th-large"></i> Wireframe
+                            <i class="fas fa-th-large"></i> <span data-i18n="btn.wireframe">Wireframe</span>
                         </button>
                     </div>
                 </div>
@@ -126,15 +157,15 @@
                     <div id="preview-canvas"></div>
                     <div class="preview-stats">
                         <div class="stat-item">
-                            <span class="stat-label">Vertices:</span>
+                            <span class="stat-label" data-i18n="stats.vertices">Vertices:</span>
                             <span id="vertex-count" class="stat-value">0</span>
                         </div>
                         <div class="stat-item">
-                            <span class="stat-label">Faces:</span>
+                            <span class="stat-label" data-i18n="stats.faces">Faces:</span>
                             <span id="face-count" class="stat-value">0</span>
                         </div>
                         <div class="stat-item">
-                            <span class="stat-label">Size:</span>
+                            <span class="stat-label" data-i18n="stats.size">Size:</span>
                             <span id="gear-size" class="stat-value">0 mm</span>
                         </div>
                     </div>
@@ -143,148 +174,314 @@
 
             <!-- Right Panel: Parameters and Export -->
             <div class="panel right-panel">
+                <div class="mobile-drawer-handle"></div>
                 <div class="panel-header">
-                    <h2><i class="fas fa-sliders-h"></i> Parameters</h2>
+                    <h2><img src="./assets/icons/icon-Parameters.png" alt=""
+                            style="height: 20px; vertical-align: middle; margin-right: 8px;"><span
+                            data-i18n="section.parameters">Parameters</span></h2>
                 </div>
-                
+
                 <div class="parameters-form">
                     <div class="parameter-group">
-                        <h3><i class="fas fa-ruler-combined"></i> Basic Dimensions</h3>
-                        
-                        <div class="parameter">
-                            <label for="module">
-                                Module (mm)
-                                <span class="tooltip" title="Size of teeth (pitch diameter / teeth count)">
-                                    <i class="fas fa-info-circle"></i>
-                                </span>
-                            </label>
-                            <input type="number" id="module" min="0.5" max="20" step="0.5" value="2">
+                        <div class="group-header">
+                            <h3><i class="fas fa-ruler-combined"></i> <span data-i18n="group.basicDimensions">Basic
+                                    Dimensions</span></h3>
+                            <button class="group-reset-btn" data-group="basic"><i class="fas fa-undo-alt"></i> <span
+                                    data-i18n="btn.reset">Reset</span></button>
                         </div>
-                        
-                        <div class="parameter">
-                            <label for="teeth">
-                                Number of Teeth
-                                <span class="tooltip" title="Total number of teeth on the gear">
+
+                        <!-- Module Card -->
+                        <div class="parameter-card">
+                            <div class="parameter-header">
+                                <div class="parameter-label">
+                                    <span class="parameter-title" data-i18n="param.module">Module (mm)</span>
+                                    <span class="parameter-desc" data-i18n="param.module.tooltip">Size of teeth (pitch
+                                        diameter / teeth count)</span>
+                                </div>
+                                <span class="tooltip" data-i18n-title="param.module.tooltip"
+                                    title="Size of teeth (pitch diameter / teeth count)">
                                     <i class="fas fa-info-circle"></i>
                                 </span>
-                            </label>
-                            <input type="number" id="teeth" min="8" max="200" step="1" value="20">
+                            </div>
+                            <div class="parameter-controls-row">
+                                <div class="slider-group">
+                                    <input type="range" id="module-slider" min="0.5" max="20" step="0.5" value="2">
+                                </div>
+                                <div class="input-group">
+                                    <button class="step-btn minus" data-target="module"><i
+                                            class="fas fa-minus"></i></button>
+                                    <div class="parameter-number-input">
+                                        <input type="number" id="module" min="0.5" max="20" step="0.5" value="2">
+                                    </div>
+                                    <button class="step-btn plus" data-target="module"><i
+                                            class="fas fa-plus"></i></button>
+                                </div>
+                            </div>
+                            <div class="preset-chips" data-target="module">
+                                <button class="preset-chip" data-value="1">1.0</button>
+                                <button class="preset-chip" data-value="1.5">1.5</button>
+                                <button class="preset-chip active" data-value="2">2.0</button>
+                                <button class="preset-chip" data-value="2.5">2.5</button>
+                                <button class="preset-chip" data-value="3">3.0</button>
+                                <button class="preset-chip" data-value="4">4.0</button>
+                            </div>
                         </div>
-                        
-                        <div class="parameter">
-                            <label for="pressure-angle">
-                                Pressure Angle (°)
-                                <span class="tooltip" title="Angle between tooth face and gear wheel tangent">
+
+                        <!-- Teeth Card -->
+                        <div class="parameter-card">
+                            <div class="parameter-header">
+                                <div class="parameter-label">
+                                    <span class="parameter-title" data-i18n="param.teeth">Number of Teeth</span>
+                                    <span class="parameter-desc" data-i18n="param.teeth.tooltip">Total number of teeth
+                                        on the gear</span>
+                                </div>
+                                <span class="tooltip" data-i18n-title="param.teeth.tooltip"
+                                    title="Total number of teeth on the gear">
                                     <i class="fas fa-info-circle"></i>
                                 </span>
-                            </label>
-                            <select id="pressure-angle">
-                                <option value="20">20° (Common)</option>
-                                <option value="14.5">14.5° (Legacy)</option>
-                                <option value="25">25° (High Load)</option>
+                            </div>
+                            <div class="parameter-controls-row">
+                                <div class="slider-group">
+                                    <input type="range" id="teeth-slider" min="8" max="200" step="1" value="20">
+                                </div>
+                                <div class="input-group">
+                                    <button class="step-btn minus" data-target="teeth"><i
+                                            class="fas fa-minus"></i></button>
+                                    <div class="parameter-number-input">
+                                        <input type="number" id="teeth" min="8" max="200" step="1" value="20">
+                                    </div>
+                                    <button class="step-btn plus" data-target="teeth"><i
+                                            class="fas fa-plus"></i></button>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Pressure Angle Card -->
+                        <div class="parameter-card">
+                            <div class="parameter-header">
+                                <div class="parameter-label">
+                                    <span class="parameter-title" data-i18n="param.pressureAngle">Pressure Angle
+                                        (°)</span>
+                                    <span class="parameter-desc" data-i18n="param.pressureAngle.tooltip">Angle between
+                                        tooth face and gear wheel tangent</span>
+                                </div>
+                            </div>
+                            <select id="pressure-angle" class="premium-select">
+                                <option value="20" data-i18n="param.pressureAngle.common">20° (Common)</option>
+                                <option value="14.5" data-i18n="param.pressureAngle.legacy">14.5° (Legacy)</option>
+                                <option value="25" data-i18n="param.pressureAngle.highLoad">25° (High Load)</option>
                             </select>
                         </div>
                     </div>
-                    
+
                     <div class="parameter-group">
-                        <h3><i class="fas fa-cube"></i> Gear Body</h3>
-                        
-                        <div class="parameter">
-                            <label for="face-width">
-                                Face Width (mm)
-                                <span class="tooltip" title="Thickness of the gear">
-                                    <i class="fas fa-info-circle"></i>
-                                </span>
-                            </label>
-                            <input type="number" id="face-width" min="1" max="100" step="1" value="10">
+                        <div class="group-header">
+                            <h3><i class="fas fa-cube"></i> <span data-i18n="group.gearBody">Gear Body</span></h3>
+                            <button class="group-reset-btn" data-group="body"><i class="fas fa-undo-alt"></i> <span
+                                    data-i18n="btn.reset">Reset</span></button>
                         </div>
-                        
-                        <div class="parameter">
-                            <label for="hub-diameter">
-                                Hub Diameter (mm)
-                                <span class="tooltip" title="Diameter of the central hub">
-                                    <i class="fas fa-info-circle"></i>
-                                </span>
-                            </label>
-                            <input type="number" id="hub-diameter" min="0" max="50" step="1" value="10">
+
+                        <!-- Face Width Card -->
+                        <div class="parameter-card">
+                            <div class="parameter-header">
+                                <div class="parameter-label">
+                                    <span class="parameter-title" data-i18n="param.faceWidth">Face Width (mm)</span>
+                                    <span class="parameter-desc" data-i18n="param.faceWidth.tooltip">Thickness of the
+                                        gear</span>
+                                </div>
+                            </div>
+                            <div class="parameter-controls-row">
+                                <div class="slider-group">
+                                    <input type="range" id="face-width-slider" min="1" max="100" step="1" value="10">
+                                </div>
+                                <div class="input-group">
+                                    <button class="step-btn minus" data-target="faceWidth"><i
+                                            class="fas fa-minus"></i></button>
+                                    <div class="parameter-number-input">
+                                        <input type="number" id="face-width" min="1" max="100" step="1" value="10">
+                                    </div>
+                                    <button class="step-btn plus" data-target="faceWidth"><i
+                                            class="fas fa-plus"></i></button>
+                                </div>
+                            </div>
                         </div>
-                        
-                        <div class="parameter">
-                            <label for="bore-diameter">
-                                Bore Diameter (mm)
-                                <span class="tooltip" title="Diameter of the central hole">
-                                    <i class="fas fa-info-circle"></i>
-                                </span>
-                            </label>
-                            <input type="number" id="bore-diameter" min="0" max="20" step="0.5" value="5">
+
+                        <!-- Hub Diameter Card -->
+                        <div class="parameter-card">
+                            <div class="parameter-header">
+                                <div class="parameter-label">
+                                    <span class="parameter-title" data-i18n="param.hubDiameter">Hub Diameter (mm)</span>
+                                    <span class="parameter-desc" data-i18n="param.hubDiameter.tooltip">Diameter of the
+                                        central hub</span>
+                                </div>
+                            </div>
+                            <div class="parameter-controls-row">
+                                <div class="slider-group">
+                                    <input type="range" id="hub-diameter-slider" min="0" max="50" step="1" value="10">
+                                </div>
+                                <div class="input-group">
+                                    <button class="step-btn minus" data-target="hubDiameter"><i
+                                            class="fas fa-minus"></i></button>
+                                    <div class="parameter-number-input">
+                                        <input type="number" id="hub-diameter" min="0" max="50" step="1" value="10">
+                                    </div>
+                                    <button class="step-btn plus" data-target="hubDiameter"><i
+                                            class="fas fa-plus"></i></button>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Bore Diameter Card -->
+                        <div class="parameter-card">
+                            <div class="parameter-header">
+                                <div class="parameter-label">
+                                    <span class="parameter-title" data-i18n="param.boreDiameter">Bore Diameter
+                                        (mm)</span>
+                                    <span class="parameter-desc" data-i18n="param.boreDiameter.tooltip">Diameter of the
+                                        central hole</span>
+                                </div>
+                            </div>
+                            <div class="parameter-controls-row">
+                                <div class="slider-group">
+                                    <input type="range" id="bore-diameter-slider" min="0" max="20" step="0.5" value="5">
+                                </div>
+                                <div class="input-group">
+                                    <button class="step-btn minus" data-target="boreDiameter"><i
+                                            class="fas fa-minus"></i></button>
+                                    <div class="parameter-number-input">
+                                        <input type="number" id="bore-diameter" min="0" max="20" step="0.5" value="5">
+                                    </div>
+                                    <button class="step-btn plus" data-target="boreDiameter"><i
+                                            class="fas fa-plus"></i></button>
+                                </div>
+                            </div>
                         </div>
                     </div>
-                    
+
                     <div class="parameter-group">
-                        <h3><i class="fas fa-palette"></i> Appearance</h3>
-                        
-                        <div class="parameter">
-                            <label for="color">Gear Color</label>
-                            <input type="color" id="color" value="#3498db">
+                        <div class="group-header">
+                            <h3><i class="fas fa-palette"></i> <span data-i18n="group.appearance">Appearance</span></h3>
                         </div>
-                        
-                        <div class="parameter">
-                            <label for="quality">Mesh Quality</label>
-                            <select id="quality">
-                                <option value="low">Low (Fast)</option>
-                                <option value="medium" selected>Medium (Recommended)</option>
-                                <option value="high">High (Detailed)</option>
+
+                        <div class="parameter-card">
+                            <div class="parameter-header">
+                                <div class="parameter-label">
+                                    <span class="parameter-title" data-i18n="param.color">Gear Color</span>
+                                </div>
+                            </div>
+                            <input type="color" id="color" value="#3498db" class="premium-color-input">
+                        </div>
+
+                        <div class="parameter-card">
+                            <div class="parameter-header">
+                                <div class="parameter-label">
+                                    <span class="parameter-title" data-i18n="param.quality">Mesh Quality</span>
+                                </div>
+                            </div>
+                            <select id="quality" class="premium-select">
+                                <option value="low" data-i18n="param.quality.low">Low (Fast)</option>
+                                <option value="medium" selected data-i18n="param.quality.medium">Medium (Recommended)
+                                </option>
+                                <option value="high" data-i18n="param.quality.high">High (Detailed)</option>
                             </select>
                         </div>
+                    </div>
+
+                    <!-- Calculated Info Section -->
+                    <div id="calculated-info-container" class="calculated-info-premium">
+                        <!-- Will be populated by JS -->
                     </div>
                 </div>
-                
+
                 <div class="export-section">
-                    <h3><i class="fas fa-download"></i> Export</h3>
+                    <h3><i class="fas fa-download"></i> <span data-i18n="section.export">Export</span></h3>
                     <div class="export-buttons">
                         <button id="export-stl" class="btn btn-primary btn-export">
-                            <i class="fas fa-cube"></i> Download STL
-                        </button>
-                        <button id="export-step" class="btn btn-secondary btn-export" disabled>
-                            <i class="fas fa-file-export"></i> Download STEP
-                            <span class="badge">Soon</span>
+                            <i class="fas fa-cube"></i> <span data-i18n="btn.downloadSTL">Download STL</span>
                         </button>
                     </div>
                     <div class="export-info">
-                        <p><strong>STL:</strong> Ready for 3D printing</p>
-                        <p><strong>STEP:</strong> For CAD software (coming soon)</p>
+                        <p><i class="fas fa-check-circle" style="color: #27ae60;"></i> <strong
+                                data-i18n="export.stl.title">STL Format:</strong> <span data-i18n="export.stl.desc">The
+                                STL file is sufficient for:</span></p>
+                        <div class="export-usage-tags">
+                            <span data-i18n="export.stl.use1">3D printing</span>
+                            <span data-i18n="export.stl.use2">Mechanical assembly</span>
+                            <span data-i18n="export.stl.use3">CAD Software</span>
+                            <span data-i18n="export.stl.use4">Simulations</span>
+                        </div>
+                        <p
+                            style="margin-top: 12px; padding: 10px; background: rgba(52, 152, 219, 0.1); border-left: 3px solid #3498db; border-radius: 4px; font-size: 0.85em;">
+                            <i class="fas fa-info-circle"></i> <strong data-i18n="export.note.title">Note:</strong>
+                            <span data-i18n="export.note.desc">We are developing a free offline software for creating
+                                more complex gears with additional export formats (STEP, IGES, etc.).</span>
+                        </p>
                     </div>
                 </div>
-                
+
                 <div class="info-notice">
                     <i class="fas fa-info-circle"></i>
-                    <p>Currently only <strong>Spur Gears</strong> are available. Other gear types will be implemented soon.</p>
+                    <p data-i18n="info.notice" data-i18n-html="true">Currently only <strong>Spur Gears</strong> are
+                        available. Other gear types will be implemented soon.</p>
                 </div>
             </div>
         </div>
     </main>
 
+    <!-- Mobile Overlay -->
+    <div class="mobile-overlay"></div>
+
+    <!-- Mobile Bottom Navigation -->
+    <nav class="mobile-nav">
+        <button class="nav-item" data-show="left-panel">
+            <i class="fas fa-cog"></i>
+            <span data-i18n="section.gearType">Gear Type</span>
+        </button>
+        <button class="nav-item active" data-show="center-panel">
+            <i class="fas fa-eye"></i>
+            <span data-i18n="section.preview">Preview</span>
+        </button>
+        <button class="nav-item" data-show="right-panel">
+            <i class="fas fa-sliders-h"></i>
+            <span data-i18n="section.parameters">Parameters</span>
+        </button>
+    </nav>
+
     <footer class="footer">
         <div class="container">
-            <p>GearGen - 3D Gear Generator &copy; 2024</p>
+            <p data-i18n="footer.copyright">GearGen - 3D Gear Generator &copy; 2026</p>
             <p class="footer-links">
-                <a href="#"><i class="fas fa-book"></i> Documentation</a>
-                <a href="#"><i class="fas fa-bug"></i> Report Issue</a>
-                <a href="#"><i class="fas fa-envelope"></i> Contact</a>
+                <a href="#" id="doc-link"><i class="fas fa-book"></i> <span
+                        data-i18n="footer.documentation">Documentation</span></a>
+                <a href="#" id="report-link"><i class="fas fa-bug"></i> <span data-i18n="footer.reportIssue">Report
+                        Issue</span></a>
+                <a href="#" id="contact-link"><i class="fas fa-envelope"></i> <span
+                        data-i18n="footer.contact">Contact</span></a>
             </p>
+            <div class="powered-by"
+                style="margin-top: 15px; display: flex; align-items: center; justify-content: center; gap: 8px;">
+                <span
+                    style="font-size: 0.8rem; opacity: 0.6; font-weight: 600; text-transform: uppercase; letter-spacing: 1px;">Powered
+                    by</span>
+                <img src="./assets/images/powered-by.png" alt="Powered By" style="height: 25px; opacity: 0.7;">
+            </div>
         </div>
     </footer>
 
     <!-- JavaScript Files -->
     <script src="./src/js/utils/math-utils.js"></script>
+    <script src="./src/js/utils/i18n.js"></script>
     <script src="./src/js/gear-types/spur-gear.js"></script>
     <script src="./src/js/renderer/threejs-setup.js"></script>
     <script src="./src/js/renderer/scene-manager.js"></script>
     <script src="./src/js/renderer/gear-renderer.js"></script>
     <script src="./src/js/exporters/stl-exporter.js"></script>
+    <script src="./src/js/ui/mobile-ui.js"></script>
     <script src="./src/js/ui/parameter-ui.js"></script>
     <script src="./src/js/ui/preview-panel.js"></script>
     <script src="./src/js/ui/export-ui.js"></script>
+    <script src="./src/js/ui/navigation.js"></script>
     <script src="./src/js/main.js"></script>
 </body>
+
 </html>

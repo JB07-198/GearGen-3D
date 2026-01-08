@@ -1,83 +1,225 @@
-/* Responsive Design */
-@media (max-width: 1200px) {
+/* Professional Multi-Device Design Transitions */
+
+/* 1. Large Screen & Desktop (Pro Workspace) */
+@media (min-width: 1201px) {
     .app-layout {
-        grid-template-columns: 220px 1fr 320px;
+        grid-template-columns: 280px 1fr 380px;
+        transition: all 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+    .mobile-nav {
+        display: none;
     }
 }
 
-@media (max-width: 992px) {
+/* 2. Desktop Small (Compact Workspace) */
+@media (max-width: 1200px) and (min-width: 1025px) {
     .app-layout {
-        grid-template-columns: 1fr;
-        grid-template-rows: auto 400px auto;
+        grid-template-columns: 240px 1fr 340px;
+    }
+
+    .logo h1 {
+        font-size: 1.5rem;
+    }
+
+    .mobile-nav {
+        display: none;
+    }
+}
+
+/* 3. Tablet Experience (Split Workbench) */
+@media (max-width: 1024px) and (min-width: 769px) {
+    .app-layout {
+        grid-template-columns: 1fr 340px;
+        grid-template-rows: auto 1fr;
         height: auto;
     }
-    
-    .panel {
+
+    .left-panel {
+        grid-column: 1 / -1;
         margin-bottom: 20px;
     }
-    
-    .export-buttons {
-        grid-template-columns: 1fr;
-    }
-}
 
-@media (max-width: 768px) {
-    .header .container {
-        flex-direction: column;
-        text-align: center;
-        gap: 10px;
-    }
-    
-    .logo {
-        flex-direction: column;
-        text-align: center;
-    }
-    
-    .tagline {
-        margin-left: 0;
-        margin-top: 5px;
-    }
-    
     .gear-types {
-        display: grid;
-        grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
-        gap: 10px;
+        display: flex;
+        overflow-x: auto;
+        padding-bottom: 10px;
+        gap: 15px;
     }
-    
+
     .gear-type-card {
+        flex: 0 0 200px;
         margin-bottom: 0;
     }
-    
-    .preview-stats {
-        position: static;
-        background: #2c3e50;
-        margin-top: 10px;
-        border-radius: 6px;
+
+    .center-panel {
+        min-height: 500px;
     }
-    
-    .footer-links {
-        flex-direction: column;
-        gap: 10px;
+
+    .mobile-nav {
+        display: none;
     }
 }
 
-@media (max-width: 576px) {
-    .container {
-        padding: 0 10px;
+/* 4. Mobile Experience (Adaptive Dashboard) */
+@media (max-width: 768px) {
+    body {
+        overflow-x: hidden;
+        padding-bottom: 70px;
+        /* Space for nav */
     }
-    
-    .panel-header {
+
+    .header .container {
         flex-direction: column;
-        gap: 10px;
-        text-align: center;
+        gap: 8px;
     }
-    
-    .preview-controls {
-        width: 100%;
-        justify-content: center;
+
+    .logo h1 {
+        font-size: 1.4rem;
     }
-    
-    .gear-types {
-        grid-template-columns: 1fr;
+
+    .tagline {
+        display: none;
+    }
+
+    /* Drawer Handle */
+    .mobile-drawer-handle {
+        width: 40px;
+        height: 5px;
+        background: #ddd;
+        border-radius: 10px;
+        margin: 10px auto;
+        display: block;
+    }
+
+    .main-content {
+        padding: 10px 0;
+    }
+
+    /* Full-screen 3D View logic */
+    .app-layout {
+        display: block;
+        position: relative;
+        height: calc(100vh - 160px);
+        margin: 0;
+    }
+
+    /* Panels as Animated Drawers */
+    .left-panel,
+    .right-panel {
+        position: fixed;
+        bottom: 70px;
+        left: 10px;
+        right: 10px;
+        top: 80px;
+        z-index: 1000;
+        background: rgba(255, 255, 255, 0.95);
+        backdrop-filter: blur(10px);
+        border: 1px solid rgba(255, 255, 255, 0.3);
+        border-radius: 20px 20px 0 0;
+        box-shadow: 0 -10px 30px rgba(0, 0, 0, 0.15);
+        transform: translateY(120%);
+        transition: transform 0.4s cubic-bezier(0.19, 1, 0.22, 1);
+        display: flex !important;
+        margin: 0;
+    }
+
+    .left-panel.active,
+    .right-panel.active {
+        transform: translateY(0);
+    }
+
+    .center-panel {
+        position: absolute;
+        inset: 0;
+        z-index: 1;
+        border-radius: 12px;
+        overflow: hidden;
+    }
+
+    /* Mobile Navigation Bar Styling */
+    .mobile-nav {
+        position: fixed;
+        bottom: 0;
+        left: 0;
+        right: 0;
+        height: 70px;
+        background: white;
+        display: flex;
+        justify-content: space-around;
+        align-items: center;
+        box-shadow: 0 -5px 20px rgba(0, 0, 0, 0.05);
+        z-index: 2000;
+        border-top: 1px solid #eee;
+    }
+
+    .nav-item {
+        background: none;
+        border: none;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 4px;
+        color: #95a5a6;
+        font-size: 0.7rem;
+        font-weight: 600;
+        cursor: pointer;
+        padding: 5px;
+        transition: all 0.3s;
+    }
+
+    .nav-item i {
+        font-size: 1.4rem;
+    }
+
+    .nav-item.active {
+        color: #3498db;
+    }
+
+    .nav-item.active i {
+        transform: translateY(-2px);
+    }
+
+    .footer {
+        display: none;
+        /* Auto-hide footer on mobile dashboard */
+    }
+
+    .mobile-overlay {
+        position: fixed;
+        inset: 0;
+        background: rgba(0, 0, 0, 0.3);
+        backdrop-filter: blur(4px);
+        z-index: 900;
+        opacity: 0;
+        pointer-events: none;
+        transition: opacity 0.3s;
+    }
+
+    .mobile-overlay.active {
+        opacity: 1;
+        pointer-events: auto;
+    }
+
+    /* Card adjustments for mobile */
+    .gear-type-card {
+        padding: 12px;
+    }
+}
+
+/* Landscape Mobile Fix */
+@media (max-width: 896px) and (orientation: landscape) {
+    .app-layout {
+        height: calc(100vh - 120px);
+    }
+
+    .left-panel,
+    .right-panel {
+        top: 20px;
+        bottom: 60px;
+    }
+
+    .mobile-nav {
+        height: 60px;
     }
 }

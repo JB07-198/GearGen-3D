@@ -1,0 +1,280 @@
+/* Modal Styles */
+.modal {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    z-index: 9999;
+    opacity: 0;
+    visibility: hidden;
+    transition: opacity 0.3s ease, visibility 0.3s ease;
+}
+
+.modal.active {
+    opacity: 1;
+    visibility: visible;
+}
+
+.modal-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.6);
+    backdrop-filter: blur(4px);
+}
+
+.modal-content {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%) scale(0.9);
+    background: white;
+    border-radius: 12px;
+    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.3);
+    max-width: 700px;
+    width: 90%;
+    max-height: 80vh;
+    overflow: hidden;
+    transition: transform 0.3s ease;
+}
+
+.modal.active .modal-content {
+    transform: translate(-50%, -50%) scale(1);
+}
+
+.modal-close {
+    position: absolute;
+    top: 15px;
+    right: 15px;
+    width: 36px;
+    height: 36px;
+    border: none;
+    background: #f8f9fa;
+    border-radius: 50%;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.3s ease;
+    z-index: 10;
+}
+
+.modal-close:hover {
+    background: #e9ecef;
+    transform: rotate(90deg);
+}
+
+.modal-close i {
+    font-size: 1.2rem;
+    color: #2c3e50;
+}
+
+.modal-body {
+    padding: 30px;
+    overflow-y: auto;
+    max-height: calc(80vh - 60px);
+}
+
+.modal-body h2 {
+    margin-top: 0;
+    margin-bottom: 20px;
+    color: #2c3e50;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    font-size: 1.8rem;
+}
+
+.modal-body h2 i {
+    color: #3498db;
+}
+
+.modal-body h3 {
+    margin-top: 24px;
+    margin-bottom: 12px;
+    color: #34495e;
+    font-size: 1.3rem;
+    border-bottom: 2px solid #e9ecef;
+    padding-bottom: 8px;
+}
+
+.modal-body h4 {
+    margin-top: 16px;
+    margin-bottom: 8px;
+    color: #3498db;
+    font-size: 1.1rem;
+}
+
+.modal-body p {
+    margin-bottom: 12px;
+    line-height: 1.7;
+    color: #555;
+}
+
+.modal-body ul,
+.modal-body ol {
+    margin-bottom: 16px;
+    padding-left: 24px;
+}
+
+.modal-body li {
+    margin-bottom: 8px;
+    line-height: 1.6;
+    color: #555;
+}
+
+.modal-body code {
+    background: #f8f9fa;
+    padding: 2px 6px;
+    border-radius: 4px;
+    font-family: 'Courier New', monospace;
+    color: #e74c3c;
+    font-size: 0.9em;
+}
+
+.modal-body a {
+    color: #3498db;
+    text-decoration: none;
+    transition: color 0.3s ease;
+}
+
+.modal-body a:hover {
+    color: #2980b9;
+    text-decoration: underline;
+}
+
+.modal-body strong {
+    color: #2c3e50;
+    font-weight: 600;
+}
+
+/* Help Section Specific Styles */
+.help-section {
+    font-size: 0.95rem;
+}
+
+.help-section ol {
+    counter-reset: item;
+    list-style-type: none;
+    padding-left: 0;
+}
+
+.help-section ol li {
+    counter-increment: item;
+    margin-bottom: 12px;
+    padding-left: 40px;
+    position: relative;
+}
+
+.help-section ol li::before {
+    content: counter(item);
+    position: absolute;
+    left: 0;
+    top: 0;
+    background: #3498db;
+    color: white;
+    width: 28px;
+    height: 28px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 600;
+    font-size: 0.9rem;
+}
+
+/* Documentation Section Specific Styles */
+.documentation-section {
+    font-size: 0.95rem;
+}
+
+.documentation-section h4 {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.documentation-section h4::before {
+    content: '▸';
+    color: #3498db;
+    font-size: 1.2rem;
+}
+
+/* RTL Support for Modals */
+[dir="rtl"] .modal-close {
+    right: auto;
+    left: 15px;
+}
+
+[dir="rtl"] .modal-body ul,
+[dir="rtl"] .modal-body ol {
+    padding-left: 0;
+    padding-right: 24px;
+}
+
+[dir="rtl"] .help-section ol li {
+    padding-left: 0;
+    padding-right: 40px;
+}
+
+[dir="rtl"] .help-section ol li::before {
+    left: auto;
+    right: 0;
+}
+
+/* Mobile Responsive */
+@media (max-width: 768px) {
+    .modal-content {
+        width: 95%;
+        max-height: 90vh;
+    }
+
+    .modal-body {
+        padding: 20px;
+        max-height: calc(90vh - 40px);
+    }
+
+    .modal-body h2 {
+        font-size: 1.5rem;
+    }
+
+    .modal-body h3 {
+        font-size: 1.2rem;
+    }
+
+    .modal-body h4 {
+        font-size: 1rem;
+    }
+
+    .help-section ol li {
+        padding-left: 35px;
+    }
+
+    .help-section ol li::before {
+        width: 24px;
+        height: 24px;
+        font-size: 0.85rem;
+    }
+}
+
+/* Scrollbar Styling for Modal Body */
+.modal-body::-webkit-scrollbar {
+    width: 8px;
+}
+
+.modal-body::-webkit-scrollbar-track {
+    background: #f1f1f1;
+    border-radius: 4px;
+}
+
+.modal-body::-webkit-scrollbar-thumb {
+    background: #bdc3c7;
+    border-radius: 4px;
+}
+
+.modal-body::-webkit-scrollbar-thumb:hover {
+    background: #95a5a6;
+}

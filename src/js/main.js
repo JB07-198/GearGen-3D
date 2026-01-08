@@ -53,21 +53,9 @@ class GearGenApp {
             });
         });
 
-        // Parameter inputs
-        document.querySelectorAll('.parameter input, .parameter select').forEach(input => {
-            input.addEventListener('change', (e) => {
-                this.updateParameter(e.target.id, e.target.value);
-                this.generateGear();
-            });
-        });
-
         // Export buttons
         document.getElementById('export-stl').addEventListener('click', () => {
             this.exportSTL();
-        });
-
-        document.getElementById('export-step').addEventListener('click', () => {
-            this.showComingSoonMessage('STEP export');
         });
 
         // Preview controls
@@ -98,15 +86,6 @@ class GearGenApp {
                 gear.material.wireframe = !gear.material.wireframe;
                 e.target.classList.toggle('active');
             }
-        });
-
-        // Info buttons
-        document.getElementById('help-btn').addEventListener('click', () => {
-            alert('Help documentation will be available soon!\n\nCurrently only Spur Gears are functional. Other gear types are coming in future updates.');
-        });
-
-        document.getElementById('github-btn').addEventListener('click', () => {
-            window.open('https://github.com', '_blank');
         });
     }
 
@@ -144,11 +123,18 @@ class GearGenApp {
     }
 
     generateGear() {
+        // Sync parameters with UI if available
+        if (window.parameterUI) {
+            this.gearParameters = window.parameterUI.getAllParameters();
+        }
+
         console.log('Generating gear with parameters:', this.gearParameters);
 
         // Update stats display
         const pitchDiameter = this.gearParameters.module * this.gearParameters.teeth;
-        document.getElementById('gear-size').textContent = `${pitchDiameter.toFixed(1)} mm`;
+        if (document.getElementById('gear-size')) {
+            document.getElementById('gear-size').textContent = `${pitchDiameter.toFixed(1)} mm`;
+        }
 
         // Generate gear geometry based on type
         switch (this.currentGearType) {
@@ -223,11 +209,12 @@ class GearGenApp {
     }
 
     showComingSoonMessage(feature) {
-        alert(`🚧 ${feature} is coming soon!\n\nCurrently only Spur Gears are available for generation and export. Other gear types and STEP export will be implemented in future updates.`);
+        // Use i18n and system logic if available, otherwise fallback
+        const message = window.i18n ? window.i18n.translate('status.comingSoon') : 'Coming Soon';
+        alert(`🚧 ${feature}: ${message}`);
 
         // Highlight the feature as coming soon
-        const element = document.querySelector(`[data-type="${feature}"]`) ||
-            document.getElementById(`export-${feature}`);
+        const element = document.querySelector(`[data-type="${feature}"]`);
         if (element) {
             element.style.animation = 'pulse 0.5s';
             setTimeout(() => {
