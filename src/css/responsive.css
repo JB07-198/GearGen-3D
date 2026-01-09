@@ -1,43 +1,70 @@
 /* Professional Multi-Device Design Transitions */
 
 /* 1. Large Screen & Desktop (Pro Workspace) */
-@media (min-width: 1201px) {
+@media (min-width: 1401px) {
     .app-layout {
-        grid-template-columns: 280px 1fr 380px;
+        grid-template-columns: 280px 1fr 380px 320px;
         transition: all 0.5s cubic-bezier(0.4, 0, 0.2, 1);
     }
 
-    .mobile-nav {
+    .mobile-nav,
+    .floating-controls,
+    .mobile-drawer-header {
         display: none;
     }
 }
 
 /* 2. Desktop Small (Compact Workspace) */
-@media (max-width: 1200px) and (min-width: 1025px) {
+@media (max-width: 1400px) and (min-width: 1101px) {
     .app-layout {
-        grid-template-columns: 240px 1fr 340px;
+        grid-template-columns: 240px 1fr 340px 280px;
     }
 
     .logo h1 {
         font-size: 1.5rem;
     }
 
-    .mobile-nav {
+    .mobile-nav,
+    .floating-controls,
+    .mobile-drawer-header {
         display: none;
     }
 }
 
-/* 3. Tablet Experience (Split Workbench) */
-@media (max-width: 1024px) and (min-width: 769px) {
+/* 3. Mobile/Tablet Transition (3 Columns) */
+@media (max-width: 1100px) and (min-width: 897px) {
     .app-layout {
-        grid-template-columns: 1fr 340px;
+        grid-template-columns: 220px 1fr 320px;
+    }
+
+    .export-panel {
+        display: none !important;
+        /* Hide on smaller desktop to avoid clutter, or could be a drawer */
+    }
+
+    .mobile-nav,
+    .floating-controls,
+    .mobile-drawer-header {
+        display: none;
+    }
+}
+
+/* 4. Tablet Experience (Split Workbench) */
+@media (max-width: 896px) and (min-width: 769px) {
+    .app-layout {
+        grid-template-columns: 1fr 320px;
         grid-template-rows: auto 1fr;
         height: auto;
     }
 
-    .left-panel {
+    .left-panel,
+    .export-panel {
         grid-column: 1 / -1;
         margin-bottom: 20px;
+    }
+
+    .export-panel {
+        display: block !important;
     }
 
     .gear-types {
@@ -56,170 +83,282 @@
         min-height: 500px;
     }
 
-    .mobile-nav {
+    .mobile-nav,
+    .floating-controls,
+    .mobile-drawer-header {
         display: none;
     }
 }
 
-/* 4. Mobile Experience (Adaptive Dashboard) */
+/* 5. Mobile Experience (Adaptive Dashboard) */
 @media (max-width: 768px) {
     body {
         overflow-x: hidden;
-        padding-bottom: 70px;
-        /* Space for nav */
+        padding-bottom: 75px;
+        background-color: #000;
+        /* Dark background under the 3D canvas */
+    }
+
+    .header {
+        padding: 0.8rem 0;
     }
 
     .header .container {
-        flex-direction: column;
-        gap: 8px;
+        flex-direction: row;
+        justify-content: space-between;
+        padding: 0 15px;
+    }
+
+    .logo img {
+        height: 25px !important;
     }
 
     .logo h1 {
-        font-size: 1.4rem;
+        font-size: 1.1rem;
     }
 
-    .tagline {
+    .header-actions {
+        gap: 5px;
+    }
+
+    .header-actions .btn {
+        padding: 6px 8px;
+        font-size: 0.75rem;
+    }
+
+    .header-actions .btn span {
         display: none;
+        /* Hide button text on mobile header */
     }
 
-    /* Drawer Handle */
-    .mobile-drawer-handle {
-        width: 40px;
-        height: 5px;
-        background: #ddd;
-        border-radius: 10px;
-        margin: 10px auto;
-        display: block;
+    .tagline,
+    .mobile-hidden {
+        display: none !important;
     }
 
-    .main-content {
-        padding: 10px 0;
-    }
-
-    /* Full-screen 3D View logic */
+    /* Main Layout */
     .app-layout {
         display: block;
         position: relative;
-        height: calc(100vh - 160px);
+        height: calc(100vh - 120px);
         margin: 0;
+        background: #1a1a1a;
     }
 
-    /* Panels as Animated Drawers */
-    .left-panel,
-    .right-panel {
-        position: fixed;
-        bottom: 70px;
-        left: 10px;
-        right: 10px;
-        top: 80px;
-        z-index: 1000;
-        background: rgba(255, 255, 255, 0.95);
-        backdrop-filter: blur(10px);
-        border: 1px solid rgba(255, 255, 255, 0.3);
-        border-radius: 20px 20px 0 0;
-        box-shadow: 0 -10px 30px rgba(0, 0, 0, 0.15);
-        transform: translateY(120%);
-        transition: transform 0.4s cubic-bezier(0.19, 1, 0.22, 1);
-        display: flex !important;
-        margin: 0;
+    .main-content {
+        padding: 0;
     }
 
-    .left-panel.active,
-    .right-panel.active {
-        transform: translateY(0);
+    .container {
+        padding: 0;
     }
 
+    /* Center Panel as Background */
     .center-panel {
         position: absolute;
         inset: 0;
         z-index: 1;
-        border-radius: 12px;
-        overflow: hidden;
+        border-radius: 0;
     }
 
-    /* Mobile Navigation Bar Styling */
+    /* Floating Preview Controls */
+    .floating-controls {
+        position: absolute;
+        right: 15px;
+        top: 50%;
+        transform: translateY(-50%);
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+        z-index: 50;
+    }
+
+    .btn-floating {
+        width: 40px;
+        height: 40px;
+        border-radius: 50%;
+        background: rgba(255, 255, 255, 0.15);
+        backdrop-filter: blur(8px);
+        border: 1px solid rgba(255, 255, 255, 0.2);
+        color: white;
+        font-size: 1rem;
+        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+    }
+
+    .btn-floating.active {
+        background: #3498db;
+        border-color: #3498db;
+    }
+
+    .preview-controls-desktop {
+        display: none;
+    }
+
+    .preview-stats {
+        bottom: 85px;
+        left: 15px;
+        font-size: 0.7rem;
+        background: rgba(0, 0, 0, 0.5);
+    }
+
+    /* Panels as Animated Bottom Sheets */
+    .mobile-drawer-header {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 10px 15px;
+        position: relative;
+        border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+    }
+
+    .mobile-drawer-handle {
+        width: 40px;
+        height: 4px;
+        background: #ddd;
+        border-radius: 10px;
+    }
+
+    .mobile-drawer-close {
+        position: absolute;
+        right: 15px;
+        top: 50%;
+        transform: translateY(-50%);
+        background: #f1f3f5;
+        border: none;
+        width: 30px;
+        height: 30px;
+        border-radius: 50%;
+        color: #495057;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        cursor: pointer;
+    }
+
+    .left-panel,
+    .right-panel,
+    .export-panel {
+        position: fixed;
+        bottom: 0;
+        left: 0;
+        right: 0;
+        top: 15%;
+        /* Leave some space at top */
+        z-index: 1500;
+        background: white;
+        border-radius: 24px 24px 0 0;
+        box-shadow: 0 -10px 40px rgba(0, 0, 0, 0.2);
+        transform: translateY(100%);
+        transition: transform 0.5s cubic-bezier(0.32, 0.72, 0, 1);
+        display: flex !important;
+        margin: 0;
+        opacity: 1 !important;
+    }
+
+    .left-panel.active,
+    .right-panel.active,
+    .export-panel.active {
+        transform: translateY(0);
+    }
+
+    .panel-header {
+        border-bottom: none;
+        background: transparent;
+    }
+
+    /* Navigation Bar */
     .mobile-nav {
         position: fixed;
         bottom: 0;
         left: 0;
         right: 0;
-        height: 70px;
-        background: white;
+        height: 75px;
+        background: rgba(255, 255, 255, 0.9);
+        backdrop-filter: blur(15px);
         display: flex;
         justify-content: space-around;
         align-items: center;
-        box-shadow: 0 -5px 20px rgba(0, 0, 0, 0.05);
+        box-shadow: 0 -5px 25px rgba(0, 0, 0, 0.1);
         z-index: 2000;
-        border-top: 1px solid #eee;
+        border-top: 1px solid rgba(0, 0, 0, 0.05);
+        padding-bottom: env(safe-area-inset-bottom);
     }
 
     .nav-item {
-        background: none;
-        border: none;
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-        gap: 4px;
-        color: #95a5a6;
-        font-size: 0.7rem;
-        font-weight: 600;
-        cursor: pointer;
-        padding: 5px;
-        transition: all 0.3s;
-    }
-
-    .nav-item i {
-        font-size: 1.4rem;
+        color: #7f8c8d;
+        flex: 1;
     }
 
     .nav-item.active {
         color: #3498db;
     }
 
-    .nav-item.active i {
-        transform: translateY(-2px);
+    .nav-item i {
+        font-size: 1.4rem;
+        margin-bottom: 2px;
     }
 
-    .footer {
-        display: none;
-        /* Auto-hide footer on mobile dashboard */
+    .nav-item span {
+        font-size: 0.6rem;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
     }
 
+    /* Mobile Overlay */
     .mobile-overlay {
-        position: fixed;
-        inset: 0;
-        background: rgba(0, 0, 0, 0.3);
-        backdrop-filter: blur(4px);
-        z-index: 900;
-        opacity: 0;
-        pointer-events: none;
-        transition: opacity 0.3s;
+        background: rgba(0, 0, 0, 0.4);
+        backdrop-filter: blur(2px);
     }
 
-    .mobile-overlay.active {
-        opacity: 1;
-        pointer-events: auto;
-    }
-
-    /* Card adjustments for mobile */
+    /* Adjust cards and typography for mobile */
     .gear-type-card {
-        padding: 12px;
+        padding: 15px;
+        display: flex;
+        align-items: center;
+        gap: 15px;
+    }
+
+    .gear-type-card .gear-icon {
+        margin-bottom: 0;
+        flex-shrink: 0;
+    }
+
+    .gear-type-card h3 {
+        margin-bottom: 2px;
+    }
+
+    .gear-type-card p {
+        margin-bottom: 0;
+        font-size: 0.75rem;
+    }
+
+    .parameter-card {
+        padding: 15px !important;
+    }
+
+    .parameter-header {
+        margin-bottom: 10px !important;
     }
 }
 
-/* Landscape Mobile Fix */
+/* Landscape Mobile */
 @media (max-width: 896px) and (orientation: landscape) {
     .app-layout {
-        height: calc(100vh - 120px);
+        height: calc(100vh - 60px);
     }
 
     .left-panel,
     .right-panel {
-        top: 20px;
-        bottom: 60px;
+        top: 10px;
+        border-radius: 20px 20px 0 0;
     }
 
-    .mobile-nav {
-        height: 60px;
+    .floating-controls {
+        flex-direction: row;
+        top: auto;
+        bottom: 15px;
+        right: 50%;
+        transform: translateX(50%);
     }
 }

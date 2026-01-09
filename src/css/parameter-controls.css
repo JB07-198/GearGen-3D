@@ -221,15 +221,25 @@
 }
 
 /* Responsive Adjustments */
-@media (max-width: 576px) {
+@media (max-width: 768px) {
     .parameter-controls-row {
         flex-direction: column;
         align-items: stretch;
+        gap: 12px;
     }
 
     .input-group {
         width: 100%;
         justify-content: space-between;
+        padding: 5px;
+        /* More room for touch */
+    }
+
+    .step-btn {
+        width: 44px;
+        /* Larger touch target */
+        height: 44px;
+        font-size: 1.2rem;
     }
 
     .parameter-number-input {
@@ -238,6 +248,12 @@
 
     .parameter-number-input input {
         width: 100% !important;
+        font-size: 1.1rem !important;
+    }
+
+    .parameter-controls-row input[type="range"]::-webkit-slider-thumb {
+        width: 24px;
+        height: 24px;
     }
 }
 

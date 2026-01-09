@@ -60,7 +60,10 @@
         <div class="app-layout">
             <!-- Left Panel: Gear Type Selection -->
             <div class="panel left-panel">
-                <div class="mobile-drawer-handle"></div>
+                <div class="mobile-drawer-header">
+                    <div class="mobile-drawer-handle"></div>
+                    <button class="mobile-drawer-close"><i class="fas fa-times"></i></button>
+                </div>
                 <div class="panel-header">
                     <h2><img src="./assets/icons/icon-gear-type.png" alt=""
                             style="height: 20px; vertical-align: middle; margin-right: 8px;"><span
@@ -134,27 +137,45 @@
 
             <!-- Center Panel: 3D Preview -->
             <div class="panel center-panel">
-                <div class="panel-header">
+                <div class="panel-header mobile-hidden">
                     <h2><img src="./assets/icons/icon-3D-Preview.png" alt=""
                             style="height: 20px; vertical-align: middle; margin-right: 8px;"><span
                             data-i18n="section.preview">3D Preview</span></h2>
-                    <div class="preview-controls">
-                        <button id="reset-view" class="btn btn-small">
-                            <i class="fas fa-redo"></i> <span data-i18n="btn.resetView">Reset View</span>
-                        </button>
-                        <button id="toggle-grid" class="btn btn-small">
-                            <i class="fas fa-th"></i> <span data-i18n="btn.grid">Grid</span>
-                        </button>
-                        <button id="toggle-axis" class="btn btn-small">
-                            <i class="fas fa-arrows-alt"></i> <span data-i18n="btn.axis">Axis</span>
-                        </button>
-                        <button id="toggle-wireframe" class="btn btn-small">
-                            <i class="fas fa-th-large"></i> <span data-i18n="btn.wireframe">Wireframe</span>
-                        </button>
-                    </div>
                 </div>
                 <div class="preview-container">
                     <div id="preview-canvas"></div>
+
+                    <!-- Floating Preview Controls for Mobile -->
+                    <div class="floating-controls">
+                        <button id="reset-view" class="btn btn-floating" title="Reset View">
+                            <i class="fas fa-redo"></i>
+                        </button>
+                        <button id="toggle-grid" class="btn btn-floating" title="Grid">
+                            <i class="fas fa-th"></i>
+                        </button>
+                        <button id="toggle-axis" class="btn btn-floating" title="Axis">
+                            <i class="fas fa-arrows-alt"></i>
+                        </button>
+                        <button id="toggle-wireframe" class="btn btn-floating" title="Wireframe">
+                            <i class="fas fa-th-large"></i>
+                        </button>
+                    </div>
+
+                    <!-- Desktop Preview Controls -->
+                    <div class="preview-controls-desktop">
+                        <button id="reset-view-desktop" class="btn btn-small preview-btn-desktop">
+                            <i class="fas fa-redo"></i> <span data-i18n="btn.resetView">Reset View</span>
+                        </button>
+                        <button id="toggle-grid-desktop" class="btn btn-small preview-btn-desktop">
+                            <i class="fas fa-th"></i> <span data-i18n="btn.grid">Grid</span>
+                        </button>
+                        <button id="toggle-axis-desktop" class="btn btn-small preview-btn-desktop">
+                            <i class="fas fa-arrows-alt"></i> <span data-i18n="btn.axis">Axis</span>
+                        </button>
+                        <button id="toggle-wireframe-desktop" class="btn btn-small preview-btn-desktop">
+                            <i class="fas fa-th-large"></i> <span data-i18n="btn.wireframe">Wireframe</span>
+                        </button>
+                    </div>
                     <div class="preview-stats">
                         <div class="stat-item">
                             <span class="stat-label" data-i18n="stats.vertices">Vertices:</span>
@@ -174,7 +195,10 @@
 
             <!-- Right Panel: Parameters and Export -->
             <div class="panel right-panel">
-                <div class="mobile-drawer-handle"></div>
+                <div class="mobile-drawer-header">
+                    <div class="mobile-drawer-handle"></div>
+                    <button class="mobile-drawer-close"><i class="fas fa-times"></i></button>
+                </div>
                 <div class="panel-header">
                     <h2><img src="./assets/icons/icon-Parameters.png" alt=""
                             style="height: 20px; vertical-align: middle; margin-right: 8px;"><span
@@ -391,10 +415,21 @@
                     <div id="calculated-info-container" class="calculated-info-premium">
                         <!-- Will be populated by JS -->
                     </div>
+                </div> <!-- Close parameters-form -->
+            </div> <!-- Close right-panel -->
+
+            <!-- Export Panel -->
+            <div class="panel export-panel">
+                <div class="mobile-drawer-header">
+                    <div class="mobile-drawer-handle"></div>
+                    <button class="mobile-drawer-close"><i class="fas fa-times"></i></button>
+                </div>
+                <div class="panel-header">
+                    <h2><i class="fas fa-file-export" style="margin-right: 8px; color: #3498db;"></i><span
+                            data-i18n="section.export">Export</span></h2>
                 </div>
 
                 <div class="export-section">
-                    <h3><i class="fas fa-download"></i> <span data-i18n="section.export">Export</span></h3>
                     <div class="export-buttons">
                         <button id="export-stl" class="btn btn-primary btn-export">
                             <i class="fas fa-cube"></i> <span data-i18n="btn.downloadSTL">Download STL</span>
@@ -413,7 +448,8 @@
                         <p
                             style="margin-top: 12px; padding: 10px; background: rgba(52, 152, 219, 0.1); border-left: 3px solid #3498db; border-radius: 4px; font-size: 0.85em;">
                             <i class="fas fa-info-circle"></i> <strong data-i18n="export.note.title">Note:</strong>
-                            <span data-i18n="export.note.desc">We are developing a free offline software for creating
+                            <span data-i18n="export.note.desc">We are developing a free offline software for
+                                creating
                                 more complex gears with additional export formats (STEP, IGES, etc.).</span>
                         </p>
                     </div>
@@ -424,7 +460,8 @@
                     <p data-i18n="info.notice" data-i18n-html="true">Currently only <strong>Spur Gears</strong> are
                         available. Other gear types will be implemented soon.</p>
                 </div>
-            </div>
+            </div> <!-- Close export-panel -->
+        </div> <!-- Close app-layout -->
         </div>
     </main>
 
@@ -444,6 +481,10 @@
         <button class="nav-item" data-show="right-panel">
             <i class="fas fa-sliders-h"></i>
             <span data-i18n="section.parameters">Parameters</span>
+        </button>
+        <button class="nav-item" data-show="export-panel">
+            <i class="fas fa-download"></i>
+            <span data-i18n="section.export">Export</span>
         </button>
     </nav>
 

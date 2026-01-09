@@ -28,6 +28,12 @@ class GearGenApp {
         this.generateGear();
     }
 
+    onWindowResize() {
+        if (window.threeJSSetup) {
+            window.threeJSSetup.onWindowResize();
+        }
+    }
+
     initUI() {
         console.log('Initializing UI components...');
         // UI components will be initialized by their respective modules
@@ -58,33 +64,67 @@ class GearGenApp {
             this.exportSTL();
         });
 
-        // Preview controls
-        document.getElementById('reset-view').addEventListener('click', () => {
-            if (window.sceneManager) {
-                window.sceneManager.resetCamera();
+        // Preview controls - Floating & Desktop
+        ['reset-view', 'reset-view-desktop'].forEach(id => {
+            const btn = document.getElementById(id);
+            if (btn) {
+                btn.addEventListener('click', () => {
+                    if (window.sceneManager) {
+                        window.sceneManager.resetCamera();
+                    }
+                });
             }
         });
 
-        document.getElementById('toggle-grid').addEventListener('click', (e) => {
-            if (window.sceneManager) {
-                window.sceneManager.toggleGrid();
-                e.target.classList.toggle('active');
+        ['toggle-grid', 'toggle-grid-desktop'].forEach(id => {
+            const btn = document.getElementById(id);
+            if (btn) {
+                btn.addEventListener('click', (e) => {
+                    if (window.sceneManager) {
+                        window.sceneManager.toggleGrid();
+                        const currentBtn = e.currentTarget;
+                        currentBtn.classList.toggle('active');
+                        // Sync with other button
+                        const otherId = id.includes('-desktop') ? id.replace('-desktop', '') : id + '-desktop';
+                        const otherBtn = document.getElementById(otherId);
+                        if (otherBtn) otherBtn.classList.toggle('active');
+                    }
+                });
             }
         });
 
-        document.getElementById('toggle-axis').addEventListener('click', (e) => {
-            if (window.sceneManager) {
-                window.sceneManager.toggleAxis();
-                e.target.classList.toggle('active');
+        ['toggle-axis', 'toggle-axis-desktop'].forEach(id => {
+            const btn = document.getElementById(id);
+            if (btn) {
+                btn.addEventListener('click', (e) => {
+                    if (window.sceneManager) {
+                        window.sceneManager.toggleAxis();
+                        const currentBtn = e.currentTarget;
+                        currentBtn.classList.toggle('active');
+                        // Sync with other button
+                        const otherId = id.includes('-desktop') ? id.replace('-desktop', '') : id + '-desktop';
+                        const otherBtn = document.getElementById(otherId);
+                        if (otherBtn) otherBtn.classList.toggle('active');
+                    }
+                });
             }
         });
 
-        // Wireframe toggle
-        document.getElementById('toggle-wireframe').addEventListener('click', (e) => {
-            if (window.sceneManager && window.sceneManager.currentGear) {
-                const gear = window.sceneManager.currentGear;
-                gear.material.wireframe = !gear.material.wireframe;
-                e.target.classList.toggle('active');
+        ['toggle-wireframe', 'toggle-wireframe-desktop'].forEach(id => {
+            const btn = document.getElementById(id);
+            if (btn) {
+                btn.addEventListener('click', (e) => {
+                    if (window.sceneManager && window.sceneManager.currentGear) {
+                        const gear = window.sceneManager.currentGear;
+                        gear.material.wireframe = !gear.material.wireframe;
+                        const currentBtn = e.currentTarget;
+                        currentBtn.classList.toggle('active');
+                        // Sync with other button
+                        const otherId = id.includes('-desktop') ? id.replace('-desktop', '') : id + '-desktop';
+                        const otherBtn = document.getElementById(otherId);
+                        if (otherBtn) otherBtn.classList.toggle('active');
+                    }
+                });
             }
         });
     }
