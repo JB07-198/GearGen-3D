@@ -50,6 +50,8 @@ class I18n {
                 'param.pressureAngle.common': '20° (Common)',
                 'param.pressureAngle.legacy': '14.5° (Legacy)',
                 'param.pressureAngle.highLoad': '25° (High Load)',
+                'param.helixAngle': 'Helix Angle (°)',
+                'param.helixAngle.tooltip': 'The angle of the teeth relative to the gear axis',
 
                 'group.gearBody': 'Gear Body',
                 'param.faceWidth': 'Face Width (mm)',
@@ -79,7 +81,7 @@ class I18n {
                 'export.note.desc': 'We are developing free offline software for complex gears and more formats (STEP, IGES, etc.).',
 
                 // Info Notice
-                'info.notice': 'Currently only <strong>Spur Gears</strong> are available. Other gear types will be implemented soon.',
+                'info.notice': 'Currently <strong>Spur</strong> and <strong>Helical</strong> gears are available. More types coming soon.',
 
                 // Footer
                 'footer.copyright': 'GearGen - 3D Gear Generator © 2026',
@@ -136,9 +138,11 @@ class I18n {
                 'param.teeth.tooltip': 'Nombre total de dents sur l\'engrenage',
                 'param.pressureAngle': 'Angle de Pression (°)',
                 'param.pressureAngle.tooltip': 'Angle entre la face de la dent et la tangente de la roue',
-                'param.pressureAngle.common': '20° (Courant)',
-                'param.pressureAngle.legacy': '14.5° (Ancien)',
+                'param.pressureAngle.common': '20° (Standard)',
+                'param.pressureAngle.legacy': '14,5° (Ancien)',
                 'param.pressureAngle.highLoad': '25° (Charge Élevée)',
+                'param.helixAngle': 'Angle d\'Hélice (°)',
+                'param.helixAngle.tooltip': 'L\'inclinaison des dents par rapport à l\'axe de l\'engrenage',
 
                 'group.gearBody': 'Corps de l\'Engrenage',
                 'param.faceWidth': 'Largeur de Denture (mm)',
@@ -168,7 +172,7 @@ class I18n {
                 'export.note.desc': 'Logiciel gratuit en cours pour engrenages complexes et plus de formats (STEP, IGES, etc.).',
 
                 // Info Notice
-                'info.notice': 'Actuellement, seuls les <strong>Engrenages Droits</strong> sont disponibles. Les autres types d\'engrenages seront implémentés prochainement.',
+                'info.notice': 'Actuellement, les engrenages <strong>Droits</strong> et <strong>Hélicoïdaux</strong> sont disponibles. D\'autres types suivront.',
 
                 // Footer
                 'footer.copyright': 'GearGen - Générateur d\'Engrenages 3D © 2026',
@@ -228,6 +232,8 @@ class I18n {
                 'param.pressureAngle.common': '20° (شائع)',
                 'param.pressureAngle.legacy': '14.5° (قديم)',
                 'param.pressureAngle.highLoad': '25° (حمل عالي)',
+                'param.helixAngle': 'زاوية الحلزون (°)',
+                'param.helixAngle.tooltip': 'زاوية الأسنان بالنسبة لمحور الترس',
 
                 'group.gearBody': 'جسم الترس',
                 'param.faceWidth': 'عرض الوجه (مم)',
@@ -257,7 +263,7 @@ class I18n {
                 'export.note.desc': 'نحن نطور برنامجاً مجانياً للتروس المعقدة وتنسيقات إضافية (STEP، IGES، إلخ).',
 
                 // Info Notice
-                'info.notice': 'حالياً، فقط <strong>التروس المستقيمة</strong> متاحة. سيتم تنفيذ أنواع التروس الأخرى قريباً.',
+                'info.notice': 'حالياً تتوفر التروس <strong>المستقيمة</strong> و <strong>الحلزونية</strong>. المزيد من الأنواع قريباً.',
 
                 // Footer
                 'footer.copyright': 'GearGen - مولد التروس ثلاثية الأبعاد © 2026',

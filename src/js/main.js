@@ -51,7 +51,7 @@ class GearGenApp {
         document.querySelectorAll('.gear-type-card').forEach(card => {
             card.addEventListener('click', (e) => {
                 const type = card.dataset.type;
-                if (type === 'spur') {
+                if (type === 'spur' || type === 'helical') {
                     this.setGearType(type);
                 } else {
                     this.showComingSoonMessage(type);
@@ -139,6 +139,12 @@ class GearGenApp {
         document.querySelector(`[data-type="${type}"]`).classList.add('active');
 
         this.currentGearType = type;
+
+        // Update UI visibility for parameters
+        if (window.parameterUI) {
+            window.parameterUI.updateVisibility(type);
+        }
+
         this.generateGear();
     }
 
@@ -176,10 +182,18 @@ class GearGenApp {
             document.getElementById('gear-size').textContent = `${pitchDiameter.toFixed(1)} mm`;
         }
 
+        // Update orientation/stats in export UI
+        if (window.exportUI) {
+            window.exportUI.updateFileSizeEstimation();
+        }
+
         // Generate gear geometry based on type
         switch (this.currentGearType) {
             case 'spur':
                 this.generateSpurGear();
+                break;
+            case 'helical':
+                this.generateHelicalGear();
                 break;
             default:
                 console.warn(`Gear type ${this.currentGearType} not implemented yet`);
@@ -223,8 +237,16 @@ class GearGenApp {
             document.getElementById('vertex-count').textContent =
                 vertexCount.toLocaleString();
 
-            // Calculate approximate face count
-            const faceCount = vertexCount / 3;
+            // Calculate accurate face count
+            // If indexed, faceCount = index.count / 3
+            // If not indexed, faceCount = vertexCount / 3
+            let faceCount = 0;
+            if (gearMesh.geometry.index) {
+                faceCount = gearMesh.geometry.index.count / 3;
+            } else {
+                faceCount = vertexCount / 3;
+            }
+
             document.getElementById('face-count').textContent =
                 Math.round(faceCount).toLocaleString();
 
@@ -242,9 +264,39 @@ class GearGenApp {
         console.log('Exporting as STL...');
 
         if (window.stlExporter) {
-            window.stlExporter.exportCurrentGear();
+            const params = {
+                type: this.currentGearType,
+                module: this.gearParameters.module,
+                teeth: this.gearParameters.teeth,
+                faceWidth: this.gearParameters.faceWidth,
+                helixAngle: this.currentGearType === 'helical' ? this.gearParameters.helixAngle : null
+            };
+            window.stlExporter.exportCurrentGear(params);
         } else {
             alert('STL exporter not available. Please check console for errors.');
+        }
+    }
+
+    generateHelicalGear() {
+        console.log('Generating helical gear...');
+        const params = this.gearParameters;
+
+        const gearData = calculateHelicalGear(
+            params.module,
+            params.teeth,
+            params.pressureAngle,
+            params.helixAngle,
+            params.faceWidth,
+            params.hubDiameter,
+            params.boreDiameter,
+            params.quality
+        );
+
+        if (window.gearRenderer) {
+            const gearMesh = window.gearRenderer.createHelicalGear(gearData, params.color, params.quality);
+            if (gearMesh) {
+                this.updateGearStats(gearMesh);
+            }
         }
     }
 

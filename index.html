@@ -90,7 +90,7 @@
                         </div>
                         <h3 data-i18n="gear.helical">Helical Gear</h3>
                         <p data-i18n="gear.helical.desc">Angled teeth for smoother operation</p>
-                        <span class="status-badge status-coming" data-i18n="status.comingSoon">Coming Soon</span>
+                        <span class="status-badge status-active" data-i18n="status.available">Available</span>
                     </div>
 
                     <div class="gear-type-card" data-type="bevel">
@@ -280,6 +280,35 @@
                                         <input type="number" id="teeth" min="8" max="200" step="1" value="20">
                                     </div>
                                     <button class="step-btn plus" data-target="teeth"><i
+                                            class="fas fa-plus"></i></button>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Helix Angle Card (Helical only) -->
+                        <div class="parameter-card" id="helix-angle-container" style="display: none;">
+                            <div class="parameter-header">
+                                <div class="parameter-label">
+                                    <span class="parameter-title" data-i18n="param.helixAngle">Helix Angle (°)</span>
+                                    <span class="parameter-desc" data-i18n="param.helixAngle.tooltip">The angle of the
+                                        teeth relative to the gear axis</span>
+                                </div>
+                                <span class="tooltip" data-i18n-title="param.helixAngle.tooltip"
+                                    title="The angle of the teeth relative to the gear axis">
+                                    <i class="fas fa-info-circle"></i>
+                                </span>
+                            </div>
+                            <div class="parameter-controls-row">
+                                <div class="slider-group">
+                                    <input type="range" id="helix-angle-slider" min="0" max="45" step="1" value="20">
+                                </div>
+                                <div class="input-group">
+                                    <button class="step-btn minus" data-target="helixAngle"><i
+                                            class="fas fa-minus"></i></button>
+                                    <div class="parameter-number-input">
+                                        <input type="number" id="helix-angle" min="0" max="45" step="1" value="20">
+                                    </div>
+                                    <button class="step-btn plus" data-target="helixAngle"><i
                                             class="fas fa-plus"></i></button>
                                 </div>
                             </div>
@@ -516,6 +545,7 @@
     <script src="./src/js/utils/math-utils.js"></script>
     <script src="./src/js/utils/i18n.js"></script>
     <script src="./src/js/gear-types/spur-gear.js"></script>
+    <script src="./src/js/gear-types/helical-gear.js"></script>
     <script src="./src/js/renderer/threejs-setup.js"></script>
     <script src="./src/js/renderer/scene-manager.js"></script>
     <script src="./src/js/renderer/gear-renderer.js"></script>

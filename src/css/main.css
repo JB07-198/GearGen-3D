@@ -111,9 +111,11 @@ body {
 
 /* Panel Styles */
 .panel {
-    background: var(--surface);
+    background: rgba(255, 255, 255, 0.85);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
     border-radius: var(--radius-lg);
-    border: 1px solid var(--border);
+    border: 1px solid rgba(255, 255, 255, 0.2);
     box-shadow: var(--shadow-md);
     display: flex;
     flex-direction: column;
@@ -124,6 +126,7 @@ body {
 
 .panel:hover {
     box-shadow: var(--shadow-lg);
+    border-color: rgba(255, 255, 255, 0.4);
 }
 
 .mobile-drawer-handle {
@@ -509,13 +512,14 @@ body {
 .btn-primary {
     background: linear-gradient(135deg, var(--primary) 0%, var(--primary-active) 100%);
     color: white;
-    box-shadow: 0 4px 12px var(--primary-glow);
+    box-shadow: 0 4px 15px rgba(67, 97, 238, 0.4);
+    font-weight: 600;
 }
 
 .btn-primary:hover {
     background: linear-gradient(135deg, var(--primary-hover) 0%, var(--primary) 100%);
     transform: translateY(-2px);
-    box-shadow: 0 6px 16px var(--primary-glow);
+    box-shadow: 0 8px 20px rgba(67, 97, 238, 0.5);
 }
 
 .btn-primary:active {

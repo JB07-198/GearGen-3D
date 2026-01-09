@@ -54,6 +54,91 @@ class GearRenderer {
         }
     }
 
+    createHelicalGear(gearData, color = '#3498db', quality = 'medium') {
+        console.log('Creating helical gear with helical twist...', gearData);
+
+        try {
+            const gearShape = this.createCorrectedGearShape(gearData, quality);
+
+            // Calculate total twist angle (in radians)
+            // helixAngle is beta
+            // twist = faceWidth * tan(beta) / pitchRadius
+            const beta = gearData.helixAngle * Math.PI / 180;
+            const twistAngle = (gearData.faceWidth * Math.tan(beta)) / (gearData.pitchDiameter / 2);
+
+            // Create gear geometry with multiple steps for smooth twist
+            const steps = quality === 'high' ? 32 : (quality === 'medium' ? 16 : 8);
+            const extrudeSettings = {
+                depth: gearData.faceWidth,
+                steps: steps,
+                bevelEnabled: true,
+                bevelThickness: Math.min(0.5, gearData.module * 0.2),
+                bevelSize: Math.min(0.5, gearData.module * 0.2),
+                bevelSegments: 2,
+                curveSegments: 24
+            };
+
+            const geometry = new THREE.ExtrudeGeometry(gearShape, extrudeSettings);
+
+            // Center geometry first
+            geometry.center();
+
+            // Apply helical twist by rotating vertices
+            const positions = geometry.attributes.position;
+            const faceWidth = gearData.faceWidth;
+
+            for (let i = 0; i < positions.count; i++) {
+                const x = positions.getX(i);
+                const y = positions.getY(i);
+                const z = positions.getZ(i);
+
+                // Calculate twist for this Z position
+                // Z is centered, so it goes from -faceWidth/2 to +faceWidth/2
+                const angle = (z / faceWidth) * twistAngle;
+
+                const cosA = Math.cos(angle);
+                const sinA = Math.sin(angle);
+
+                const newX = x * cosA - y * sinA;
+                const newY = x * sinA + y * cosA;
+
+                positions.setXY(i, newX, newY);
+            }
+
+            // Normals need to be recalculated after vertex manipulation
+            geometry.computeVertexNormals();
+
+            // Orient correctly (Three.js extrudes along Z, but we want gear axis to be vertical in our scene or as per spur gear)
+            // Spur gear uses geometry.rotateX(Math.PI / 2); Let's stay consistent.
+            geometry.rotateX(Math.PI / 2);
+
+            // Create material
+            const material = new THREE.MeshPhongMaterial({
+                color: color,
+                shininess: 60,
+                specular: 0x222222,
+                flatShading: false
+            });
+
+            // Create mesh
+            const gearMesh = new THREE.Mesh(geometry, material);
+            gearMesh.castShadow = true;
+            gearMesh.receiveShadow = true;
+
+            // Add to scene
+            if (window.sceneManager) {
+                window.sceneManager.addGear(gearMesh);
+            }
+
+            console.log('Helical gear created successfully');
+            return gearMesh;
+
+        } catch (error) {
+            console.error('Error creating helical gear:', error);
+            return this.createRobustGear(gearData, color);
+        }
+    }
+
     createCorrectedGearShape(gearData, quality) {
         const shape = new THREE.Shape();
         const { teeth, displayPoints } = gearData;

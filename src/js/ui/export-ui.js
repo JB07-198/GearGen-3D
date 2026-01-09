@@ -3,13 +3,13 @@ class ExportUI {
     constructor() {
         this.init();
     }
-    
+
     init() {
         console.log('Initializing export UI...');
         this.setupEventListeners();
         this.updateExportInfo();
     }
-    
+
     setupEventListeners() {
         // Export format selection
         document.querySelectorAll('.export-format').forEach(radio => {
@@ -17,7 +17,7 @@ class ExportUI {
                 this.updateExportOptions(e.target.value);
             });
         });
-        
+
         // File name input
         const fileNameInput = document.getElementById('file-name');
         if (fileNameInput) {
@@ -26,11 +26,11 @@ class ExportUI {
             });
         }
     }
-    
+
     updateExportOptions(format) {
         const qualitySelect = document.getElementById('export-quality');
         const unitsSelect = document.getElementById('export-units');
-        
+
         if (format === 'stl') {
             // STL specific options
             if (qualitySelect) {
@@ -40,7 +40,7 @@ class ExportUI {
                     <option value="high">High (Best quality)</option>
                 `;
             }
-            
+
             if (unitsSelect) {
                 unitsSelect.innerHTML = `
                     <option value="mm" selected>Millimeters (mm)</option>
@@ -56,7 +56,7 @@ class ExportUI {
                     <option value="high" selected>High (Exact geometry)</option>
                 `;
             }
-            
+
             if (unitsSelect) {
                 unitsSelect.innerHTML = `
                     <option value="mm" selected>Millimeters (mm)</option>
@@ -66,22 +66,22 @@ class ExportUI {
             }
         }
     }
-    
+
     validateFileName(input) {
         let fileName = input.value.trim();
-        
+
         // Remove invalid characters
         fileName = fileName.replace(/[<>:"/\\|?*]/g, '');
-        
+
         // Add extension if not present
         if (fileName && !fileName.match(/\.[a-z]{3,4}$/i)) {
             const format = document.querySelector('input[name="export-format"]:checked')?.value || 'stl';
             fileName += format === 'stl' ? '.stl' : '.step';
         }
-        
+
         input.value = fileName;
     }
-    
+
     updateExportInfo() {
         // Add file size estimation
         const exportSection = document.querySelector('.export-section');
@@ -91,25 +91,25 @@ class ExportUI {
             sizeInfo.innerHTML = `
                 <p><i class="fas fa-info-circle"></i> Estimated file size: <span id="file-size-estimate">~500 KB</span></p>
             `;
-            
+
             exportSection.appendChild(sizeInfo);
-            
+
             // Update file size based on gear complexity
             this.updateFileSizeEstimation();
         }
     }
-    
+
     updateFileSizeEstimation() {
-        // Simple estimation based on vertex count
-        const vertexCount = parseInt(
-            document.getElementById('vertex-count')?.textContent?.replace(/,/g, '') || '0'
+        // Use the accurate face count from the dashboard stats
+        const faceCount = parseInt(
+            document.getElementById('face-count')?.textContent?.replace(/,/g, '') || '0'
         );
-        
-        if (vertexCount > 0) {
-            // Rough estimation: ~72 bytes per triangle for STL binary
-            const triangleCount = vertexCount / 3;
-            const sizeBytes = triangleCount * 72;
-            
+
+        if (faceCount > 0) {
+            // Precise estimation for binary STL: 
+            // 84 byte header + 50 bytes per triangle
+            const sizeBytes = 84 + (faceCount * 50);
+
             let sizeText;
             if (sizeBytes < 1024) {
                 sizeText = `${Math.round(sizeBytes)} bytes`;
@@ -118,14 +118,14 @@ class ExportUI {
             } else {
                 sizeText = `${(sizeBytes / (1024 * 1024)).toFixed(1)} MB`;
             }
-            
+
             const estimateElement = document.getElementById('file-size-estimate');
             if (estimateElement) {
-                estimateElement.textContent = sizeText;
+                estimateElement.textContent = `~${sizeText}`;
             }
         }
     }
-    
+
     showExportProgress(format) {
         // Create progress overlay
         const overlay = document.createElement('div');
@@ -142,9 +142,9 @@ class ExportUI {
                 </div>
             </div>
         `;
-        
+
         document.body.appendChild(overlay);
-        
+
         // Add styles
         const style = document.createElement('style');
         style.textContent = `
@@ -193,12 +193,12 @@ class ExportUI {
                 100% { width: 0%; }
             }
         `;
-        
+
         document.head.appendChild(style);
-        
+
         return overlay;
     }
-    
+
     hideExportProgress(overlay) {
         if (overlay && overlay.parentNode) {
             overlay.parentNode.removeChild(overlay);

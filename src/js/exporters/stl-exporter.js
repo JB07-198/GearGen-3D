@@ -3,59 +3,76 @@ class STLExporter {
     constructor() {
         console.log('STL exporter initialized');
     }
-    
-    exportCurrentGear() {
+
+    exportCurrentGear(params = null) {
         console.log('Exporting current gear as STL...');
-        
+
         const gear = window.sceneManager ? window.sceneManager.getCurrentGear() : null;
-        
+
         if (!gear) {
             alert('No gear to export! Please generate a gear first.');
             return;
         }
-        
+
         try {
             // Clone gear to avoid modifying the scene
             const exportMesh = gear.clone();
-            
+
             // Remove rotation for export
             exportMesh.rotation.set(0, 0, 0);
             exportMesh.updateMatrixWorld(true);
-            
+
             // Create exporter
             const exporter = new THREE.STLExporter();
-            
+
             // Export to binary STL
             const stlData = exporter.parse(exportMesh, { binary: true });
-            
+
+            // Generate dynamic filename
+            let filename = 'gear.stl';
+            if (params) {
+                const type = params.type || 'gear';
+                const m = params.module || 0;
+                const z = params.teeth || 0;
+                const b = params.faceWidth || 0;
+
+                filename = `${type}gear_m${m}_Z${z}_b${b}`;
+
+                if (type === 'helical' && params.helixAngle !== null) {
+                    filename += `_beta${params.helixAngle}`;
+                }
+
+                filename += '.stl';
+            }
+
             // Create download link
-            this.downloadSTL(stlData, 'spur-gear.stl');
-            
+            this.downloadSTL(stlData, filename);
+
             console.log('STL export successful');
         } catch (error) {
             console.error('STL export error:', error);
             alert('Error exporting STL file. Please check console for details.');
         }
     }
-    
+
     downloadSTL(stlData, filename) {
         // Create blob
         const blob = new Blob([stlData], { type: 'application/octet-stream' });
-        
+
         // Create download link
         const link = document.createElement('a');
         link.href = URL.createObjectURL(blob);
         link.download = filename;
-        
+
         // Trigger download
         document.body.appendChild(link);
         link.click();
         document.body.removeChild(link);
-        
+
         // Show success message
         this.showExportSuccess(filename);
     }
-    
+
     showExportSuccess(filename) {
         // Create success notification
         const notification = document.createElement('div');
@@ -74,7 +91,7 @@ class STLExporter {
             gap: 10px;
             animation: slideIn 0.3s ease;
         `;
-        
+
         notification.innerHTML = `
             <i class="fas fa-check-circle" style="font-size: 1.2em;"></i>
             <div>
@@ -82,9 +99,9 @@ class STLExporter {
                 ${filename} downloaded
             </div>
         `;
-        
+
         document.body.appendChild(notification);
-        
+
         // Remove notification after 3 seconds
         setTimeout(() => {
             notification.style.animation = 'slideOut 0.3s ease';
@@ -94,7 +111,7 @@ class STLExporter {
                 }
             }, 300);
         }, 3000);
-        
+
         // Add CSS animations if not already present
         if (!document.querySelector('#export-animations')) {
             const style = document.createElement('style');

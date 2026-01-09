@@ -8,6 +8,7 @@ class ParameterUI {
             faceWidth: 10,
             hubDiameter: 10,
             boreDiameter: 5,
+            helixAngle: 20,
             color: '#3498db',
             quality: 'medium'
         };
@@ -29,6 +30,7 @@ class ParameterUI {
             faceWidth: document.getElementById('face-width'),
             hubDiameter: document.getElementById('hub-diameter'),
             boreDiameter: document.getElementById('bore-diameter'),
+            helixAngle: document.getElementById('helix-angle'),
             color: document.getElementById('color'),
             quality: document.getElementById('quality')
         };
@@ -38,10 +40,12 @@ class ParameterUI {
             teeth: document.getElementById('teeth-slider'),
             faceWidth: document.getElementById('face-width-slider'),
             hubDiameter: document.getElementById('hub-diameter-slider'),
-            boreDiameter: document.getElementById('bore-diameter-slider')
+            boreDiameter: document.getElementById('bore-diameter-slider'),
+            helixAngle: document.getElementById('helix-angle-slider')
         };
 
         this.calcContainer = document.getElementById('calculated-info-container');
+        this.helixAngleContainer = document.getElementById('helix-angle-container');
     }
 
     setupEventListeners() {
@@ -152,7 +156,7 @@ class ParameterUI {
 
     handleGroupReset(group) {
         const groups = {
-            basic: ['module', 'teeth', 'pressureAngle'],
+            basic: ['module', 'teeth', 'pressureAngle', 'helixAngle'],
             body: ['faceWidth', 'hubDiameter', 'boreDiameter'],
             appearance: ['color', 'quality']
         };
@@ -228,6 +232,16 @@ class ParameterUI {
                 if (this.sliders[key]) this.sliders[key].value = val;
                 this.updatePresetChips(key, val);
             }
+        }
+    }
+
+    updateVisibility(gearType) {
+        if (!this.helixAngleContainer) return;
+
+        if (gearType === 'helical') {
+            this.helixAngleContainer.style.display = 'block';
+        } else {
+            this.helixAngleContainer.style.display = 'none';
         }
     }
 }
