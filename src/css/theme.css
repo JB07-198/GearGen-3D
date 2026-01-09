@@ -1,56 +1,82 @@
 /* Theme Variables */
 :root {
-    /* Primary Colors */
-    --primary: #3498db;
-    --primary-dark: #2980b9;
-    --primary-light: #5dade2;
-    
+    /* Fonts */
+    --font-heading: 'Outfit', 'Segoe UI', system-ui, -apple-system, sans-serif;
+    --font-body: 'Inter', 'Segoe UI', system-ui, -apple-system, sans-serif;
+
+    /* Primary Colors - More Vibrant */
+    --primary: #4361ee;
+    --primary-hover: #3a56d4;
+    --primary-active: #2f45c5;
+    --primary-light: #4895ef;
+    --primary-glow: rgba(67, 97, 238, 0.3);
+
     /* Secondary Colors */
-    --secondary: #2c3e50;
-    --secondary-dark: #1a252f;
-    --secondary-light: #34495e;
-    
+    --secondary: #24292e;
+    --secondary-hover: #1b1f23;
+    --secondary-light: #57606a;
+
     /* Accent Colors */
-    --accent-success: #27ae60;
-    --accent-warning: #f39c12;
-    --accent-danger: #e74c3c;
-    --accent-info: #3498db;
-    
-    /* Neutral Colors */
-    --neutral-light: #f8f9fa;
-    --neutral: #e9ecef;
-    --neutral-dark: #dee2e6;
-    --text-primary: #333;
-    --text-secondary: #666;
-    --text-light: #999;
-    
+    --accent-success: #06d6a0;
+    --accent-warning: #ffd166;
+    --accent-danger: #ef476f;
+    --accent-info: #118ab2;
+
+    /* Neutral Colors - Modern Grays */
+    --neutral-0: #ffffff;
+    --neutral-50: #f8fafc;
+    --neutral-100: #f1f5f9;
+    --neutral-200: #e2e8f0;
+    --neutral-300: #cbd5e1;
+    --neutral-400: #94a3b8;
+    --neutral-500: #64748b;
+    --neutral-600: #475569;
+    --neutral-700: #334155;
+    --neutral-800: #1e293b;
+    --neutral-900: #0f172a;
+
+    --text-primary: var(--neutral-800);
+    --text-secondary: var(--neutral-600);
+    --text-light: var(--neutral-400);
+
     /* UI Colors */
-    --background: #f5f7fa;
+    --background: #f1f5f9;
     --surface: #ffffff;
-    --border: #ddd;
-    
-    /* Shadows */
-    --shadow-sm: 0 2px 4px rgba(0,0,0,0.05);
-    --shadow-md: 0 4px 6px rgba(0,0,0,0.07);
-    --shadow-lg: 0 10px 15px rgba(0,0,0,0.1);
-    
-    /* Border Radius */
-    --radius-sm: 4px;
-    --radius-md: 8px;
-    --radius-lg: 12px;
-    --radius-xl: 16px;
-    
+    --surface-glass: rgba(255, 255, 255, 0.8);
+    --border: #e2e8f0;
+    --border-light: rgba(226, 232, 240, 0.6);
+
+    /* Shadows - More Professional */
+    --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.05);
+    --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+    --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+    --shadow-xl: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+
+    /* Border Radius - Modern / Rounded */
+    --radius-sm: 6px;
+    --radius-md: 10px;
+    --radius-lg: 14px;
+    --radius-xl: 20px;
+    --radius-full: 9999px;
+
     /* Transitions */
-    --transition-fast: 0.15s ease;
-    --transition-normal: 0.3s ease;
-    --transition-slow: 0.5s ease;
+    --transition-fast: 0.15s cubic-bezier(0.4, 0, 0.2, 1);
+    --transition-normal: 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+    --transition-slow: 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+
+    /* Blur */
+    --blur-sm: 4px;
+    --blur-md: 8px;
+    --blur-lg: 12px;
 }
 
-/* Dark Theme (Optional) */
+/* Dark Theme */
 [data-theme="dark"] {
-    --background: #1a1a1a;
-    --surface: #2d2d2d;
-    --text-primary: #ffffff;
-    --text-secondary: #b3b3b3;
-    --border: #404040;
+    --background: #0f172a;
+    --surface: #1e293b;
+    --surface-glass: rgba(30, 41, 59, 0.8);
+    --text-primary: #f8fafc;
+    --text-secondary: #cbd5e1;
+    --border: #334155;
+    --border-light: rgba(51, 65, 85, 0.6);
 }

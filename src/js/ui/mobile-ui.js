@@ -11,6 +11,7 @@ class MobileUI {
         this.overlay = document.querySelector('.mobile-overlay');
         this.closeButtons = document.querySelectorAll('.mobile-drawer-close');
         this.drawerHandles = document.querySelectorAll('.mobile-drawer-handle');
+        this.navIndicator = document.querySelector('.nav-indicator');
 
         this.init();
     }
@@ -26,10 +27,29 @@ class MobileUI {
     init() {
         if (!this.navItems.length) return;
 
+        // Initialize indicator position
+        setTimeout(() => {
+            const activeNav = document.querySelector('.nav-item.active');
+            if (activeNav) this.updateIndicator(activeNav);
+        }, 100);
+
+        // Window Resize handling for indicator
+        window.addEventListener('resize', () => {
+            const activeNav = document.querySelector('.nav-item.active');
+            if (activeNav) this.updateIndicator(activeNav);
+            this.onWindowResize();
+        });
+
         // Navigation item clicks
         this.navItems.forEach(item => {
             item.addEventListener('click', () => {
                 const showId = item.getAttribute('data-show');
+
+                // Haptic feedback if supported
+                if ('vibrate' in navigator) {
+                    navigator.vibrate(10);
+                }
+
                 this.switchPanel(showId, item);
             });
         });
@@ -79,8 +99,16 @@ class MobileUI {
         if (!activeNavItem) return;
 
         // Update Nav Items
-        this.navItems.forEach(nav => nav.classList.remove('active'));
+        this.navItems.forEach(nav => {
+            nav.classList.remove('active');
+            nav.style.transform = 'scale(1)';
+        });
         activeNavItem.classList.add('active');
+        activeNavItem.style.transform = 'scale(1.1)';
+
+        setTimeout(() => {
+            activeNavItem.style.transform = 'scale(1)';
+        }, 200);
 
         // Close all drawers first
         Object.entries(this.panels).forEach(([id, panel]) => {
@@ -106,6 +134,9 @@ class MobileUI {
             }
         }
 
+        // Update indicator position
+        this.updateIndicator(activeNavItem);
+
         // Ensure 3D Canvas updates its size if needed
         if (window.threeJSSetup && window.threeJSSetup.onWindowResize) {
             setTimeout(() => window.threeJSSetup.onWindowResize(), 100);
@@ -115,6 +146,23 @@ class MobileUI {
 
         // Dispatch event for other components if needed
         window.dispatchEvent(new CustomEvent('panelChanged', { detail: { panelId } }));
+    }
+
+    updateIndicator(activeItem) {
+        if (!this.navIndicator || !activeItem) return;
+
+        const nav = document.querySelector('.mobile-nav');
+        if (!nav) return;
+
+        const navRect = nav.getBoundingClientRect();
+        const itemRect = activeItem.getBoundingClientRect();
+
+        // Calculate position relative to nav container
+        const left = itemRect.left - navRect.left;
+        const width = itemRect.width;
+
+        this.navIndicator.style.width = `${width - 20}px`; // Padding for pill look
+        this.navIndicator.style.left = `${left + 10}px`;
     }
 }
 

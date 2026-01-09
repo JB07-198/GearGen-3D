@@ -5,6 +5,11 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>GearGen - 3D Gear Generator</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Outfit:wght@400;500;600;700;800&display=swap"
+        rel="stylesheet">
     <link rel="stylesheet" href="./src/css/main.css">
     <link rel="stylesheet" href="./src/css/theme.css">
     <link rel="stylesheet" href="./src/css/responsive.css">
@@ -20,7 +25,7 @@
     <header class="header">
         <div class="container">
             <div class="logo">
-                <img src="./assets/images/GearGen_logo.png" alt="GearGen Logo" class="logo-img" style="height: 40px;">
+                <img src="./assets/images/GearGen_logo.png" alt="GearGen Logo" class="logo-img">
                 <h1>GearGen</h1>
                 <span class="tagline">3D Gear Generator</span>
             </div>
@@ -470,6 +475,7 @@
 
     <!-- Mobile Bottom Navigation -->
     <nav class="mobile-nav">
+        <div class="nav-indicator"></div>
         <button class="nav-item" data-show="left-panel">
             <i class="fas fa-cog"></i>
             <span data-i18n="section.gearType">Gear Type</span>
@@ -499,12 +505,9 @@
                 <a href="#" id="contact-link"><i class="fas fa-envelope"></i> <span
                         data-i18n="footer.contact">Contact</span></a>
             </p>
-            <div class="powered-by"
-                style="margin-top: 15px; display: flex; align-items: center; justify-content: center; gap: 8px;">
-                <span
-                    style="font-size: 0.8rem; opacity: 0.6; font-weight: 600; text-transform: uppercase; letter-spacing: 1px;">Powered
-                    by</span>
-                <img src="./assets/images/powered-by.png" alt="Powered By" style="height: 25px; opacity: 0.7;">
+            <div class="powered-by">
+                <span>Powered by</span>
+                <img src="./assets/images/powered-by.png" alt="Powered By">
             </div>
         </div>
     </footer>
