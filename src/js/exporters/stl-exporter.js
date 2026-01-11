@@ -42,6 +42,10 @@ class STLExporter {
                     filename += `_beta${params.helixAngle}`;
                 }
 
+                if (type === 'planetary') {
+                    filename = `${type}_Zs${params.teeth}_Zp${params.planetTeeth}_N${params.planetCount}_m${m}_b${b}`;
+                }
+
                 filename += '.stl';
             }
 

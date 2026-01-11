@@ -98,7 +98,8 @@ const GearMath = {
             rootRadius,
             pitchRadius,
             pressureAngleRad,
-            module
+            module,
+            isInternal
         } = gearData;
 
         // Quality settings
@@ -117,12 +118,17 @@ const GearMath = {
         const invAlpha = Math.tan(pressureAngleRad) - pressureAngleRad;
 
         // Function to get angular position of the Left Flank (Upper Y) at radius r
-        // Theta(r) = HalfThickPitch + invAlpha - inv(alpha_r)
         const getTheta = (r) => {
-            // Constraint: r cannot be less than base radius for involute
             const effR = Math.max(r, baseRadius);
             const invR = GearMath.getInvoluteVal(effR, baseRadius);
-            return halfThickPitch + invAlpha - invR;
+
+            if (isInternal) {
+                // For internal gears, tooth thickness increases with radius
+                return halfThickPitch - invAlpha + invR;
+            } else {
+                // For external gears, tooth thickness decreases with radius
+                return halfThickPitch + invAlpha - invR;
+            }
         };
 
         // 1. Root to Base (Left Side/Upper)
@@ -302,6 +308,114 @@ const GearMath = {
         });
 
         return profile;
+    },
+
+    // NEW: Generate a single continuous profile for internal gear (all teeth)
+    generateFullInternalProfile: (gearData, quality = 'medium') => {
+        const {
+            teeth,
+            baseRadius,
+            outerRadius, // Tip radius for internal (smaller)
+            rootRadius,  // Root radius for internal (larger)
+            pressureAngleRad
+        } = gearData;
+
+        // Quality settings
+        const qualitySteps = { low: 4, medium: 12, high: 24 };
+        const steps = qualitySteps[quality] || qualitySteps.medium;
+
+        const fullProfile = [];
+        const pitchAngle = (2 * Math.PI) / teeth;
+        const halfThickPitch = Math.PI / (2 * teeth);
+        const invAlpha = Math.tan(pressureAngleRad) - pressureAngleRad;
+
+        // Internal half-thickness angle
+        const getThetaInternal = (r) => {
+            const effR = Math.max(r, baseRadius);
+            const invR = GearMath.getInvoluteVal(effR, baseRadius);
+            // Thickest at root (large r), thinnest at tip (small r)
+            return halfThickPitch - (invAlpha - invR);
+        };
+
+        // For a clean CW hole, we process teeth in descending order
+        for (let i = teeth; i > 0; i--) {
+            const centerAngle = (i - 1) * pitchAngle;
+
+            // 1. Left Flank (Root to Tip) - CW progression
+            for (let j = 0; j <= steps; j++) {
+                const t = j / steps;
+                const r = rootRadius - t * (rootRadius - outerRadius);
+                const theta = getThetaInternal(r);
+                const angle = centerAngle + theta;
+                fullProfile.push({ x: r * Math.cos(angle), y: r * Math.sin(angle) });
+            }
+
+            // 2. Tip Arc (From Left Tip to Right Tip) - CW
+            const thetaTip = getThetaInternal(outerRadius);
+            for (let j = 1; j <= steps; j++) {
+                const t = j / steps;
+                const angle = (centerAngle + thetaTip) - t * (2 * thetaTip);
+                fullProfile.push({ x: outerRadius * Math.cos(angle), y: outerRadius * Math.sin(angle) });
+            }
+
+            // 3. Right Flank (Tip to Root) - CW progression
+            for (let j = 1; j <= steps; j++) {
+                const t = j / steps;
+                const r = outerRadius + t * (rootRadius - outerRadius);
+                const theta = -getThetaInternal(r);
+                const angle = centerAngle + theta;
+                fullProfile.push({ x: r * Math.cos(angle), y: r * Math.sin(angle) });
+            }
+
+            // 4. Root Arc (To next tooth's Left Root) - CW
+            const thetaRoot = getThetaInternal(rootRadius);
+            const startAngle = centerAngle - thetaRoot;
+            const endAngle = (centerAngle - pitchAngle) + thetaRoot;
+
+            for (let j = 1; j <= steps; j++) {
+                const t = j / steps;
+                const angle = startAngle - t * (startAngle - endAngle);
+                fullProfile.push({ x: rootRadius * Math.cos(angle), y: rootRadius * Math.sin(angle) });
+            }
+        }
+
+        return fullProfile;
+    },
+
+    // NEW: Calculate Rack Tooth Profile (Straight-sided)
+    calculateRackProfile: (module, pressureAngleDeg, faceWidth) => {
+        const p = Math.PI * module; // Circular pitch
+        const alpha = pressureAngleDeg * Math.PI / 180;
+
+        const addendum = module;
+        const dedendum = module * 1.25;
+        const height = addendum + dedendum;
+
+        // At pitch line (y=0), thickness is p/2
+        // x coordinates for one tooth centered at x=0
+        // Top width = p/2 - 2 * addendum * tan(alpha)
+        // Bottom width = p/2 + 2 * dedendum * tan(alpha) (actually base width)
+
+        const tanA = Math.tan(alpha);
+        const halfThick = p / 4;
+
+        const profile = [
+            { x: -halfThick - dedendum * tanA, y: -dedendum }, // Bottom Left
+            { x: -halfThick + addendum * tanA, y: addendum },  // Top Left
+            { x: halfThick - addendum * tanA, y: addendum },   // Top Right
+            { x: halfThick + dedendum * tanA, y: -dedendum }   // Bottom Right
+        ];
+
+        return {
+            module,
+            pressureAngle: pressureAngleDeg,
+            circularPitch: p,
+            addendum,
+            dedendum,
+            height,
+            faceWidth,
+            displayPoints: profile
+        };
     }
 };
 
@@ -316,6 +430,108 @@ function calculateSpurGear(module, teeth, pressureAngle, faceWidth, hubDiameter,
 
     // Generate display profile (optimized for 3D rendering)
     // Use complete profile for better accuracy and look
+    profile.displayPoints = GearMath.generateCompleteToothProfile(profile, quality);
+
+    return profile;
+}
+
+// Calculate bevel gear dimensions
+function calculateBevelGear(module, teeth, pressureAngle, pitchAngle, faceWidth, hubDiameter, boreDiameter, quality = 'medium') {
+    const profile = GearMath.calculateToothProfile(module, teeth, pressureAngle);
+
+    // Add additional parameters
+    profile.faceWidth = faceWidth;
+    profile.hubDiameter = hubDiameter;
+    profile.boreDiameter = boreDiameter;
+    profile.pitchAngle = pitchAngle;
+
+    // Generate display profile
+    profile.displayPoints = GearMath.generateCompleteToothProfile(profile, quality);
+
+    return profile;
+}
+
+// Calculate rack gear dimensions
+function calculateRackGear(module, teeth, pressureAngle, faceWidth, quality = 'medium') {
+    const data = GearMath.calculateRackProfile(module, pressureAngle, faceWidth);
+    data.teeth = teeth; // teeth is the number of teeth in the rack
+    return data;
+}
+
+// Calculate internal gear (ring gear) dimensions
+function calculateInternalGear(module, teeth, pressureAngle, faceWidth, quality = 'medium') {
+    // For internal gear, we swap addendum and dedendum logic for the tips
+    // But GearMath.calculateToothProfile is designed for external.
+    // We can use it but we need to interpret the results carefully.
+
+    // Standard involute profile is actually the same, just the boundary is different.
+    const profile = GearMath.calculateToothProfile(module, teeth, pressureAngle);
+
+    // For internal gears:
+    // tip radius = pitch - addendum
+    // root radius = pitch + dedendum
+    const pitchRadius = profile.pitchRadius;
+    const m = module;
+
+    // Set parameters for generateCompleteToothProfile
+    // Internal tooth: root is at large radius, tip is at small radius
+    profile.rootRadius = pitchRadius + 1.25 * m;
+    profile.outerRadius = pitchRadius - m; // generator's "tip"
+    profile.innerRadius = profile.outerRadius;
+
+    // Rim sizing
+    profile.rimRadius = profile.rootRadius + 2 * m;
+    profile.outerRadiusRim = profile.rimRadius; // For storage
+
+    profile.faceWidth = faceWidth;
+    profile.isInternal = true;
+
+    // Generate the FULL internal loop (all teeth as one polygon)
+    profile.displayPoints = GearMath.generateFullInternalProfile(profile, quality);
+
+    return profile;
+}
+
+// Calculate planetary gear assembly dimensions
+function calculatePlanetaryGear(module, sunTeeth, planetTeeth, planetCount, pressureAngle, faceWidth, quality = 'medium') {
+    // Ring teeth must satisfy the planetary geometry
+    const ringTeeth = sunTeeth + 2 * planetTeeth;
+
+    // Calculate each component
+    const sunData = calculateSpurGear(module, sunTeeth, pressureAngle, faceWidth, 0, 0, quality);
+    const planetData = calculateSpurGear(module, planetTeeth, pressureAngle, faceWidth, 0, 0, quality);
+    const ringData = calculateInternalGear(module, ringTeeth, pressureAngle, faceWidth, quality);
+
+    // Center distance between sun and planets
+    const centerDistance = (module * (sunTeeth + planetTeeth)) / 2;
+
+    return {
+        sun: sunData,
+        planet: planetData,
+        ring: ringData,
+        planetCount: planetCount,
+        centerDistance: centerDistance,
+        module: module,
+        sunTeeth: sunTeeth,
+        planetTeeth: planetTeeth,
+        ringTeeth: ringTeeth,
+        faceWidth: faceWidth
+    };
+}
+
+// Calculate worm gear dimensions
+function calculateWormGear(module, starts, pressureAngle, leadAngle, faceWidth, hubDiameter, boreDiameter, quality = 'medium') {
+    // For a worm, "teeth" is the number of starts
+    const profile = GearMath.calculateToothProfile(module, starts, pressureAngle);
+
+    // Add additional parameters
+    profile.faceWidth = faceWidth;
+    profile.hubDiameter = hubDiameter;
+    profile.boreDiameter = boreDiameter;
+    profile.leadAngle = leadAngle;
+    profile.starts = starts;
+
+    // Generate display profile
     profile.displayPoints = GearMath.generateCompleteToothProfile(profile, quality);
 
     return profile;

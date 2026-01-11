@@ -99,7 +99,7 @@
                         </div>
                         <h3 data-i18n="gear.bevel">Bevel Gear</h3>
                         <p data-i18n="gear.bevel.desc">Conical shape for right-angle drive</p>
-                        <span class="status-badge status-coming" data-i18n="status.comingSoon">Coming Soon</span>
+                        <span class="status-badge status-active" data-i18n="status.available">Available</span>
                     </div>
 
                     <div class="gear-type-card" data-type="worm">
@@ -108,7 +108,7 @@
                         </div>
                         <h3 data-i18n="gear.worm">Worm Gear</h3>
                         <p data-i18n="gear.worm.desc">Screw-like gear for high reduction</p>
-                        <span class="status-badge status-coming" data-i18n="status.comingSoon">Coming Soon</span>
+                        <span class="status-badge status-active" data-i18n="status.available">Available</span>
                     </div>
 
                     <div class="gear-type-card" data-type="rack">
@@ -117,7 +117,7 @@
                         </div>
                         <h3 data-i18n="gear.rack">Rack Gear</h3>
                         <p data-i18n="gear.rack.desc">Linear gear for conversion</p>
-                        <span class="status-badge status-coming" data-i18n="status.comingSoon">Coming Soon</span>
+                        <span class="status-badge status-active" data-i18n="status.available">Available</span>
                     </div>
 
                     <div class="gear-type-card" data-type="internal">
@@ -125,8 +125,8 @@
                             <img src="./assets/icons/icon-internal-gear.png" alt="Internal Gear" style="width: 30px;">
                         </div>
                         <h3 data-i18n="gear.internal">Internal Gear</h3>
-                        <p data-i18n="gear.internal.desc">Teeth on the inside surface</p>
-                        <span class="status-badge status-coming" data-i18n="status.comingSoon">Coming Soon</span>
+                        <p data-i18n="gear.internal.desc">Gear with teeth on the inside</p>
+                        <span class="status-badge status-active" data-i18n="status.available">Available</span>
                     </div>
 
                     <div class="gear-type-card" data-type="planetary">
@@ -134,8 +134,8 @@
                             <img src="./assets/icons/icon-planetary-gear.png" alt="Planetary Gear" style="width: 30px;">
                         </div>
                         <h3 data-i18n="gear.planetary">Planetary Gear</h3>
-                        <p data-i18n="gear.planetary.desc">Multiple gears in planetary system</p>
-                        <span class="status-badge status-coming" data-i18n="status.comingSoon">Coming Soon</span>
+                        <p data-i18n="gear.planetary.desc">Sun, planets and ring assembly</p>
+                        <span class="status-badge status-active" data-i18n="status.available">Available</span>
                     </div>
                 </div>
             </div>
@@ -284,6 +284,62 @@
                                 </div>
                             </div>
                         </div>
+                        <!-- Planetary Specific Cards -->
+                        <div class="parameter-card" id="planet-teeth-container" style="display: none;">
+                            <div class="parameter-header">
+                                <div class="parameter-label">
+                                    <span class="parameter-title" data-i18n="param.planetTeeth">Planet Teeth</span>
+                                    <span class="parameter-desc" data-i18n="param.planetTeeth.tooltip">Number of teeth
+                                        on each planet gear</span>
+                                </div>
+                                <span class="tooltip" data-i18n-title="param.planetTeeth.tooltip"
+                                    title="Number of teeth on each planet gear">
+                                    <i class="fas fa-info-circle"></i>
+                                </span>
+                            </div>
+                            <div class="parameter-controls-row">
+                                <div class="slider-group">
+                                    <input type="range" id="planet-teeth-slider" min="8" max="100" step="1" value="12">
+                                </div>
+                                <div class="input-group">
+                                    <button class="step-btn minus" data-target="planetTeeth"><i
+                                            class="fas fa-minus"></i></button>
+                                    <div class="parameter-number-input">
+                                        <input type="number" id="planet-teeth" min="8" max="100" step="1" value="12">
+                                    </div>
+                                    <button class="step-btn plus" data-target="planetTeeth"><i
+                                            class="fas fa-plus"></i></button>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="parameter-card" id="planet-count-container" style="display: none;">
+                            <div class="parameter-header">
+                                <div class="parameter-label">
+                                    <span class="parameter-title" data-i18n="param.planetCount">Planet Count</span>
+                                    <span class="parameter-desc" data-i18n="param.planetCount.tooltip">Number of planet
+                                        gears in the assembly</span>
+                                </div>
+                                <span class="tooltip" data-i18n-title="param.planetCount.tooltip"
+                                    title="Number of planet gears in the assembly">
+                                    <i class="fas fa-info-circle"></i>
+                                </span>
+                            </div>
+                            <div class="parameter-controls-row">
+                                <div class="slider-group">
+                                    <input type="range" id="planet-count-slider" min="2" max="12" step="1" value="3">
+                                </div>
+                                <div class="input-group">
+                                    <button class="step-btn minus" data-target="planetCount"><i
+                                            class="fas fa-minus"></i></button>
+                                    <div class="parameter-number-input">
+                                        <input type="number" id="planet-count" min="2" max="12" step="1" value="3">
+                                    </div>
+                                    <button class="step-btn plus" data-target="planetCount"><i
+                                            class="fas fa-plus"></i></button>
+                                </div>
+                            </div>
+                        </div>
 
                         <!-- Helix Angle Card (Helical only) -->
                         <div class="parameter-card" id="helix-angle-container" style="display: none;">
@@ -309,6 +365,35 @@
                                         <input type="number" id="helix-angle" min="0" max="45" step="1" value="20">
                                     </div>
                                     <button class="step-btn plus" data-target="helixAngle"><i
+                                            class="fas fa-plus"></i></button>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Pitch Angle Card (Bevel only) -->
+                        <div class="parameter-card" id="pitch-angle-container" style="display: none;">
+                            <div class="parameter-header">
+                                <div class="parameter-label">
+                                    <span class="parameter-title" data-i18n="param.pitchAngle">Pitch Angle (°)</span>
+                                    <span class="parameter-desc" data-i18n="param.pitchAngle.tooltip">The angle of the
+                                        pitch cone</span>
+                                </div>
+                                <span class="tooltip" data-i18n-title="param.pitchAngle.tooltip"
+                                    title="The angle of the pitch cone">
+                                    <i class="fas fa-info-circle"></i>
+                                </span>
+                            </div>
+                            <div class="parameter-controls-row">
+                                <div class="slider-group">
+                                    <input type="range" id="pitch-angle-slider" min="10" max="80" step="1" value="45">
+                                </div>
+                                <div class="input-group">
+                                    <button class="step-btn minus" data-target="pitchAngle"><i
+                                            class="fas fa-minus"></i></button>
+                                    <div class="parameter-number-input">
+                                        <input type="number" id="pitch-angle" min="10" max="80" step="1" value="45">
+                                    </div>
+                                    <button class="step-btn plus" data-target="pitchAngle"><i
                                             class="fas fa-plus"></i></button>
                                 </div>
                             </div>
@@ -546,6 +631,11 @@
     <script src="./src/js/utils/i18n.js"></script>
     <script src="./src/js/gear-types/spur-gear.js"></script>
     <script src="./src/js/gear-types/helical-gear.js"></script>
+    <script src="./src/js/gear-types/bevel-gear.js"></script>
+    <script src="./src/js/gear-types/worm-gear.js"></script>
+    <script src="./src/js/gear-types/rack-gear.js"></script>
+    <script src="./src/js/gear-types/internal-gear.js"></script>
+    <script src="./src/js/gear-types/planetary-gear.js"></script>
     <script src="./src/js/renderer/threejs-setup.js"></script>
     <script src="./src/js/renderer/scene-manager.js"></script>
     <script src="./src/js/renderer/gear-renderer.js"></script>

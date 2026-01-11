@@ -9,8 +9,11 @@ class ParameterUI {
             hubDiameter: 10,
             boreDiameter: 5,
             helixAngle: 20,
+            pitchAngle: 45,
             color: '#3498db',
-            quality: 'medium'
+            quality: 'medium',
+            planetTeeth: 12,
+            planetCount: 3
         };
         this.init();
     }
@@ -31,8 +34,11 @@ class ParameterUI {
             hubDiameter: document.getElementById('hub-diameter'),
             boreDiameter: document.getElementById('bore-diameter'),
             helixAngle: document.getElementById('helix-angle'),
+            pitchAngle: document.getElementById('pitch-angle'),
             color: document.getElementById('color'),
-            quality: document.getElementById('quality')
+            quality: document.getElementById('quality'),
+            planetTeeth: document.getElementById('planet-teeth'),
+            planetCount: document.getElementById('planet-count')
         };
 
         this.sliders = {
@@ -41,11 +47,15 @@ class ParameterUI {
             faceWidth: document.getElementById('face-width-slider'),
             hubDiameter: document.getElementById('hub-diameter-slider'),
             boreDiameter: document.getElementById('bore-diameter-slider'),
-            helixAngle: document.getElementById('helix-angle-slider')
+            helixAngle: document.getElementById('helix-angle-slider'),
+            pitchAngle: document.getElementById('pitch-angle-slider'),
+            planetTeeth: document.getElementById('planet-teeth-slider'),
+            planetCount: document.getElementById('planet-count-slider')
         };
 
         this.calcContainer = document.getElementById('calculated-info-container');
         this.helixAngleContainer = document.getElementById('helix-angle-container');
+        this.pitchAngleContainer = document.getElementById('pitch-angle-container');
     }
 
     setupEventListeners() {
@@ -156,7 +166,7 @@ class ParameterUI {
 
     handleGroupReset(group) {
         const groups = {
-            basic: ['module', 'teeth', 'pressureAngle', 'helixAngle'],
+            basic: ['module', 'teeth', 'pressureAngle', 'helixAngle', 'pitchAngle', 'planetTeeth', 'planetCount'],
             body: ['faceWidth', 'hubDiameter', 'boreDiameter'],
             appearance: ['color', 'quality']
         };
@@ -236,13 +246,48 @@ class ParameterUI {
     }
 
     updateVisibility(gearType) {
-        if (!this.helixAngleContainer) return;
+        if (!this.helixAngleContainer || !this.pitchAngleContainer) return;
 
-        if (gearType === 'helical') {
-            this.helixAngleContainer.style.display = 'block';
-        } else {
-            this.helixAngleContainer.style.display = 'none';
+        this.helixAngleContainer.style.display = (gearType === 'helical' || gearType === 'worm') ? 'block' : 'none';
+        this.pitchAngleContainer.style.display = gearType === 'bevel' ? 'block' : 'none';
+
+        // Planetary parameters
+        const planetTeethContainer = document.getElementById('planet-teeth-container');
+        const planetCountContainer = document.getElementById('planet-count-container');
+        if (planetTeethContainer) planetTeethContainer.style.display = gearType === 'planetary' ? 'block' : 'none';
+        if (planetCountContainer) planetCountContainer.style.display = gearType === 'planetary' ? 'block' : 'none';
+
+        // Hide Hub/Bore for Rack, Internal and Planetary
+        const hubCard = this.elements.hubDiameter?.closest('.parameter-card');
+        const boreCard = this.elements.boreDiameter?.closest('.parameter-card');
+
+        const hideBody = gearType === 'rack' || gearType === 'internal' || gearType === 'planetary';
+        if (hubCard) hubCard.style.display = hideBody ? 'none' : 'block';
+        if (boreCard) boreCard.style.display = hideBody ? 'none' : 'block';
+
+        // Update labels
+        const teethTitle = document.querySelector('[data-i18n="param.teeth"]');
+        const helixTitle = document.querySelector('[data-i18n="param.helixAngle"]');
+
+        if (teethTitle) {
+            if (gearType === 'worm') {
+                teethTitle.setAttribute('data-i18n', 'param.teeth.worm');
+                if (window.i18n) teethTitle.textContent = window.i18n.translate('param.teeth.worm');
+            } else if (gearType === 'planetary') {
+                teethTitle.setAttribute('data-i18n', 'param.sunTeeth');
+                if (window.i18n) teethTitle.textContent = window.i18n.translate('param.sunTeeth');
+                else teethTitle.textContent = 'Sun Teeth';
+            } else {
+                teethTitle.setAttribute('data-i18n', 'param.teeth');
+                if (window.i18n) teethTitle.textContent = window.i18n.translate('param.teeth');
+            }
         }
+        if (helixTitle) {
+            helixTitle.setAttribute('data-i18n', gearType === 'worm' ? 'param.helixAngle.worm' : 'param.helixAngle');
+            if (window.i18n) helixTitle.textContent = window.i18n.translate(gearType === 'worm' ? 'param.helixAngle.worm' : 'param.helixAngle');
+        }
+
+        if (window.i18n) window.i18n.applyLanguage();
     }
 }
 

@@ -52,6 +52,15 @@ class I18n {
                 'param.pressureAngle.highLoad': '25° (High Load)',
                 'param.helixAngle': 'Helix Angle (°)',
                 'param.helixAngle.tooltip': 'The angle of the teeth relative to the gear axis',
+                'param.pitchAngle': 'Pitch Angle (°)',
+                'param.pitchAngle.tooltip': 'Angle of the pitch cone.',
+                'param.planetTeeth': 'Planet Teeth',
+                'param.planetTeeth.tooltip': 'Number of teeth on each planet gear.',
+                'param.planetCount': 'Planet Count',
+                'param.planetCount.tooltip': 'Number of planet gears in the assembly.',
+                'param.sunTeeth': 'Sun Teeth',
+                'param.teeth.worm': 'Number of Starts',
+                'param.helixAngle.worm': 'Lead Angle (°)',
 
                 'group.gearBody': 'Gear Body',
                 'param.faceWidth': 'Face Width (mm)',
@@ -81,7 +90,7 @@ class I18n {
                 'export.note.desc': 'We are developing free offline software for complex gears and more formats (STEP, IGES, etc.).',
 
                 // Info Notice
-                'info.notice': 'Currently <strong>Spur</strong> and <strong>Helical</strong> gears are available. More types coming soon.',
+                'info.notice': 'Currently <strong>Spur</strong>, <strong>Helical</strong>, <strong>Bevel</strong>, <strong>Worm</strong>, <strong>Rack</strong>, <strong>Internal</strong> and <strong>Planetary</strong> gears are available.',
 
                 // Footer
                 'footer.copyright': 'GearGen - 3D Gear Generator © 2026',
@@ -115,7 +124,7 @@ class I18n {
                 'gear.internal': 'Engrenage Intérieur',
                 'gear.internal.desc': 'Dents sur la surface intérieure',
                 'gear.planetary': 'Engrenage Planétaire',
-                'gear.planetary.desc': 'Plusieurs engrenages en système planétaire',
+                'gear.planetary.desc': 'Plusieurs engrenages dans un système planétaire pour une réduction et un couple élevés.',
                 'status.available': 'Disponible',
                 'status.comingSoon': 'Bientôt Disponible',
 
@@ -143,6 +152,15 @@ class I18n {
                 'param.pressureAngle.highLoad': '25° (Charge Élevée)',
                 'param.helixAngle': 'Angle d\'Hélice (°)',
                 'param.helixAngle.tooltip': 'L\'inclinaison des dents par rapport à l\'axe de l\'engrenage',
+                'param.pitchAngle': 'Angle Primitif (°)',
+                'param.pitchAngle.tooltip': 'L\'angle du cône primitif.',
+                'param.planetTeeth': 'Dents Planète',
+                'param.planetTeeth.tooltip': 'Nombre de dents sur chaque pignon satellite.',
+                'param.planetCount': 'Nombre de Planètes',
+                'param.planetCount.tooltip': 'Nombre de satellites dans l\'ensemble.',
+                'param.sunTeeth': 'Dents Soleil',
+                'param.teeth.worm': 'Nombre de Filets',
+                'param.helixAngle.worm': 'Angle d\'Inclinaison (°)',
 
                 'group.gearBody': 'Corps de l\'Engrenage',
                 'param.faceWidth': 'Largeur de Denture (mm)',
@@ -172,7 +190,7 @@ class I18n {
                 'export.note.desc': 'Logiciel gratuit en cours pour engrenages complexes et plus de formats (STEP, IGES, etc.).',
 
                 // Info Notice
-                'info.notice': 'Actuellement, les engrenages <strong>Droits</strong> et <strong>Hélicoïdaux</strong> sont disponibles. D\'autres types suivront.',
+                'info.notice': 'Actuellement, les engrenages <strong>Droits</strong>, <strong>Hélicoïdaux</strong>, <strong>Coniques</strong>, <strong>Vis sans fin</strong>, <strong>Crémaillère</strong>, <strong>Intérieurs</strong> et <strong>Planétaires</strong> sont disponibles.',
 
                 // Footer
                 'footer.copyright': 'GearGen - Générateur d\'Engrenages 3D © 2026',
@@ -206,7 +224,7 @@ class I18n {
                 'gear.internal': 'ترس داخلي',
                 'gear.internal.desc': 'أسنان على السطح الداخلي',
                 'gear.planetary': 'ترس كوكبي',
-                'gear.planetary.desc': 'تروس متعددة في نظام كوكبي',
+                'gear.planetary.desc': 'تروس متعددة في نظام كوكبي لتقليل السرعة وزيادة العزم.',
                 'status.available': 'متاح',
                 'status.comingSoon': 'قريباً',
 
@@ -234,6 +252,15 @@ class I18n {
                 'param.pressureAngle.highLoad': '25° (حمل عالي)',
                 'param.helixAngle': 'زاوية الحلزون (°)',
                 'param.helixAngle.tooltip': 'زاوية الأسنان بالنسبة لمحور الترس',
+                'param.pitchAngle': 'زاوية الخطوة (°)',
+                'param.pitchAngle.tooltip': 'زاوية مخروط الخطوة.',
+                'param.planetTeeth': 'أسنان الكوكب',
+                'param.planetTeeth.tooltip': 'عدد الأسنان على كل ترس كوكبي.',
+                'param.planetCount': 'عدد الكواكب',
+                'param.planetCount.tooltip': 'عدد التروس الكوكبية في المجموعة.',
+                'param.sunTeeth': 'أسنان الشمس',
+                'param.teeth.worm': 'عدد البدايات',
+                'param.helixAngle.worm': 'زاوية الرصاص (°)',
 
                 'group.gearBody': 'جسم الترس',
                 'param.faceWidth': 'عرض الوجه (مم)',
@@ -263,7 +290,7 @@ class I18n {
                 'export.note.desc': 'نحن نطور برنامجاً مجانياً للتروس المعقدة وتنسيقات إضافية (STEP، IGES، إلخ).',
 
                 // Info Notice
-                'info.notice': 'حالياً تتوفر التروس <strong>المستقيمة</strong> و <strong>الحلزونية</strong>. المزيد من الأنواع قريباً.',
+                'info.notice': 'حالياً تتوفر التروس <strong>المستقيمة</strong> و <strong>الحلزونية</strong> و <strong>المخروطية</strong> و <strong>الدودية</strong> و <strong>المسننة</strong> و <strong>الداخلية</strong> و <strong>الكوكبية</strong>.',
 
                 // Footer
                 'footer.copyright': 'GearGen - مولد التروس ثلاثية الأبعاد © 2026',
