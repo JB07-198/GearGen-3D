@@ -362,8 +362,13 @@ function calculateSpurGear(module, teeth, pressureAngle, faceWidth, hubDiameter,
 function calculateBevelGear(module, teeth, pressureAngle, pitchAngle, faceWidth, hubDiameter, boreDiameter, quality = 'medium') {
     const profile = GearMath.calculateToothProfile(module, teeth, pressureAngle);
 
+    const delta = (pitchAngle || 45) * Math.PI / 180;
+    const R = profile.pitchDiameter / 2;
+    const maxFaceWidth = Math.max(1, (R / Math.sin(delta)) * 0.9);
+    const clampedFaceWidth = Math.min(faceWidth, maxFaceWidth);
+
     // Add additional parameters
-    profile.faceWidth = faceWidth;
+    profile.faceWidth = clampedFaceWidth;
     profile.hubDiameter = hubDiameter;
     profile.boreDiameter = boreDiameter;
     profile.pitchAngle = pitchAngle;

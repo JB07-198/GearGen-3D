@@ -582,12 +582,20 @@ class GearRenderer {
         // Close the shape
         shape.closePath();
 
-        // Add bore hole if specified
+        // Add bore hole if specified (explicit CW circle for robustness)
         if (gearData.boreDiameter > 0) {
             const boreRadius = gearData.boreDiameter / 2;
             const borePath = new THREE.Path();
-            // True for clockwise winding (opposite to shape) which is required for holes in Three.js
-            borePath.absarc(0, 0, boreRadius, 0, Math.PI * 2, true);
+            const segments = 64;
+            for (let i = 0; i <= segments; i++) {
+                const a = (i / segments) * Math.PI * 2;
+                // clockwise: decreasing angle
+                const x = boreRadius * Math.cos(-a);
+                const y = boreRadius * Math.sin(-a);
+                if (i === 0) borePath.moveTo(x, y);
+                else borePath.lineTo(x, y);
+            }
+            borePath.closePath();
             shape.holes.push(borePath);
         }
 

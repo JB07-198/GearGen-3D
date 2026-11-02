@@ -5,7 +5,7 @@
 
 class GearGenApp {
     constructor() {
-        this.currentGearType = 'spur';
+        this.currentGearType = null;
         this.hasGeneratedMesh = false;
         this.init();
     }
@@ -32,9 +32,10 @@ class GearGenApp {
         this.setupGearTypeSelector();
         this.setupFloatingToolbar();
         this.setupKeyboardShortcuts();
+        this.setupTopMenu();
 
-        // 5. Generate Initial Gear
-        this.setGearType('spur');
+        // 5. No initial gear: 3D view stays empty until a type is chosen
+        this.updateExportStatus(false);
     }
 
     setupGearTypeSelector() {
@@ -69,6 +70,10 @@ class GearGenApp {
     }
 
     generateGear() {
+        if (!this.currentGearType) {
+            this.updateExportStatus(false);
+            return;
+        }
         if (!window.parameterUI || !window.gearRenderer) return;
 
         const params = window.parameterUI.getAllParameters();
@@ -230,6 +235,106 @@ class GearGenApp {
                 window.sceneManager?.zoom(1.25);
             }
         });
+    }
+
+    setupTopMenu() {
+        // Dropdown toggle
+        document.querySelectorAll('.menu-btn').forEach(btn => {
+            btn.addEventListener('click', (e) => {
+                e.stopPropagation();
+                const menuId = 'menu-' + btn.dataset.menu;
+                const dropdown = document.getElementById(menuId);
+                const isOpen = dropdown && dropdown.classList.contains('open');
+                this.closeTopMenus();
+                if (dropdown && !isOpen) {
+                    dropdown.classList.add('open');
+                    btn.setAttribute('aria-expanded', 'true');
+                }
+            });
+        });
+
+        document.addEventListener('click', (e) => {
+            if (!e.target.closest('.menu-group')) this.closeTopMenus();
+        });
+
+        // Menu item actions
+        document.querySelectorAll('.menu-item').forEach(item => {
+            item.addEventListener('click', (e) => {
+                if (item.disabled) return;
+                const action = item.dataset.action;
+                const target = item.dataset.target;
+                this.handleTopMenuAction(action, target, item);
+                this.closeTopMenus();
+            });
+        });
+    }
+
+    closeTopMenus() {
+        document.querySelectorAll('.menu-dropdown.open').forEach(d => d.classList.remove('open'));
+        document.querySelectorAll('.menu-btn').forEach(b => b.setAttribute('aria-expanded', 'false'));
+    }
+
+    handleTopMenuAction(action, target, item) {
+        switch (action) {
+            case 'RESET_ALL_PARAMS':
+                if (window.parameterUI) {
+                    window.parameterUI.handleGroupReset('basic');
+                    window.parameterUI.handleGroupReset('body');
+                    window.parameterUI.handleGroupReset('appearance');
+                }
+                break;
+            case 'RESET_BASIC':
+                if (window.parameterUI) window.parameterUI.handleGroupReset('basic');
+                break;
+            case 'RESET_BODY':
+                if (window.parameterUI) window.parameterUI.handleGroupReset('body');
+                break;
+            case 'RESET_APPEARANCE':
+                if (window.parameterUI) window.parameterUI.handleGroupReset('appearance');
+                break;
+            case 'EXPORT_STL':
+                this.exportSTL();
+                break;
+            case 'EXPORT_STEP':
+                this.exportSTEP();
+                break;
+            case 'SET_VIEW':
+                if (target && window.sceneManager) window.sceneManager.setCameraView(target);
+                break;
+            case 'RESET_VIEW':
+                if (window.sceneManager) window.sceneManager.resetCamera();
+                break;
+            case 'TOGGLE_HELPER':
+                if (target === 'grid' && window.sceneManager) {
+                    const v = window.sceneManager.toggleGrid();
+                    if (item) item.classList.toggle('active', !!v);
+                } else if (target === 'axis' && window.sceneManager) {
+                    const v = window.sceneManager.toggleAxis();
+                    if (item) item.classList.toggle('active', !!v);
+                }
+                break;
+            case 'TOGGLE_RENDER_MODE':
+                if (target === 'wireframe' && window.sceneManager) {
+                    const v = window.sceneManager.toggleWireframe();
+                    if (item) item.classList.toggle('active', !!v);
+                }
+                break;
+            case 'OPEN_HELP':
+                if (window.navigation) window.navigation.showHelpModal();
+                break;
+            case 'OPEN_DOCS':
+                if (window.navigation) window.navigation.showDocumentationModal();
+                break;
+            case 'OPEN_GITHUB':
+                window.open('https://github.com/JB07-198/GearGen-3D', '_blank');
+                break;
+            case 'OPEN_REPORT':
+                window.open('https://github.com/JB07-198/GearGen-3D/issues', '_blank');
+                break;
+            case 'OPEN_CONTACT':
+                window.location.href = 'mailto:contacte.baiha@gmail.com';
+                break;
+        }
     }
 
     exportSTL() {
