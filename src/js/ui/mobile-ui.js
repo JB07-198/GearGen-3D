@@ -1,172 +1,151 @@
-// Mobile UI Management
+// ==========================================================================
+// GearGen-3D Mobile UI Controller
+// Bottom Navigation with Drawers & Swipe-Down Gesture (JSON Spec Compliant)
+// ==========================================================================
+
 class MobileUI {
     constructor() {
-        this.navItems = document.querySelectorAll('.nav-item');
-        this.panels = {
-            'left-panel': document.querySelector('.left-panel'),
-            'right-panel': document.querySelector('.right-panel'),
-            'export-panel': document.querySelector('.export-panel'),
-            'center-panel': document.querySelector('.center-panel')
-        };
+        this.leftDrawer = document.getElementById('left_sidebar');
+        this.rightDrawer = document.getElementById('right_sidebar');
         this.overlay = document.querySelector('.mobile-overlay');
-        this.closeButtons = document.querySelectorAll('.mobile-drawer-close');
-        this.drawerHandles = document.querySelectorAll('.mobile-drawer-handle');
-        this.navIndicator = document.querySelector('.nav-indicator');
+        this.navItems = document.querySelectorAll('.mobile-nav .nav-item');
 
         this.init();
     }
 
-    // New method for handling window resize
-    onWindowResize() {
-        if (window.threeJSSetup) {
-            window.threeJSSetup.onWindowResize();
+    init() {
+        console.log('Initializing CAD Mobile UI controller...');
+        this.setupBottomNav();
+        this.setupSwipeDownGestures();
+        this.setupOverlay();
+    }
+
+    setupBottomNav() {
+        this.navItems.forEach(item => {
+            item.addEventListener('click', () => {
+                const target = item.getAttribute('data-target');
+                this.handleNavSelect(target, item);
+            });
+        });
+    }
+
+    handleNavSelect(target, activeItem) {
+        // Haptic feedback
+        if ('vibrate' in navigator) navigator.vibrate(8);
+
+        // Update active nav button
+        this.navItems.forEach(i => i.classList.remove('active'));
+        activeItem.classList.add('active');
+
+        switch (target) {
+            case 'drawer_left':
+                this.closeDrawer(this.rightDrawer);
+                this.openDrawer(this.leftDrawer);
+                break;
+
+            case 'drawer_right':
+                this.closeDrawer(this.leftDrawer);
+                this.openDrawer(this.rightDrawer);
+                break;
+
+            case 'canvas_fullscreen':
+                this.closeAllDrawers();
+                break;
+
+            case 'export_modal':
+                this.closeAllDrawers();
+                if (window.exportUI) {
+                    window.exportUI.openModal();
+                }
+                break;
         }
     }
 
-    // Renamed from init() to initUI()
-    init() {
-        if (!this.navItems.length) return;
+    openDrawer(drawer) {
+        if (!drawer) return;
+        drawer.classList.add('drawer-open');
+        if (this.overlay) this.overlay.classList.add('active');
+    }
 
-        // Initialize indicator position
-        setTimeout(() => {
-            const activeNav = document.querySelector('.nav-item.active');
-            if (activeNav) this.updateIndicator(activeNav);
-        }, 100);
+    closeDrawer(drawer) {
+        if (!drawer) return;
+        drawer.classList.remove('drawer-open');
+    }
 
-        // Window Resize handling for indicator
-        window.addEventListener('resize', () => {
-            const activeNav = document.querySelector('.nav-item.active');
-            if (activeNav) this.updateIndicator(activeNav);
-            this.onWindowResize();
-        });
+    closeAllDrawers() {
+        if (this.leftDrawer) this.leftDrawer.classList.remove('drawer-open');
+        if (this.rightDrawer) this.rightDrawer.classList.remove('drawer-open');
+        if (this.overlay) this.overlay.classList.remove('active');
 
-        // Navigation item clicks
-        this.navItems.forEach(item => {
-            item.addEventListener('click', () => {
-                const showId = item.getAttribute('data-show');
+        // Set Preview tab active
+        const previewTab = document.querySelector('.mobile-nav .nav-item[data-target="canvas_fullscreen"]');
+        if (previewTab) {
+            this.navItems.forEach(i => i.classList.remove('active'));
+            previewTab.classList.add('active');
+        }
 
-                // Haptic feedback if supported
-                if ('vibrate' in navigator) {
-                    navigator.vibrate(10);
-                }
+        // Trigger Three.js resize
+        if (window.threeJSSetup) {
+            setTimeout(() => window.threeJSSetup.onWindowResize(), 150);
+        }
+    }
 
-                this.switchPanel(showId, item);
-            });
-        });
-
-        // Close buttons
-        this.closeButtons.forEach(btn => {
-            btn.addEventListener('click', () => {
-                this.closeAllDrawers();
-            });
-        });
-
-        // Drawer handles (click to close for now, or could add swipe logic)
-        this.drawerHandles.forEach(handle => {
-            handle.addEventListener('click', () => {
-                this.closeAllDrawers();
-            });
-
-            // Basic swipe down logic
-            let touchStartY = 0;
-            handle.addEventListener('touchstart', (e) => {
-                touchStartY = e.touches[0].clientY;
-            }, { passive: true });
-
-            handle.addEventListener('touchmove', (e) => {
-                const touchY = e.touches[0].clientY;
-                const diff = touchY - touchStartY;
-                if (diff > 50) {
-                    this.closeAllDrawers();
-                }
-            }, { passive: true });
-        });
-
-        // Close on overlay click
+    setupOverlay() {
         if (this.overlay) {
             this.overlay.addEventListener('click', () => {
                 this.closeAllDrawers();
             });
         }
-    }
 
-    closeAllDrawers() {
-        const previewNav = document.querySelector('.nav-item[data-show="center-panel"]');
-        this.switchPanel('center-panel', previewNav);
-    }
-
-    switchPanel(panelId, activeNavItem) {
-        if (!activeNavItem) return;
-
-        // Update Nav Items
-        this.navItems.forEach(nav => {
-            nav.classList.remove('active');
-            nav.style.transform = 'scale(1)';
+        // Close drawer buttons inside the drawer header
+        document.querySelectorAll('.mobile-drawer-close').forEach(btn => {
+            btn.addEventListener('click', () => {
+                this.closeAllDrawers();
+            });
         });
-        activeNavItem.classList.add('active');
-        activeNavItem.style.transform = 'scale(1.1)';
-
-        setTimeout(() => {
-            activeNavItem.style.transform = 'scale(1)';
-        }, 200);
-
-        // Close all drawers first
-        Object.entries(this.panels).forEach(([id, panel]) => {
-            if (panel && id !== 'center-panel') {
-                panel.classList.remove('active');
-            }
-        });
-
-        // Overlay management
-        if (this.overlay) {
-            if (panelId !== 'center-panel') {
-                this.overlay.classList.add('active');
-            } else {
-                this.overlay.classList.remove('active');
-            }
-        }
-
-        // If it's a side panel, slide it in
-        if (panelId !== 'center-panel') {
-            const targetPanel = this.panels[panelId];
-            if (targetPanel) {
-                targetPanel.classList.add('active');
-            }
-        }
-
-        // Update indicator position
-        this.updateIndicator(activeNavItem);
-
-        // Ensure 3D Canvas updates its size if needed
-        if (window.threeJSSetup && window.threeJSSetup.onWindowResize) {
-            setTimeout(() => window.threeJSSetup.onWindowResize(), 100);
-        } else if (window.gearGenApp && window.gearGenApp.onWindowResize) {
-            setTimeout(() => window.gearGenApp.onWindowResize(), 100);
-        }
-
-        // Dispatch event for other components if needed
-        window.dispatchEvent(new CustomEvent('panelChanged', { detail: { panelId } }));
     }
 
-    updateIndicator(activeItem) {
-        if (!this.navIndicator || !activeItem) return;
+    setupSwipeDownGestures() {
+        const drawers = [this.leftDrawer, this.rightDrawer].filter(Boolean);
 
-        const nav = document.querySelector('.mobile-nav');
-        if (!nav) return;
+        drawers.forEach(drawer => {
+            const header = drawer.querySelector('.mobile-drawer-header');
+            if (!header) return;
 
-        const navRect = nav.getBoundingClientRect();
-        const itemRect = activeItem.getBoundingClientRect();
+            let startY = 0;
+            let currentY = 0;
+            let isDragging = false;
 
-        // Calculate position relative to nav container
-        const left = itemRect.left - navRect.left;
-        const width = itemRect.width;
+            header.addEventListener('touchstart', (e) => {
+                startY = e.touches[0].clientY;
+                currentY = startY;
+                isDragging = true;
+                drawer.style.transition = 'none';
+            }, { passive: true });
 
-        this.navIndicator.style.width = `${width - 20}px`; // Padding for pill look
-        this.navIndicator.style.left = `${left + 10}px`;
+            header.addEventListener('touchmove', (e) => {
+                if (!isDragging) return;
+                currentY = e.touches[0].clientY;
+                const deltaY = currentY - startY;
+                if (deltaY > 0) {
+                    drawer.style.transform = `translateY(${deltaY}px)`;
+                }
+            }, { passive: true });
+
+            header.addEventListener('touchend', () => {
+                if (!isDragging) return;
+                isDragging = false;
+                drawer.style.transition = '';
+
+                const deltaY = currentY - startY;
+                if (deltaY > 80) {
+                    // Closed by swipe_down
+                    this.closeAllDrawers();
+                    drawer.style.transform = '';
+                } else {
+                    drawer.style.transform = '';
+                }
+            });
+        });
     }
 }
-
-// Initialize on mobile only (or always and it will check for elements)
-document.addEventListener('DOMContentLoaded', () => {
-    window.mobileUI = new MobileUI();
-});

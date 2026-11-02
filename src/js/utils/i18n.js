@@ -1,15 +1,49 @@
-// Internationalization (i18n) System
+// ==========================================================================
+// GearGen-3D Internationalization (i18n) System
+// EN, FR, AR Support with localStorage Persistence and RTL Switching
+// ==========================================================================
+
 class I18n {
     constructor() {
+        this.storageKey = 'geargen-language';
+        this.supportedLanguages = ['en', 'fr', 'ar'];
+        this.rtlLanguages = ['ar'];
         this.currentLanguage = this.getStoredLanguage() || 'en';
+
         this.translations = {
             en: {
-                // Headers (Logo/Slogan kept in English in HTML)
+                // Header & Branding
+                'branding.tagline': 'Parametric 3D Gear Generator',
                 'btn.help': 'Help',
                 'btn.github': 'GitHub',
                 'btn.reset': 'Reset',
 
-                // Gear Types
+                // Top Menu Bar
+                'menu.file': 'File',
+                'menu.file.reset': 'Reset All Parameters',
+                'menu.file.exportStl': 'Export STL...',
+                'menu.file.exportStep': 'Export STEP...',
+                'menu.edit': 'Edit',
+                'menu.edit.resetBasic': 'Reset Basic Dimensions',
+                'menu.edit.resetBody': 'Reset Gear Body',
+                'menu.edit.resetAppearance': 'Reset Appearance',
+                'menu.view': 'View',
+                'menu.view.iso': 'Isometric View',
+                'menu.view.top': 'Top View',
+                'menu.view.front': 'Front View',
+                'menu.view.side': 'Side View',
+                'menu.view.reset': 'Reset Camera',
+                'menu.view.grid': 'Toggle Grid',
+                'menu.view.axis': 'Toggle Axis',
+                'menu.view.wireframe': 'Toggle Wireframe',
+                'menu.help': 'Help',
+                'menu.help.help': 'Help',
+                'menu.help.docs': 'Documentation',
+                'menu.help.report': 'Report Issue',
+                'menu.help.contact': 'Contact',
+                'menu.help.github': 'GitHub',
+
+                // Left Panel: Gear Types
                 'section.gearType': 'Gear Type',
                 'gear.spur': 'Spur Gear',
                 'gear.spur.desc': 'Straight teeth parallel to axis',
@@ -22,53 +56,54 @@ class I18n {
                 'gear.rack': 'Rack Gear',
                 'gear.rack.desc': 'Linear gear for conversion',
                 'gear.internal': 'Internal Gear',
-                'gear.internal.desc': 'Teeth on the inside surface',
+                'gear.internal.desc': 'Teeth on inside surface',
                 'gear.planetary': 'Planetary Gear',
-                'gear.planetary.desc': 'Multiple gears in planetary system',
+                'gear.planetary.desc': 'Sun, planets & ring assembly',
                 'status.available': 'Available',
-                'status.comingSoon': 'Coming Soon',
 
-                // 3D Preview
+                // Center Viewport: Floating Toolbar Tooltips
                 'section.preview': '3D Preview',
-                'btn.resetView': 'Reset View',
-                'btn.grid': 'Grid',
-                'btn.axis': 'Axis',
-                'btn.wireframe': 'Wireframe',
-                'stats.vertices': 'Vertices:',
-                'stats.faces': 'Faces:',
-                'stats.size': 'Size:',
+                'toolbar.reset': 'Reset View (0)',
+                'toolbar.iso': 'Isometric (R)',
+                'toolbar.top': 'Top View (1)',
+                'toolbar.front': 'Front View (2)',
+                'toolbar.side': 'Side View (3)',
+                'toolbar.zoomIn': 'Zoom In (+)',
+                'toolbar.zoomOut': 'Zoom Out (-)',
+                'toolbar.grid': 'Grid (G)',
+                'toolbar.axis': 'Axis (A)',
+                'toolbar.wireframe': 'Wireframe (W)',
 
-                // Parameters
+                // Mesh Statistics
+                'stats.vertices': 'Vertices',
+                'stats.faces': 'Faces',
+                'stats.size': 'Bounding Box',
+
+                // Right Panel: Parameters
                 'section.parameters': 'Parameters',
                 'group.basicDimensions': 'Basic Dimensions',
                 'param.module': 'Module (mm)',
-                'param.module.tooltip': 'Size of teeth (pitch diameter / teeth count)',
+                'param.module.desc': 'Pitch diameter / teeth count ratio',
                 'param.teeth': 'Number of Teeth',
-                'param.teeth.tooltip': 'Total number of teeth on the gear',
-                'param.pressureAngle': 'Pressure Angle (°)',
-                'param.pressureAngle.tooltip': 'Angle between tooth face and gear wheel tangent',
-                'param.pressureAngle.common': '20° (Common)',
-                'param.pressureAngle.legacy': '14.5° (Legacy)',
-                'param.pressureAngle.highLoad': '25° (High Load)',
-                'param.helixAngle': 'Helix Angle (°)',
-                'param.helixAngle.tooltip': 'The angle of the teeth relative to the gear axis',
-                'param.pitchAngle': 'Pitch Angle (°)',
-                'param.pitchAngle.tooltip': 'Angle of the pitch cone.',
+                'param.teeth.desc': 'Total tooth count on the gear',
                 'param.planetTeeth': 'Planet Teeth',
-                'param.planetTeeth.tooltip': 'Number of teeth on each planet gear.',
+                'param.planetTeeth.desc': 'Number of teeth on planet gears',
                 'param.planetCount': 'Planet Count',
-                'param.planetCount.tooltip': 'Number of planet gears in the assembly.',
-                'param.sunTeeth': 'Sun Teeth',
-                'param.teeth.worm': 'Number of Starts',
-                'param.helixAngle.worm': 'Lead Angle (°)',
+                'param.planetCount.desc': 'Number of planet gears in assembly',
+                'param.helixAngle': 'Helix Angle (°)',
+                'param.helixAngle.desc': 'Angle of teeth relative to axis',
+                'param.pitchAngle': 'Pitch Angle (°)',
+                'param.pitchAngle.desc': 'Angle of the pitch cone',
+                'param.pressureAngle': 'Pressure Angle (°)',
+                'param.pressureAngle.desc': 'Tooth profile standard angle',
 
                 'group.gearBody': 'Gear Body',
                 'param.faceWidth': 'Face Width (mm)',
-                'param.faceWidth.tooltip': 'Thickness of the gear',
+                'param.faceWidth.desc': 'Thickness of the gear rim',
                 'param.hubDiameter': 'Hub Diameter (mm)',
-                'param.hubDiameter.tooltip': 'Diameter of the central hub',
+                'param.hubDiameter.desc': 'Diameter of central mounting hub',
                 'param.boreDiameter': 'Bore Diameter (mm)',
-                'param.boreDiameter.tooltip': 'Diameter of the central hole',
+                'param.boreDiameter.desc': 'Diameter of center shaft hole',
 
                 'group.appearance': 'Appearance',
                 'param.color': 'Gear Color',
@@ -77,98 +112,116 @@ class I18n {
                 'param.quality.medium': 'Medium (Recommended)',
                 'param.quality.high': 'High (Detailed)',
 
-                // Export
-                'section.export': 'Export',
-                'btn.downloadSTL': 'Download STL',
-                'export.stl.title': 'STL Format:',
-                'export.stl.desc': 'The STL file is sufficient for:',
-                'export.stl.use1': '3D Printing',
-                'export.stl.use2': 'Assembly',
-                'export.stl.use3': 'CAD Soft',
-                'export.stl.use4': 'Simulation',
-                'export.note.title': 'Note:',
-                'export.note.desc': 'We are developing free offline software for complex gears and more formats (STEP, IGES, etc.).',
-
-                // Info Notice
-                'info.notice': 'Currently <strong>Spur</strong>, <strong>Helical</strong>, <strong>Bevel</strong>, <strong>Worm</strong>, <strong>Rack</strong>, <strong>Internal</strong> and <strong>Planetary</strong> gears are available.',
-
-                // Footer
-                'footer.copyright': 'GearGen - 3D Gear Generator © 2026',
-                'footer.documentation': 'Documentation',
-                'footer.reportIssue': 'Report Issue',
-                'footer.contact': 'Contact',
-
-                // Calculated Values
+                // Calculated KPIs
                 'calc.pitchDiameter': 'Pitch Diameter',
-                'calc.circularPitch': 'Circular Pitch'
+                'calc.circularPitch': 'Circular Pitch',
+
+                // Export Modal & Mobile
+                'section.export': 'Export',
+                'modal.export.title': 'Export 3D Model',
+                'modal.export.gear': 'Gear Model',
+                'modal.export.stl': 'Download STL',
+                'modal.export.step': 'Download STEP',
+                'modal.export.stlDesc': 'Binary STL format. Optimal for 3D printing and slicers.',
+                'modal.export.stepDesc': 'Faceted B-Rep STEP (AP214). Suitable for mechanical CAD.',
+                'modal.export.estimatedSize': 'Estimated File Size',
+                'modal.export.noMesh': 'No 3D mesh currently available to export.',
+                'export.success': 'File downloaded successfully:'
             },
 
             fr: {
-                // Header
+                // Header & Branding
+                'branding.tagline': 'Générateur d\'Engrenages 3D Paramétrique',
                 'btn.help': 'Aide',
                 'btn.github': 'GitHub',
                 'btn.reset': 'Réinitialiser',
 
-                // Gear Types
+                // Top Menu Bar
+                'menu.file': 'Fichier',
+                'menu.file.reset': 'Réinitialiser tous les paramètres',
+                'menu.file.exportStl': 'Exporter STL...',
+                'menu.file.exportStep': 'Exporter STEP...',
+                'menu.edit': 'Édition',
+                'menu.edit.resetBasic': 'Réinitialiser dimensions de base',
+                'menu.edit.resetBody': 'Réinitialiser corps d\'engrenage',
+                'menu.edit.resetAppearance': 'Réinitialiser apparence',
+                'menu.view': 'Affichage',
+                'menu.view.iso': 'Vue Isométrique',
+                'menu.view.top': 'Vue de Dessus',
+                'menu.view.front': 'Vue de Face',
+                'menu.view.side': 'Vue de Côté',
+                'menu.view.reset': 'Réinitialiser Caméra',
+                'menu.view.grid': 'Basculer Grille',
+                'menu.view.axis': 'Basculer Axes',
+                'menu.view.wireframe': 'Basculer Fil de Fer',
+                'menu.help': 'Aide',
+                'menu.help.help': 'Aide',
+                'menu.help.docs': 'Documentation',
+                'menu.help.report': 'Signaler un Problème',
+                'menu.help.contact': 'Contact',
+                'menu.help.github': 'GitHub',
+
+                // Left Panel: Gear Types
                 'section.gearType': 'Type d\'Engrenage',
                 'gear.spur': 'Engrenage Droit',
                 'gear.spur.desc': 'Dents droites parallèles à l\'axe',
                 'gear.helical': 'Engrenage Hélicoïdal',
-                'gear.helical.desc': 'Dents inclinées pour un fonctionnement plus doux',
+                'gear.helical.desc': 'Dents inclinées pour un fonctionnement doux',
                 'gear.bevel': 'Engrenage Conique',
-                'gear.bevel.desc': 'Forme conique pour transmission à angle droit',
+                'gear.bevel.desc': 'Forme conique pour renvoi d\'angle',
                 'gear.worm': 'Roue et Vis Sans Fin',
-                'gear.worm.desc': 'Engrenage en forme de vis pour réduction élevée',
+                'gear.worm.desc': 'Vis sans fin à grand rapport de réduction',
                 'gear.rack': 'Crémaillère',
-                'gear.rack.desc': 'Engrenage linéaire pour conversion',
+                'gear.rack.desc': 'Engrenage linéaire de conversion',
                 'gear.internal': 'Engrenage Intérieur',
-                'gear.internal.desc': 'Dents sur la surface intérieure',
-                'gear.planetary': 'Engrenage Planétaire',
-                'gear.planetary.desc': 'Plusieurs engrenages dans un système planétaire pour une réduction et un couple élevés.',
+                'gear.internal.desc': 'Denture sur surface intérieure',
+                'gear.planetary': 'Train Épicycloïdal',
+                'gear.planetary.desc': 'Solaire, satellites et couronne',
                 'status.available': 'Disponible',
-                'status.comingSoon': 'Bientôt Disponible',
 
-                // 3D Preview
+                // Center Viewport
                 'section.preview': 'Aperçu 3D',
-                'btn.resetView': 'Réinitialiser la Vue',
-                'btn.grid': 'Grille',
-                'btn.axis': 'Axes',
-                'btn.wireframe': 'Fil de Fer',
-                'stats.vertices': 'Sommets :',
-                'stats.faces': 'Faces :',
-                'stats.size': 'Taille :',
+                'toolbar.reset': 'Réinitialiser Vue (0)',
+                'toolbar.iso': 'Isométrique (R)',
+                'toolbar.top': 'Vue de Dessus (1)',
+                'toolbar.front': 'Vue de Face (2)',
+                'toolbar.side': 'Vue de Côté (3)',
+                'toolbar.zoomIn': 'Zoom Avant (+)',
+                'toolbar.zoomOut': 'Zoom Arrière (-)',
+                'toolbar.grid': 'Grille (G)',
+                'toolbar.axis': 'Axes (A)',
+                'toolbar.wireframe': 'Fil de Fer (W)',
 
-                // Parameters
+                // Mesh Statistics
+                'stats.vertices': 'Sommets',
+                'stats.faces': 'Faces',
+                'stats.size': 'Dimensions',
+
+                // Right Panel: Parameters
                 'section.parameters': 'Paramètres',
                 'group.basicDimensions': 'Dimensions de Base',
                 'param.module': 'Module (mm)',
-                'param.module.tooltip': 'Taille des dents (diamètre primitif / nombre de dents)',
+                'param.module.desc': 'Rapport diamètre primitif / nombre de dents',
                 'param.teeth': 'Nombre de Dents',
-                'param.teeth.tooltip': 'Nombre total de dents sur l\'engrenage',
-                'param.pressureAngle': 'Angle de Pression (°)',
-                'param.pressureAngle.tooltip': 'Angle entre la face de la dent et la tangente de la roue',
-                'param.pressureAngle.common': '20° (Standard)',
-                'param.pressureAngle.legacy': '14,5° (Ancien)',
-                'param.pressureAngle.highLoad': '25° (Charge Élevée)',
+                'param.teeth.desc': 'Nombre total de dents sur l\'engrenage',
+                'param.planetTeeth': 'Dents Satellites',
+                'param.planetTeeth.desc': 'Nombre de dents par satellite',
+                'param.planetCount': 'Nombre de Satellites',
+                'param.planetCount.desc': 'Quantité de satellites dans l\'ensemble',
                 'param.helixAngle': 'Angle d\'Hélice (°)',
-                'param.helixAngle.tooltip': 'L\'inclinaison des dents par rapport à l\'axe de l\'engrenage',
+                'param.helixAngle.desc': 'Angle des dents par rapport à l\'axe',
                 'param.pitchAngle': 'Angle Primitif (°)',
-                'param.pitchAngle.tooltip': 'L\'angle du cône primitif.',
-                'param.planetTeeth': 'Dents Planète',
-                'param.planetTeeth.tooltip': 'Nombre de dents sur chaque pignon satellite.',
-                'param.planetCount': 'Nombre de Planètes',
-                'param.planetCount.tooltip': 'Nombre de satellites dans l\'ensemble.',
-                'param.sunTeeth': 'Dents Soleil',
-                'param.teeth.worm': 'Nombre de Filets',
-                'param.helixAngle.worm': 'Angle d\'Inclinaison (°)',
+                'param.pitchAngle.desc': 'Angle du cône primitif',
+                'param.pressureAngle': 'Angle de Pression (°)',
+                'param.pressureAngle.desc': 'Profil standard d\'engrènement',
 
                 'group.gearBody': 'Corps de l\'Engrenage',
                 'param.faceWidth': 'Largeur de Denture (mm)',
-                'param.faceWidth.tooltip': 'Épaisseur de l\'engrenage',
+                'param.faceWidth.desc': 'Épaisseur de la couronne d\'engrenage',
                 'param.hubDiameter': 'Diamètre du Moyeu (mm)',
-                'param.hubDiameter.tooltip': 'Diamètre du moyeu central',
+                'param.hubDiameter.desc': 'Diamètre du moyeu central',
                 'param.boreDiameter': 'Diamètre d\'Alésage (mm)',
-                'param.boreDiameter.tooltip': 'Diamètre du trou central',
+                'param.boreDiameter.desc': 'Diamètre du trou d\'arbre central',
 
                 'group.appearance': 'Apparence',
                 'param.color': 'Couleur de l\'Engrenage',
@@ -177,98 +230,116 @@ class I18n {
                 'param.quality.medium': 'Moyenne (Recommandée)',
                 'param.quality.high': 'Haute (Détaillée)',
 
-                // Export
-                'section.export': 'Exportation',
-                'btn.downloadSTL': 'Télécharger STL',
-                'export.stl.title': 'Format STL :',
-                'export.stl.desc': 'Le fichier STL est suffisant pour :',
-                'export.stl.use1': 'Impression 3D',
-                'export.stl.use2': 'Assemblage',
-                'export.stl.use3': 'Logiciel CAO',
-                'export.stl.use4': 'Simulation',
-                'export.note.title': 'Note :',
-                'export.note.desc': 'Logiciel gratuit en cours pour engrenages complexes et plus de formats (STEP, IGES, etc.).',
-
-                // Info Notice
-                'info.notice': 'Actuellement, les engrenages <strong>Droits</strong>, <strong>Hélicoïdaux</strong>, <strong>Coniques</strong>, <strong>Vis sans fin</strong>, <strong>Crémaillère</strong>, <strong>Intérieurs</strong> et <strong>Planétaires</strong> sont disponibles.',
-
-                // Footer
-                'footer.copyright': 'GearGen - Générateur d\'Engrenages 3D © 2026',
-                'footer.documentation': 'Documentation',
-                'footer.reportIssue': 'Signaler un Problème',
-                'footer.contact': 'Contact',
-
-                // Calculated Values
+                // Calculated KPIs
                 'calc.pitchDiameter': 'Diamètre Primitif',
-                'calc.circularPitch': 'Pas Circulaire'
+                'calc.circularPitch': 'Pas Circulaire',
+
+                // Export Modal & Mobile
+                'section.export': 'Exporter',
+                'modal.export.title': 'Exporter le Modèle 3D',
+                'modal.export.gear': 'Modèle d\'Engrenage',
+                'modal.export.stl': 'Télécharger STL',
+                'modal.export.step': 'Télécharger STEP',
+                'modal.export.stlDesc': 'Format STL binaire. Recommandé pour l\'impression 3D.',
+                'modal.export.stepDesc': 'Format STEP B-Rep facetté (AP214). Adapté aux logiciels CAO.',
+                'modal.export.estimatedSize': 'Taille estimée du fichier',
+                'modal.export.noMesh': 'Aucun maillage 3D à exporter pour le moment.',
+                'export.success': 'Fichier téléchargé avec succès :'
             },
 
             ar: {
-                // Header
+                // Header & Branding
+                'branding.tagline': 'مولد التروس ثلاثية الأبعاد البارامتري',
                 'btn.help': 'مساعدة',
                 'btn.github': 'GitHub',
                 'btn.reset': 'إعادة تعيين',
 
-                // Gear Types
+                // Top Menu Bar
+                'menu.file': 'ملف',
+                'menu.file.reset': 'إعادة تعيين كافة المعاملات',
+                'menu.file.exportStl': '...STL تصدير',
+                'menu.file.exportStep': '...STEP تصدير',
+                'menu.edit': 'تعديل',
+                'menu.edit.resetBasic': 'إعادة تعيين الأبعاد الأساسية',
+                'menu.edit.resetBody': 'إعادة تعيين جسم الترس',
+                'menu.edit.resetAppearance': 'إعادة تعيين المظهر',
+                'menu.view': 'عرض',
+                'menu.view.iso': 'منظور متساوي القياس',
+                'menu.view.top': 'عرض علوي',
+                'menu.view.front': 'عرض أمامي',
+                'menu.view.side': 'عرض جانبي',
+                'menu.view.reset': 'إعادة ضبط الكاميرا',
+                'menu.view.grid': 'تبديل الشبكة',
+                'menu.view.axis': 'تبديل المحاور',
+                'menu.view.wireframe': 'تبديل الإطار السلكي',
+                'menu.help': 'مساعدة',
+                'menu.help.help': 'مساعدة',
+                'menu.help.docs': 'التوثيق',
+                'menu.help.report': 'الإبلاغ عن مشكلة',
+                'menu.help.contact': 'اتصل بنا',
+                'menu.help.github': 'GitHub',
+
+                // Left Panel: Gear Types
                 'section.gearType': 'نوع الترس',
                 'gear.spur': 'ترس مستقيم',
                 'gear.spur.desc': 'أسنان مستقيمة موازية للمحور',
                 'gear.helical': 'ترس حلزوني',
-                'gear.helical.desc': 'أسنان مائلة لتشغيل أكثر سلاسة',
+                'gear.helical.desc': 'أسنان مائلة لتشغيل سلس وهادئ',
                 'gear.bevel': 'ترس مخروطي',
-                'gear.bevel.desc': 'شكل مخروطي للدفع بزاوية قائمة',
+                'gear.bevel.desc': 'شكل مخروطي لنقل الحركة بزاوية',
                 'gear.worm': 'ترس دودي',
-                'gear.worm.desc': 'ترس يشبه البرغي للتخفيض العالي',
-                'gear.rack': 'ترس رف',
-                'gear.rack.desc': 'ترس خطي للتحويل',
+                'gear.worm.desc': 'ترس لولبي لنسب تخفيض عالية',
+                'gear.rack': 'ترس جريدة مسننة',
+                'gear.rack.desc': 'ترس خطي لتحويل الحركة',
                 'gear.internal': 'ترس داخلي',
                 'gear.internal.desc': 'أسنان على السطح الداخلي',
-                'gear.planetary': 'ترس كوكبي',
-                'gear.planetary.desc': 'تروس متعددة في نظام كوكبي لتقليل السرعة وزيادة العزم.',
+                'gear.planetary': 'مجموعة كوكبية',
+                'gear.planetary.desc': 'ترس شمسي، كواكب وترس حلقي',
                 'status.available': 'متاح',
-                'status.comingSoon': 'قريباً',
 
-                // 3D Preview
+                // Center Viewport
                 'section.preview': 'معاينة ثلاثية الأبعاد',
-                'btn.resetView': 'إعادة تعيين العرض',
-                'btn.grid': 'الشبكة',
-                'btn.axis': 'المحاور',
-                'btn.wireframe': 'الإطار السلكي',
-                'stats.vertices': 'الرؤوس:',
-                'stats.faces': 'الوجوه:',
-                'stats.size': 'الحجم:',
+                'toolbar.reset': 'إعادة ضبط العرض (0)',
+                'toolbar.iso': 'متساوي القياس (R)',
+                'toolbar.top': 'عرض علوي (1)',
+                'toolbar.front': 'عرض أمامي (2)',
+                'toolbar.side': 'عرض جانبي (3)',
+                'toolbar.zoomIn': 'تكبير (+)',
+                'toolbar.zoomOut': 'تصغير (-)',
+                'toolbar.grid': 'الشبكة (G)',
+                'toolbar.axis': 'المحاور (A)',
+                'toolbar.wireframe': 'الإطار السلكي (W)',
 
-                // Parameters
+                // Mesh Statistics
+                'stats.vertices': 'الرؤوس',
+                'stats.faces': 'الوجوه',
+                'stats.size': 'الأبعاد',
+
+                // Right Panel: Parameters
                 'section.parameters': 'المعاملات',
                 'group.basicDimensions': 'الأبعاد الأساسية',
                 'param.module': 'المعامل (مم)',
-                'param.module.tooltip': 'حجم الأسنان (القطر الأولي / عدد الأسنان)',
+                'param.module.desc': 'نسبة القطر الأولي إلى عدد الأسنان',
                 'param.teeth': 'عدد الأسنان',
-                'param.teeth.tooltip': 'العدد الإجمالي للأسنان على الترس',
-                'param.pressureAngle': 'زاوية الضغط (°)',
-                'param.pressureAngle.tooltip': 'الزاوية بين وجه السن ومماس عجلة الترس',
-                'param.pressureAngle.common': '20° (شائع)',
-                'param.pressureAngle.legacy': '14.5° (قديم)',
-                'param.pressureAngle.highLoad': '25° (حمل عالي)',
-                'param.helixAngle': 'زاوية الحلزون (°)',
-                'param.helixAngle.tooltip': 'زاوية الأسنان بالنسبة لمحور الترس',
-                'param.pitchAngle': 'زاوية الخطوة (°)',
-                'param.pitchAngle.tooltip': 'زاوية مخروط الخطوة.',
-                'param.planetTeeth': 'أسنان الكوكب',
-                'param.planetTeeth.tooltip': 'عدد الأسنان على كل ترس كوكبي.',
+                'param.teeth.desc': 'العدد الإجمالي لأسنان الترس',
+                'param.planetTeeth': 'أسنان الكواكب',
+                'param.planetTeeth.desc': 'عدد الأسنان على كل ترس كوكبي',
                 'param.planetCount': 'عدد الكواكب',
-                'param.planetCount.tooltip': 'عدد التروس الكوكبية في المجموعة.',
-                'param.sunTeeth': 'أسنان الشمس',
-                'param.teeth.worm': 'عدد البدايات',
-                'param.helixAngle.worm': 'زاوية الرصاص (°)',
+                'param.planetCount.desc': 'عدد التروس الكوكبية في النظام',
+                'param.helixAngle': 'زاوية الحلزون (°)',
+                'param.helixAngle.desc': 'زاوية ميل الأسنان بالنسبة للمحور',
+                'param.pitchAngle': 'زاوية الخطوة (°)',
+                'param.pitchAngle.desc': 'زاوية مخروط الخطوة',
+                'param.pressureAngle': 'زاوية الضغط (°)',
+                'param.pressureAngle.desc': 'الزاوية القياسية لشكل السن',
 
                 'group.gearBody': 'جسم الترس',
                 'param.faceWidth': 'عرض الوجه (مم)',
-                'param.faceWidth.tooltip': 'سمك الترس',
+                'param.faceWidth.desc': 'سُمك حافة الترس',
                 'param.hubDiameter': 'قطر المحور (مم)',
-                'param.hubDiameter.tooltip': 'قطر المحور المركزي',
+                'param.hubDiameter.desc': 'قطر المحور المركزي',
                 'param.boreDiameter': 'قطر الثقب (مم)',
-                'param.boreDiameter.tooltip': 'قطر الفتحة المركزية',
+                'param.boreDiameter.desc': 'قطر فتحة العمود المركزي',
 
                 'group.appearance': 'المظهر',
                 'param.color': 'لون الترس',
@@ -277,30 +348,21 @@ class I18n {
                 'param.quality.medium': 'متوسطة (موصى بها)',
                 'param.quality.high': 'عالية (مفصلة)',
 
-                // Export
-                'section.export': 'تصدير',
-                'btn.downloadSTL': 'تنزيل STL',
-                'export.stl.title': 'تنسيق STL:',
-                'export.stl.desc': 'ملف STL كافٍ لـ:',
-                'export.stl.use1': 'طباعة ثلاثية الأبعاد',
-                'export.stl.use2': 'تجميع ميكانيكي',
-                'export.stl.use3': 'برامج CAD',
-                'export.stl.use4': 'محاكاة',
-                'export.note.title': 'ملاحظة:',
-                'export.note.desc': 'نحن نطور برنامجاً مجانياً للتروس المعقدة وتنسيقات إضافية (STEP، IGES، إلخ).',
-
-                // Info Notice
-                'info.notice': 'حالياً تتوفر التروس <strong>المستقيمة</strong> و <strong>الحلزونية</strong> و <strong>المخروطية</strong> و <strong>الدودية</strong> و <strong>المسننة</strong> و <strong>الداخلية</strong> و <strong>الكوكبية</strong>.',
-
-                // Footer
-                'footer.copyright': 'GearGen - مولد التروس ثلاثية الأبعاد © 2026',
-                'footer.documentation': 'التوثيق',
-                'footer.reportIssue': 'الإبلاغ عن مشكلة',
-                'footer.contact': 'اتصل بنا',
-
-                // Calculated Values
+                // Calculated KPIs
                 'calc.pitchDiameter': 'القطر الأولي',
-                'calc.circularPitch': 'الخطوة الدائرية'
+                'calc.circularPitch': 'الخطوة الدائرية',
+
+                // Export Modal & Mobile
+                'section.export': 'تصدير',
+                'modal.export.title': 'تصدير النموذج ثلاثي الأبعاد',
+                'modal.export.gear': 'نموذج الترس',
+                'modal.export.stl': 'STL تنزيل',
+                'modal.export.step': 'STEP تنزيل',
+                'modal.export.stlDesc': 'تنسيق STL ثنائي مثالي للطباعة ثلاثية الأبعاد.',
+                'modal.export.stepDesc': 'تنسيق STEP B-Rep ملائم لبرامج الهندسة الميكانيكية.',
+                'modal.export.estimatedSize': 'الحجم المقدر للملف',
+                'modal.export.noMesh': 'لا يتوفر نموذج حالياً للتصدير.',
+                'export.success': 'تم تنزيل الملف بنجاح:'
             }
         };
 
@@ -308,13 +370,13 @@ class I18n {
     }
 
     init() {
-        console.log('Initializing i18n system...');
         this.applyLanguage(this.currentLanguage);
     }
 
     getStoredLanguage() {
         try {
-            return localStorage.getItem('geargen-language');
+            const lang = localStorage.getItem(this.storageKey);
+            return this.supportedLanguages.includes(lang) ? lang : null;
         } catch (e) {
             console.warn('localStorage not available:', e);
             return null;
@@ -323,59 +385,54 @@ class I18n {
 
     setStoredLanguage(lang) {
         try {
-            localStorage.setItem('geargen-language', lang);
+            localStorage.setItem(this.storageKey, lang);
         } catch (e) {
             console.warn('localStorage not available:', e);
         }
     }
 
     translate(key) {
-        const translation = this.translations[this.currentLanguage]?.[key];
-        return translation || this.translations['en'][key] || key;
+        const langData = this.translations[this.currentLanguage] || this.translations['en'];
+        return langData[key] || this.translations['en'][key] || key;
     }
 
     applyLanguage(lang) {
-        if (!this.translations[lang]) {
-            console.warn(`Language ${lang} not found, falling back to English`);
+        if (!this.supportedLanguages.includes(lang)) {
             lang = 'en';
         }
 
         this.currentLanguage = lang;
         this.setStoredLanguage(lang);
 
-        // Apply RTL for Arabic
-        document.documentElement.setAttribute('dir', lang === 'ar' ? 'rtl' : 'ltr');
+        const isRtl = this.rtlLanguages.includes(lang);
+        document.documentElement.setAttribute('dir', isRtl ? 'rtl' : 'ltr');
         document.documentElement.setAttribute('lang', lang);
 
         // Update all elements with data-i18n attribute
-        document.querySelectorAll('[data-i18n]').forEach(element => {
-            const key = element.getAttribute('data-i18n');
+        document.querySelectorAll('[data-i18n]').forEach(el => {
+            const key = el.getAttribute('data-i18n');
             const translation = this.translate(key);
-
-            // Check if element has data-i18n-html attribute for HTML content
-            if (element.hasAttribute('data-i18n-html')) {
-                element.innerHTML = translation;
+            if (el.hasAttribute('data-i18n-html')) {
+                el.innerHTML = translation;
             } else {
-                element.textContent = translation;
+                el.textContent = translation;
             }
         });
 
+        // Update titles / tooltips
+        document.querySelectorAll('[data-i18n-title]').forEach(el => {
+            const key = el.getAttribute('data-i18n-title');
+            el.setAttribute('title', this.translate(key));
+        });
+
         // Update placeholders
-        document.querySelectorAll('[data-i18n-placeholder]').forEach(element => {
-            const key = element.getAttribute('data-i18n-placeholder');
-            element.placeholder = this.translate(key);
+        document.querySelectorAll('[data-i18n-placeholder]').forEach(el => {
+            const key = el.getAttribute('data-i18n-placeholder');
+            el.placeholder = this.translate(key);
         });
 
-        // Update title attributes (tooltips)
-        document.querySelectorAll('[data-i18n-title]').forEach(element => {
-            const key = element.getAttribute('data-i18n-title');
-            element.title = this.translate(key);
-        });
-
-        // Trigger custom event for language change
-        window.dispatchEvent(new CustomEvent('languageChanged', { detail: { language: lang } }));
-
-        console.log(`Language changed to: ${lang}`);
+        // Notify navigation switcher and other components
+        window.dispatchEvent(new CustomEvent('languageChanged', { detail: { language: lang, isRtl } }));
     }
 
     switchLanguage(lang) {
@@ -385,11 +442,7 @@ class I18n {
     getCurrentLanguage() {
         return this.currentLanguage;
     }
-
-    getAvailableLanguages() {
-        return Object.keys(this.translations);
-    }
 }
 
-// Initialize i18n system
+// Initialize global i18n
 window.i18n = new I18n();

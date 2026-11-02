@@ -1,185 +1,199 @@
-// Parameter UI Management
+// ==========================================================================
+// GearGen-3D Parameter UI Management
+// Dual-control Synchronization, Real-Time KPIs & 60 FPS Throttled Generation
+// JSON Spec Compliant
+// ==========================================================================
+
 class ParameterUI {
     constructor() {
         this.defaults = {
-            module: 2,
-            teeth: 20,
-            pressureAngle: '20',
-            faceWidth: 10,
-            hubDiameter: 10,
-            boreDiameter: 5,
-            helixAngle: 20,
-            pitchAngle: 45,
-            color: '#3498db',
-            quality: 'medium',
-            planetTeeth: 12,
-            planetCount: 3
+            module: 2.0,
+            teeth_count: 20,
+            planet_teeth: 12,
+            planet_count: 3,
+            helix_angle: 20,
+            pitch_angle: 45,
+            pressure_angle: 20.0,
+            face_width: 10,
+            hub_diameter: 10,
+            bore_diameter: 5,
+            gear_color: '#3B82F6',
+            mesh_quality: 'Medium'
         };
+
+        this.rafId = null;
+        this.isPendingUpdate = false;
         this.init();
     }
 
     init() {
-        console.log('Initializing premium parameter UI...');
+        console.log('Initializing CAD Parameter UI...');
         this.cacheElements();
         this.setupEventListeners();
         this.updateCalculatedValues();
     }
 
     cacheElements() {
-        this.elements = {
+        this.inputs = {
             module: document.getElementById('module'),
-            teeth: document.getElementById('teeth'),
-            pressureAngle: document.getElementById('pressure-angle'),
-            faceWidth: document.getElementById('face-width'),
-            hubDiameter: document.getElementById('hub-diameter'),
-            boreDiameter: document.getElementById('bore-diameter'),
-            helixAngle: document.getElementById('helix-angle'),
-            pitchAngle: document.getElementById('pitch-angle'),
-            color: document.getElementById('color'),
-            quality: document.getElementById('quality'),
-            planetTeeth: document.getElementById('planet-teeth'),
-            planetCount: document.getElementById('planet-count')
+            teeth_count: document.getElementById('teeth_count'),
+            planet_teeth: document.getElementById('planet_teeth'),
+            planet_count: document.getElementById('planet_count'),
+            helix_angle: document.getElementById('helix_angle'),
+            pitch_angle: document.getElementById('pitch_angle'),
+            pressure_angle: document.getElementById('pressure_angle'),
+            face_width: document.getElementById('face_width'),
+            hub_diameter: document.getElementById('hub_diameter'),
+            bore_diameter: document.getElementById('bore_diameter'),
+            gear_color: document.getElementById('gear_color'),
+            mesh_quality: document.getElementById('mesh_quality')
         };
 
         this.sliders = {
             module: document.getElementById('module-slider'),
-            teeth: document.getElementById('teeth-slider'),
-            faceWidth: document.getElementById('face-width-slider'),
-            hubDiameter: document.getElementById('hub-diameter-slider'),
-            boreDiameter: document.getElementById('bore-diameter-slider'),
-            helixAngle: document.getElementById('helix-angle-slider'),
-            pitchAngle: document.getElementById('pitch-angle-slider'),
-            planetTeeth: document.getElementById('planet-teeth-slider'),
-            planetCount: document.getElementById('planet-count-slider')
+            teeth_count: document.getElementById('teeth_count-slider'),
+            planet_teeth: document.getElementById('planet_teeth-slider'),
+            planet_count: document.getElementById('planet_count-slider'),
+            helix_angle: document.getElementById('helix_angle-slider'),
+            pitch_angle: document.getElementById('pitch_angle-slider'),
+            face_width: document.getElementById('face_width-slider'),
+            hub_diameter: document.getElementById('hub_diameter-slider'),
+            bore_diameter: document.getElementById('bore_diameter-slider')
         };
 
-        this.calcContainer = document.getElementById('calculated-info-container');
-        this.helixAngleContainer = document.getElementById('helix-angle-container');
-        this.pitchAngleContainer = document.getElementById('pitch-angle-container');
+        this.kpiPitchDiameter = document.getElementById('kpi-pitch-diameter');
+        this.kpiCircularPitch = document.getElementById('kpi-circular-pitch');
+        this.colorHexValue = document.getElementById('color-hex-value');
+
+        // Conditional containers
+        this.helixAngleContainer = document.getElementById('container-helix_angle');
+        this.pitchAngleContainer = document.getElementById('container-pitch_angle');
+        this.planetTeethContainer = document.getElementById('container-planet_teeth');
+        this.planetCountContainer = document.getElementById('container-planet_count');
+        this.hubDiameterContainer = document.getElementById('container-hub_diameter');
+        this.boreDiameterContainer = document.getElementById('container-bore_diameter');
     }
 
     setupEventListeners() {
-        // 1. Dual Control Synchronization (Sliders & Number Inputs)
+        // 1. Dual Control Sync: Number Input <-> Slider
         Object.keys(this.sliders).forEach(key => {
-            const input = this.elements[key];
+            const input = this.inputs[key];
             const slider = this.sliders[key];
 
             if (input && slider) {
-                // Number input changes -> Update slider
-                input.addEventListener('input', (e) => {
-                    this.validateInput(e.target);
-                    slider.value = e.target.value;
-                    this.updateLivePreview();
-                    this.updatePresetChips(key, e.target.value);
+                // Number input changes
+                input.addEventListener('input', () => {
+                    this.validateInput(input);
+                    slider.value = input.value;
+                    this.updatePresetChips(key, input.value);
+                    this.updateCalculatedValues();
+                    this.scheduleThrottledUpdate();
                 });
 
-                // Slider changes -> Update number input
-                slider.addEventListener('input', (e) => {
-                    input.value = e.target.value;
-                    this.updateLivePreview();
-                    this.updatePresetChips(key, e.target.value);
+                // Slider changes
+                slider.addEventListener('input', () => {
+                    input.value = slider.value;
+                    this.updatePresetChips(key, slider.value);
+                    this.updateCalculatedValues();
+                    this.scheduleThrottledUpdate();
                 });
             }
         });
 
-        // 2. Step Buttons (+/-)
+        // 2. Step Buttons (+ / -)
         document.querySelectorAll('.step-btn').forEach(btn => {
-            btn.addEventListener('click', (e) => {
+            btn.addEventListener('click', () => {
                 const targetId = btn.getAttribute('data-target');
                 const isPlus = btn.classList.contains('plus');
-                this.handleStepAction(targetId, isPlus);
+                this.handleStep(targetId, isPlus);
             });
         });
 
-        // 3. Preset Chips
+        // 3. Preset Chips (e.g. Module presets: 1.0, 1.5, 2.0, 2.5, 3.0, 4.0)
         document.querySelectorAll('.preset-chip').forEach(chip => {
             chip.addEventListener('click', () => {
                 const targetId = chip.parentElement.getAttribute('data-target');
-                const value = chip.getAttribute('data-value');
-                this.handlePresetAction(targetId, value, chip);
+                const val = chip.getAttribute('data-value');
+                this.handlePresetSelect(targetId, val, chip);
             });
         });
 
-        // 4. Group Resets
+        // 4. Selects & Color Picker
+        if (this.inputs.pressure_angle) {
+            this.inputs.pressure_angle.addEventListener('change', () => {
+                this.updateCalculatedValues();
+                this.scheduleThrottledUpdate();
+            });
+        }
+
+        if (this.inputs.mesh_quality) {
+            this.inputs.mesh_quality.addEventListener('change', () => {
+                this.scheduleThrottledUpdate();
+            });
+        }
+
+        if (this.inputs.gear_color) {
+            this.inputs.gear_color.addEventListener('input', (e) => {
+                if (this.colorHexValue) this.colorHexValue.textContent = e.target.value.toUpperCase();
+                this.scheduleThrottledUpdate();
+            });
+        }
+
+        // 5. Section / Group Reset Buttons
         document.querySelectorAll('.group-reset-btn').forEach(btn => {
             btn.addEventListener('click', () => {
-                const group = btn.getAttribute('data-group');
-                this.handleGroupReset(group);
+                const section = btn.getAttribute('data-section');
+                this.resetSection(section);
             });
         });
-
-        // 5. Selects and Color
-        this.elements.pressureAngle.addEventListener('change', () => this.updateLivePreview());
-        this.elements.color.addEventListener('input', () => this.updateLivePreview());
-        this.elements.quality.addEventListener('change', () => this.updateLivePreview());
     }
 
-    handleStepAction(id, isPlus) {
-        const input = this.elements[id];
+    handleStep(id, isPlus) {
+        const input = this.inputs[id];
         const slider = this.sliders[id];
         if (!input) return;
 
         const step = parseFloat(input.step) || 1;
-        let val = parseFloat(input.value);
-
+        let val = parseFloat(input.value) || 0;
         val = isPlus ? val + step : val - step;
 
         input.value = val;
         this.validateInput(input);
         if (slider) slider.value = input.value;
 
-        this.updateLivePreview();
         this.updatePresetChips(id, input.value);
-
-        // Visual feedback
-        input.classList.add('pulse');
-        setTimeout(() => input.classList.remove('pulse'), 200);
+        this.updateCalculatedValues();
+        this.scheduleThrottledUpdate();
     }
 
-    handlePresetAction(id, value, chip) {
-        const input = this.elements[id];
+    handlePresetSelect(id, value, activeChip) {
+        const input = this.inputs[id];
         const slider = this.sliders[id];
         if (!input) return;
 
         input.value = value;
         if (slider) slider.value = value;
 
-        // Update active state
-        chip.parentElement.querySelectorAll('.preset-chip').forEach(c => c.classList.remove('active'));
-        chip.classList.add('active');
+        activeChip.parentElement.querySelectorAll('.preset-chip').forEach(c => c.classList.remove('active'));
+        activeChip.classList.add('active');
 
-        this.updateLivePreview();
+        this.updateCalculatedValues();
+        this.scheduleThrottledUpdate();
     }
 
     updatePresetChips(id, value) {
         const container = document.querySelector(`.preset-chips[data-target="${id}"]`);
         if (!container) return;
 
+        const numVal = parseFloat(value);
         container.querySelectorAll('.preset-chip').forEach(chip => {
-            if (parseFloat(chip.getAttribute('data-value')) === parseFloat(value)) {
+            const chipVal = parseFloat(chip.getAttribute('data-value'));
+            if (chipVal === numVal) {
                 chip.classList.add('active');
             } else {
                 chip.classList.remove('active');
             }
         });
-    }
-
-    handleGroupReset(group) {
-        const groups = {
-            basic: ['module', 'teeth', 'pressureAngle', 'helixAngle', 'pitchAngle', 'planetTeeth', 'planetCount'],
-            body: ['faceWidth', 'hubDiameter', 'boreDiameter'],
-            appearance: ['color', 'quality']
-        };
-
-        const keys = groups[group] || [];
-        keys.forEach(key => {
-            const val = this.defaults[key];
-            if (this.elements[key]) this.elements[key].value = val;
-            if (this.sliders[key]) this.sliders[key].value = val;
-            this.updatePresetChips(key, val);
-        });
-
-        this.updateLivePreview();
     }
 
     validateInput(input) {
@@ -194,104 +208,106 @@ class ParameterUI {
         input.value = val;
     }
 
-    updateLivePreview() {
-        clearTimeout(this.previewTimeout);
-        this.previewTimeout = setTimeout(() => {
+    // Reset sections based on JSON spec functional inventory
+    resetSection(section) {
+        const groupFields = {
+            basic_dimensions: ['module', 'teeth_count', 'planet_teeth', 'planet_count', 'helix_angle', 'pitch_angle', 'pressure_angle'],
+            gear_body: ['face_width', 'hub_diameter', 'bore_diameter'],
+            appearance: ['gear_color', 'mesh_quality']
+        };
+
+        const fields = groupFields[section] || [];
+        fields.forEach(field => {
+            const def = this.defaults[field];
+            if (this.inputs[field]) this.inputs[field].value = def;
+            if (this.sliders[field]) this.sliders[field].value = def;
+            this.updatePresetChips(field, def);
+        });
+
+        if (section === 'appearance' && this.colorHexValue && this.inputs.gear_color) {
+            this.colorHexValue.textContent = this.inputs.gear_color.value.toUpperCase();
+        }
+
+        this.updateCalculatedValues();
+        this.scheduleThrottledUpdate();
+    }
+
+    resetAll() {
+        this.resetSection('basic_dimensions');
+        this.resetSection('gear_body');
+        this.resetSection('appearance');
+    }
+
+    // 60 FPS Throttled Mesh Regeneration
+    scheduleThrottledUpdate() {
+        if (this.isPendingUpdate) return;
+        this.isPendingUpdate = true;
+
+        this.rafId = requestAnimationFrame(() => {
             if (window.gearGenApp) {
                 window.gearGenApp.generateGear();
             }
-            this.updateCalculatedValues();
-        }, 300);
+            this.isPendingUpdate = false;
+        });
     }
 
+    // KPI Formulas as specified in JSON:
+    // pitch_diameter = module * teeth_count (mm)
+    // circular_pitch = PI * module (mm)
     updateCalculatedValues() {
-        if (!this.elements.module || !this.elements.teeth || !this.calcContainer) return;
+        const moduleVal = parseFloat(this.inputs.module?.value) || 2.0;
+        const teethVal = parseFloat(this.inputs.teeth_count?.value) || 20;
 
-        const m = parseFloat(this.elements.module.value);
-        const z = parseFloat(this.elements.teeth.value);
+        const pitchDiameter = moduleVal * teethVal;
+        const circularPitch = Math.PI * moduleVal;
 
-        const pitchDia = m * z;
-        const circPitch = Math.PI * m;
-
-        this.calcContainer.innerHTML = `
-            <div class="calc-row">
-                <span class="calc-tag" data-i18n="calc.pitchDiameter">Pitch Diameter</span>
-                <span class="calc-val">${pitchDia.toFixed(2)} mm</span>
-            </div>
-            <div class="calc-row">
-                <span class="calc-tag" data-i18n="calc.circularPitch">Circular Pitch</span>
-                <span class="calc-val">${circPitch.toFixed(2)} mm</span>
-            </div>
-        `;
-
-        if (window.i18n) window.i18n.applyLanguage();
+        if (this.kpiPitchDiameter) {
+            this.kpiPitchDiameter.textContent = `${pitchDiameter.toFixed(2)} mm`;
+        }
+        if (this.kpiCircularPitch) {
+            this.kpiCircularPitch.textContent = `${circularPitch.toFixed(2)} mm`;
+        }
     }
 
     getAllParameters() {
-        const params = {};
-        for (const [key, el] of Object.entries(this.elements)) {
-            if (el) params[key] = (el.type === 'number' || el.type === 'range') ? parseFloat(el.value) : el.value;
-        }
-        return params;
-    }
-
-    setParameters(params) {
-        for (const [key, val] of Object.entries(params)) {
-            if (this.elements[key]) {
-                this.elements[key].value = val;
-                if (this.sliders[key]) this.sliders[key].value = val;
-                this.updatePresetChips(key, val);
-            }
-        }
+        return {
+            module: parseFloat(this.inputs.module?.value) || 2.0,
+            teeth: parseFloat(this.inputs.teeth_count?.value) || 20,
+            planetTeeth: parseFloat(this.inputs.planet_teeth?.value) || 12,
+            planetCount: parseFloat(this.inputs.planet_count?.value) || 3,
+            helixAngle: parseFloat(this.inputs.helix_angle?.value) || 20,
+            pitchAngle: parseFloat(this.inputs.pitch_angle?.value) || 45,
+            pressureAngle: parseFloat(this.inputs.pressure_angle?.value) || 20.0,
+            faceWidth: parseFloat(this.inputs.face_width?.value) || 10,
+            hubDiameter: parseFloat(this.inputs.hub_diameter?.value) || 10,
+            boreDiameter: parseFloat(this.inputs.bore_diameter?.value) || 5,
+            color: this.inputs.gear_color?.value || '#3B82F6',
+            quality: (this.inputs.mesh_quality?.value || 'Medium').toLowerCase()
+        };
     }
 
     updateVisibility(gearType) {
-        if (!this.helixAngleContainer || !this.pitchAngleContainer) return;
-
-        this.helixAngleContainer.style.display = (gearType === 'helical' || gearType === 'worm') ? 'block' : 'none';
-        this.pitchAngleContainer.style.display = gearType === 'bevel' ? 'block' : 'none';
-
-        // Planetary parameters
-        const planetTeethContainer = document.getElementById('planet-teeth-container');
-        const planetCountContainer = document.getElementById('planet-count-container');
-        if (planetTeethContainer) planetTeethContainer.style.display = gearType === 'planetary' ? 'block' : 'none';
-        if (planetCountContainer) planetCountContainer.style.display = gearType === 'planetary' ? 'block' : 'none';
-
-        // Hide Hub/Bore for Rack, Internal and Planetary
-        const hubCard = this.elements.hubDiameter?.closest('.parameter-card');
-        const boreCard = this.elements.boreDiameter?.closest('.parameter-card');
-
-        const hideBody = gearType === 'rack' || gearType === 'internal' || gearType === 'planetary';
-        if (hubCard) hubCard.style.display = hideBody ? 'none' : 'block';
-        if (boreCard) boreCard.style.display = hideBody ? 'none' : 'block';
-
-        // Update labels
-        const teethTitle = document.querySelector('[data-i18n="param.teeth"]');
-        const helixTitle = document.querySelector('[data-i18n="param.helixAngle"]');
-
-        if (teethTitle) {
-            if (gearType === 'worm') {
-                teethTitle.setAttribute('data-i18n', 'param.teeth.worm');
-                if (window.i18n) teethTitle.textContent = window.i18n.translate('param.teeth.worm');
-            } else if (gearType === 'planetary') {
-                teethTitle.setAttribute('data-i18n', 'param.sunTeeth');
-                if (window.i18n) teethTitle.textContent = window.i18n.translate('param.sunTeeth');
-                else teethTitle.textContent = 'Sun Teeth';
-            } else {
-                teethTitle.setAttribute('data-i18n', 'param.teeth');
-                if (window.i18n) teethTitle.textContent = window.i18n.translate('param.teeth');
-            }
-        }
-        if (helixTitle) {
-            helixTitle.setAttribute('data-i18n', gearType === 'worm' ? 'param.helixAngle.worm' : 'param.helixAngle');
-            if (window.i18n) helixTitle.textContent = window.i18n.translate(gearType === 'worm' ? 'param.helixAngle.worm' : 'param.helixAngle');
+        if (this.helixAngleContainer) {
+            this.helixAngleContainer.style.display = (gearType === 'helical' || gearType === 'worm') ? 'flex' : 'none';
         }
 
-        if (window.i18n) window.i18n.applyLanguage();
+        if (this.pitchAngleContainer) {
+            this.pitchAngleContainer.style.display = gearType === 'bevel' ? 'flex' : 'none';
+        }
+
+        if (this.planetTeethContainer) {
+            this.planetTeethContainer.style.display = gearType === 'planetary' ? 'flex' : 'none';
+        }
+
+        if (this.planetCountContainer) {
+            this.planetCountContainer.style.display = gearType === 'planetary' ? 'flex' : 'none';
+        }
+
+        // Hide Hub and Bore for Rack, Internal and Planetary
+        const hideBody = (gearType === 'rack' || gearType === 'internal' || gearType === 'planetary');
+        if (this.hubDiameterContainer) this.hubDiameterContainer.style.display = hideBody ? 'none' : 'flex';
+        if (this.boreDiameterContainer) this.boreDiameterContainer.style.display = hideBody ? 'none' : 'flex';
+
+        this.updateCalculatedValues();
     }
 }
-
-// Initialize parameter UI
-document.addEventListener('DOMContentLoaded', () => {
-    window.parameterUI = new ParameterUI();
-});

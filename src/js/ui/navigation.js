@@ -1,151 +1,221 @@
-// Navigation and Button Logic
+// ==========================================================================
+// GearGen-3D Navigation & Menu Bar Controller
+// Top Bar Dropdowns, Modals & Quick Actions (JSON Spec Compliant)
+// ==========================================================================
+
 class Navigation {
     constructor() {
         this.init();
     }
 
     init() {
-        console.log('Initializing navigation...');
-        this.setupEventListeners();
+        console.log('Initializing CAD Navigation controller...');
+        this.setupTopMenu();
+        this.setupQuickActions();
+        this.setupLanguageSwitcher();
     }
 
-    setupEventListeners() {
-        // GitHub button
-        const githubBtn = document.getElementById('github-btn');
-        if (githubBtn) {
-            githubBtn.addEventListener('click', () => {
-                window.open('https://github.com/JB07-198/GearGen-3D', '_blank');
-            });
-        }
+    setupTopMenu() {
+        // Menu bar dropdown toggle
+        const menuButtons = document.querySelectorAll('.menu-btn');
+        menuButtons.forEach(btn => {
+            btn.addEventListener('click', (e) => {
+                e.stopPropagation();
+                const menuKey = btn.getAttribute('data-menu');
+                const dropdown = document.getElementById(`menu-${menuKey}`);
+                const isOpen = dropdown && dropdown.classList.contains('open');
 
-        // Help button
-        const helpBtn = document.getElementById('help-btn');
+                this.closeAllMenus();
+
+                if (dropdown && !isOpen) {
+                    dropdown.classList.add('open');
+                    btn.setAttribute('aria-expanded', 'true');
+                }
+            });
+        });
+
+        // Close dropdowns on outside click
+        document.addEventListener('click', (e) => {
+            if (!e.target.closest('.menu-group')) {
+                this.closeAllMenus();
+            }
+        });
+
+        // Menu item click handlers
+        document.querySelectorAll('.menu-item').forEach(item => {
+            item.addEventListener('click', (e) => {
+                if (item.disabled) return;
+                const action = item.getAttribute('data-action');
+                const target = item.getAttribute('data-target');
+                const param = item.getAttribute('data-param');
+                const url = item.getAttribute('data-url');
+
+                this.executeMenuAction(action, { target, param, url });
+                this.closeAllMenus();
+            });
+        });
+    }
+
+    closeAllMenus() {
+        document.querySelectorAll('.menu-dropdown.open').forEach(d => d.classList.remove('open'));
+        document.querySelectorAll('.menu-btn').forEach(b => b.setAttribute('aria-expanded', 'false'));
+    }
+
+    executeMenuAction(action, options = {}) {
+        console.log(`Executing menu action: ${action}`, options);
+
+        switch (action) {
+            case 'RESET_ALL_PARAMS':
+                if (window.parameterUI) window.parameterUI.resetAll();
+                break;
+
+            case 'EXPORT_STL':
+                if (window.gearGenApp) window.gearGenApp.exportSTL();
+                break;
+
+            case 'EXPORT_STEP':
+                if (window.gearGenApp) window.gearGenApp.exportSTEP();
+                break;
+
+            case 'RESET_SECTION':
+                if (window.parameterUI && options.target) {
+                    window.parameterUI.resetSection(options.target);
+                }
+                break;
+
+            case 'SET_CAMERA_VIEW':
+                if (window.sceneManager && options.param) {
+                    window.sceneManager.setCameraView(options.param);
+                }
+                break;
+
+            case 'RESET_CAMERA':
+                if (window.sceneManager) {
+                    window.sceneManager.resetCamera();
+                }
+                break;
+
+            case 'TOGGLE_HELPER':
+                if (window.sceneManager) {
+                    if (options.target === 'grid') {
+                        const active = window.sceneManager.toggleGrid();
+                        this.updateFloatingBtnState('toggle_grid', active);
+                    } else if (options.target === 'axis') {
+                        const active = window.sceneManager.toggleAxis();
+                        this.updateFloatingBtnState('toggle_axis', active);
+                    }
+                }
+                break;
+
+            case 'TOGGLE_RENDER_MODE':
+                if (window.sceneManager && options.target === 'wireframe') {
+                    const active = window.sceneManager.toggleWireframe();
+                    this.updateFloatingBtnState('toggle_wireframe', active);
+                }
+                break;
+
+            case 'OPEN_MODAL':
+                if (options.target === 'help') {
+                    this.showHelpModal();
+                } else if (options.target === 'documentation') {
+                    this.showDocumentationModal();
+                } else if (options.target === 'export') {
+                    this.showExportModal();
+                }
+                break;
+
+            case 'OPEN_EXTERNAL':
+                if (options.url === 'github_issues') {
+                    window.open('https://github.com/JB07-198/GearGen-3D/issues', '_blank');
+                } else if (options.url === 'contact_link') {
+                    window.location.href = 'mailto:contacte.baiha@gmail.com';
+                } else if (options.url === 'github_repo' || !options.url) {
+                    window.open('https://github.com/JB07-198/GearGen-3D', '_blank');
+                }
+                break;
+
+            default:
+                console.warn(`Unknown action: ${action}`);
+        }
+    }
+
+    updateFloatingBtnState(btnId, isActive) {
+        const btn = document.getElementById(btnId);
+        if (btn) {
+            btn.classList.toggle('active', !!isActive);
+        }
+    }
+
+    setupQuickActions() {
+        const helpBtn = document.getElementById('help-quick-btn');
         if (helpBtn) {
-            helpBtn.addEventListener('click', () => {
+            helpBtn.addEventListener('click', (e) => {
+                e.preventDefault();
                 this.showHelpModal();
             });
         }
 
-        // Documentation link
-        const docLink = document.querySelector('a[href="#"][data-i18n="footer.documentation"]');
-        if (docLink) {
-            docLink.addEventListener('click', (e) => {
+        const githubBtn = document.getElementById('github-quick-btn');
+        if (githubBtn) {
+            githubBtn.addEventListener('click', (e) => {
                 e.preventDefault();
-                this.showDocumentationModal();
+                window.open('https://github.com/JB07-198/GearGen-3D', '_blank');
             });
         }
-
-        // Report Issue link
-        const reportLink = document.querySelector('a[href="#"][data-i18n="footer.reportIssue"]');
-        if (reportLink) {
-            reportLink.addEventListener('click', (e) => {
-                e.preventDefault();
-                window.open('https://github.com/JB07-198/GearGen-3D/issues', '_blank');
-            });
-        }
-
-        // Contact link
-        const contactLink = document.querySelector('a[href="#"][data-i18n="footer.contact"]');
-        if (contactLink) {
-            contactLink.addEventListener('click', (e) => {
-                e.preventDefault();
-                window.location.href = 'mailto:contacte.baiha@gmail.com';
-            });
-        }
-
-        // Language switcher
-        this.setupLanguageSwitcher();
     }
 
     setupLanguageSwitcher() {
-        const languageSwitcher = document.querySelector('.language-switcher');
-        const languageBtn = document.querySelector('.language-btn');
+        const switcher = document.querySelector('.language-switcher');
+        const triggerBtn = document.querySelector('.language-btn');
 
-        if (!languageSwitcher || !languageBtn) return;
+        if (!switcher || !triggerBtn) return;
 
-        // Toggle dropdown
-        languageBtn.addEventListener('click', (e) => {
+        triggerBtn.addEventListener('click', (e) => {
             e.stopPropagation();
-            languageSwitcher.classList.toggle('active');
+            switcher.classList.toggle('active');
         });
 
-        // Close dropdown when clicking outside
         document.addEventListener('click', (e) => {
-            if (!languageSwitcher.contains(e.target)) {
-                languageSwitcher.classList.remove('active');
+            if (!switcher.contains(e.target)) {
+                switcher.classList.remove('active');
             }
         });
 
-        // Language option clicks
         document.querySelectorAll('.language-option').forEach(option => {
             option.addEventListener('click', () => {
                 const lang = option.getAttribute('data-lang');
                 if (window.i18n) {
                     window.i18n.switchLanguage(lang);
-                    this.updateLanguageSwitcher(lang);
-                    languageSwitcher.classList.remove('active');
+                    this.updateLanguageUI(lang);
+                    switcher.classList.remove('active');
                 }
             });
         });
 
-        // Update initial state
         if (window.i18n) {
-            this.updateLanguageSwitcher(window.i18n.getCurrentLanguage());
+            this.updateLanguageUI(window.i18n.getCurrentLanguage());
         }
     }
 
-    updateLanguageSwitcher(lang) {
-        // Update active state
-        document.querySelectorAll('.language-option').forEach(option => {
-            if (option.getAttribute('data-lang') === lang) {
-                option.classList.add('active');
-            } else {
-                option.classList.remove('active');
-            }
+    updateLanguageUI(lang) {
+        const flags = { en: '🇺🇸', fr: '🇫🇷', ar: '🇲🇦' };
+        const labels = { en: 'EN', fr: 'FR', ar: 'AR' };
+
+        const flagEl = document.querySelector('.language-btn .lang-flag');
+        const textEl = document.querySelector('.language-btn .lang-name');
+
+        if (flagEl) flagEl.textContent = flags[lang] || '🇺🇸';
+        if (textEl) textEl.textContent = labels[lang] || 'EN';
+
+        document.querySelectorAll('.language-option').forEach(opt => {
+            opt.classList.toggle('active', opt.getAttribute('data-lang') === lang);
         });
-
-        // Update button text
-        const languageNames = {
-            'en': 'English',
-            'fr': 'Français',
-            'ar': 'العربية'
-        };
-
-        const languageFlags = {
-            'en': '🇺🇸',
-            'fr': '🇫🇷',
-            'ar': '🇲🇦'
-        };
-
-        const languageBtn = document.querySelector('.language-btn span:not(.lang-flag)');
-        const languageFlag = document.querySelector('.language-btn .lang-flag');
-
-        if (languageBtn) {
-            languageBtn.textContent = languageNames[lang] || 'English';
-        }
-        if (languageFlag) {
-            languageFlag.textContent = languageFlags[lang] || '🇺🇸';
-        }
     }
 
-    showHelpModal() {
-        const modal = this.createModal('help-modal', this.getHelpContent());
-        document.body.appendChild(modal);
-        setTimeout(() => modal.classList.add('active'), 10);
-    }
-
-    showDocumentationModal() {
-        const modal = this.createModal('documentation-modal', this.getDocumentationContent());
-        document.body.appendChild(modal);
-        setTimeout(() => modal.classList.add('active'), 10);
-    }
-
-    createModal(id, content) {
-        // Remove existing modal if present
+    // Modal Builder
+    createModal(id, titleHtml, bodyHtml) {
         const existing = document.getElementById(id);
-        if (existing) {
-            existing.remove();
-        }
+        if (existing) existing.remove();
 
         const modal = document.createElement('div');
         modal.id = id;
@@ -153,236 +223,176 @@ class Navigation {
         modal.innerHTML = `
             <div class="modal-overlay"></div>
             <div class="modal-content">
-                <button class="modal-close">
-                    <i class="fas fa-times"></i>
-                </button>
+                <div class="modal-header">
+                    <h2>${titleHtml}</h2>
+                    <button class="modal-close" title="Close"><i class="fas fa-times"></i></button>
+                </div>
                 <div class="modal-body">
-                    ${content}
+                    ${bodyHtml}
                 </div>
             </div>
         `;
 
-        // Close button
-        modal.querySelector('.modal-close').addEventListener('click', () => {
-            this.closeModal(modal);
-        });
+        const closeModal = () => {
+            modal.classList.remove('active');
+            setTimeout(() => modal.remove(), 250);
+        };
 
-        // Close on overlay click
-        modal.querySelector('.modal-overlay').addEventListener('click', () => {
-            this.closeModal(modal);
-        });
+        modal.querySelector('.modal-close').addEventListener('click', closeModal);
+        modal.querySelector('.modal-overlay').addEventListener('click', closeModal);
 
-        // Close on ESC key
         const escHandler = (e) => {
             if (e.key === 'Escape') {
-                this.closeModal(modal);
+                closeModal();
                 document.removeEventListener('keydown', escHandler);
             }
         };
         document.addEventListener('keydown', escHandler);
 
+        document.body.appendChild(modal);
+        setTimeout(() => modal.classList.add('active'), 10);
         return modal;
     }
 
-    closeModal(modal) {
-        modal.classList.remove('active');
-        setTimeout(() => modal.remove(), 300);
-    }
-
-    getHelpContent() {
+    showHelpModal() {
         const lang = window.i18n ? window.i18n.getCurrentLanguage() : 'en';
-
         const content = {
             en: `
-                <h2><i class="fas fa-question-circle"></i> Help</h2>
-                <div class="help-section">
-                    <h3>Getting Started</h3>
-                    <p>GearGen is a 3D gear generator that allows you to create custom gears with precise parameters.</p>
-                    
-                    <h3>How to Use</h3>
-                    <ol>
-                        <li><strong>Select Gear Type:</strong> Choose from available gear types (currently Spur Gear)</li>
-                        <li><strong>Adjust Parameters:</strong> Use sliders or input fields to set dimensions</li>
-                        <li><strong>Preview:</strong> View your gear in real-time 3D preview</li>
-                        <li><strong>Export:</strong> Download your gear as STL file for 3D printing or CAD</li>
-                    </ol>
-                    
-                    <h3>Key Parameters</h3>
-                    <ul>
-                        <li><strong>Module:</strong> Defines the size of gear teeth</li>
-                        <li><strong>Number of Teeth:</strong> Total teeth count on the gear</li>
-                        <li><strong>Pressure Angle:</strong> Angle affecting tooth strength and smoothness</li>
-                        <li><strong>Face Width:</strong> Thickness of the gear</li>
-                    </ul>
-                    
-                    <h3>Need More Help?</h3>
-                    <p>Visit our <a href="https://github.com/JB07-198/GearGen-3D" target="_blank">GitHub repository</a> or contact us at <a href="mailto:contacte.baiha@gmail.com">contacte.baiha@gmail.com</a></p>
-                </div>
+                <h3>Welcome to GearGen-3D</h3>
+                <p>GearGen-3D is an engineering-grade 3D gear generator adhering to ISO 53 standards, running in real-time WebGL.</p>
+                <h3>Basic Workflow</h3>
+                <ol>
+                    <li><strong>Gear Type:</strong> Select one of the 7 supported gear types in the left panel.</li>
+                    <li><strong>Parameters:</strong> Adjust Module, Teeth, Pressure Angle, and dimensions in the right panel.</li>
+                    <li><strong>3D View:</strong> Inspect geometry using OrbitControls (rotate, pan, zoom) and camera shortcuts.</li>
+                    <li><strong>Export:</strong> Download binary STL (for 3D printing) or faceted B-Rep STEP via the File menu or Export button.</li>
+                </ol>
+                <h3>Key Shortcuts</h3>
+                <ul>
+                    <li><code>R</code>: Isometric View | <code>1</code>: Top View | <code>2</code>: Front View | <code>3</code>: Side View | <code>0</code>: Reset</li>
+                    <li><code>G</code>: Toggle Grid | <code>A</code>: Toggle Axis | <code>W</code>: Toggle Wireframe</li>
+                    <li><code>+</code> / <code>-</code>: Zoom In / Zoom Out</li>
+                </ul>
+                <p>Need support or feature requests? <a href="https://github.com/JB07-198/GearGen-3D" target="_blank">Visit GitHub</a> or <a href="mailto:contacte.baiha@gmail.com">Contact Us</a>.</p>
             `,
             fr: `
-                <h2><i class="fas fa-question-circle"></i> Aide</h2>
-                <div class="help-section">
-                    <h3>Démarrage</h3>
-                    <p>GearGen est un générateur d'engrenages 3D qui vous permet de créer des engrenages personnalisés avec des paramètres précis.</p>
-                    
-                    <h3>Comment Utiliser</h3>
-                    <ol>
-                        <li><strong>Sélectionner le Type d'Engrenage :</strong> Choisissez parmi les types disponibles (actuellement Engrenage Droit)</li>
-                        <li><strong>Ajuster les Paramètres :</strong> Utilisez les curseurs ou les champs de saisie pour définir les dimensions</li>
-                        <li><strong>Aperçu :</strong> Visualisez votre engrenage en aperçu 3D en temps réel</li>
-                        <li><strong>Exporter :</strong> Téléchargez votre engrenage au format STL pour l'impression 3D ou la CAO</li>
-                    </ol>
-                    
-                    <h3>Paramètres Clés</h3>
-                    <ul>
-                        <li><strong>Module :</strong> Définit la taille des dents de l'engrenage</li>
-                        <li><strong>Nombre de Dents :</strong> Nombre total de dents sur l'engrenage</li>
-                        <li><strong>Angle de Pression :</strong> Angle affectant la résistance et la douceur des dents</li>
-                        <li><strong>Largeur de Denture :</strong> Épaisseur de l'engrenage</li>
-                    </ul>
-                    
-                    <h3>Besoin d'Aide Supplémentaire ?</h3>
-                    <p>Visitez notre <a href="https://github.com/JB07-198/GearGen-3D" target="_blank">dépôt GitHub</a> ou contactez-nous à <a href="mailto:contacte.baiha@gmail.com">contacte.baiha@gmail.com</a></p>
-                </div>
+                <h3>Bienvenue sur GearGen-3D</h3>
+                <p>GearGen-3D est un générateur d'engrenages 3D de précision industrielle basé sur la norme ISO 53, propulsé en WebGL temps réel.</p>
+                <h3>Procédure d'Utilisation</h3>
+                <ol>
+                    <li><strong>Type d'engrenage :</strong> Choisissez parmi les 7 types disponibles dans le volet de gauche.</li>
+                    <li><strong>Paramètres :</strong> Réglez le module, le nombre de dents, l'angle de pression et les dimensions.</li>
+                    <li><strong>Visualisation 3D :</strong> Manipulez le modèle avec la souris/tactile ou les raccourcis de caméra.</li>
+                    <li><strong>Exportation :</strong> Téléchargez le modèle en STL binaire ou en STEP via le menu Fichier ou le bouton Exporter.</li>
+                </ol>
+                <h3>Raccourcis Clavier</h3>
+                <ul>
+                    <li><code>R</code> : Vue isométrique | <code>1</code> : Dessus | <code>2</code> : Face | <code>3</code> : Côté | <code>0</code> : Réinitialiser</li>
+                    <li><code>G</code> : Grille | <code>A</code> : Axes | <code>W</code> : Fil de fer</li>
+                    <li><code>+</code> / <code>-</code> : Zoom avant / arrière</li>
+                </ul>
+                <p>Questions ou assistance ? <a href="https://github.com/JB07-198/GearGen-3D" target="_blank">Dépôt GitHub</a> ou <a href="mailto:contacte.baiha@gmail.com">Contactez-nous</a>.</p>
             `,
             ar: `
-                <h2><i class="fas fa-question-circle"></i> مساعدة</h2>
-                <div class="help-section">
-                    <h3>البدء</h3>
-                    <p>GearGen هو مولد تروس ثلاثي الأبعاد يتيح لك إنشاء تروس مخصصة بمعاملات دقيقة.</p>
-                    
-                    <h3>كيفية الاستخدام</h3>
-                    <ol>
-                        <li><strong>اختر نوع الترس:</strong> اختر من أنواع التروس المتاحة (حالياً الترس المستقيم)</li>
-                        <li><strong>ضبط المعاملات:</strong> استخدم أشرطة التمرير أو حقول الإدخال لتعيين الأبعاد</li>
-                        <li><strong>المعاينة:</strong> شاهد الترس الخاص بك في معاينة ثلاثية الأبعاد في الوقت الفعلي</li>
-                        <li><strong>التصدير:</strong> قم بتنزيل الترس الخاص بك كملف STL للطباعة ثلاثية الأبعاد أو CAD</li>
-                    </ol>
-                    
-                    <h3>المعاملات الرئيسية</h3>
-                    <ul>
-                        <li><strong>المعامل:</strong> يحدد حجم أسنان الترس</li>
-                        <li><strong>عدد الأسنان:</strong> العدد الإجمالي للأسنان على الترس</li>
-                        <li><strong>زاوية الضغط:</strong> الزاوية التي تؤثر على قوة الأسنان ونعومتها</li>
-                        <li><strong>عرض الوجه:</strong> سمك الترس</li>
-                    </ul>
-                    
-                    <h3>هل تحتاج إلى مزيد من المساعدة؟</h3>
-                    <p>قم بزيارة <a href="https://github.com/JB07-198/GearGen-3D" target="_blank">مستودع GitHub</a> الخاص بنا أو اتصل بنا على <a href="mailto:contacte.baiha@gmail.com">contacte.baiha@gmail.com</a></p>
-                </div>
+                <h3>مرحباً بك في GearGen-3D</h3>
+                <p>برنامج GearGen-3D هو مولد هندسي للتروس ثلاثية الأبعاد مطابق لمعايير ISO 53 ويعمل بتقنية WebGL في الوقت الفعلي.</p>
+                <h3>طريقة الاستخدام</h3>
+                <ol>
+                    <li><strong>نوع الترس:</strong> اختر أحد الأنواع السبعة المتوفرة في اللوحة اليمنى/اليسرى.</li>
+                    <li><strong>المعاملات:</strong> اضبط المعامل، عدد الأسنان، زاوية الضغط والأبعاد في لوحة التحكم.</li>
+                    <li><strong>العرض ثلاثي الأبعاد:</strong> عاين النموذج باستخدام التكبير والتصغير وتغيير زوايا المشاهدة.</li>
+                    <li><strong>التصدير:</strong> نزّل الملف بتنسيق STL للطباعة ثلاثية الأبعاد أو STEP لبرامج الهندسة الميكانيكية.</li>
+                </ol>
+                <h3>اختصارات لوحة المفاتيح</h3>
+                <ul>
+                    <li><code>R</code>: متساوي القياس | <code>1</code>: علوي | <code>2</code>: أمامي | <code>3</code>: جانبي | <code>0</code>: إعادة ضبط</li>
+                    <li><code>G</code>: الشبكة | <code>A</code>: المحاور | <code>W</code>: الإطار السلكي</li>
+                    <li><code>+</code> / <code>-</code>: تكبير / تصغير</li>
+                </ul>
             `
         };
 
-        return content[lang] || content['en'];
+        const titles = {
+            en: '<i class="fas fa-question-circle"></i> Help & Quick Guide',
+            fr: '<i class="fas fa-question-circle"></i> Guide d\'Aide Rapide',
+            ar: '<i class="fas fa-question-circle"></i> دليل المساعدة السريع'
+        };
+
+        this.createModal('help-modal', titles[lang] || titles['en'], content[lang] || content['en']);
     }
 
-    getDocumentationContent() {
+    showDocumentationModal() {
         const lang = window.i18n ? window.i18n.getCurrentLanguage() : 'en';
-
         const content = {
             en: `
-                <h2><i class="fas fa-book"></i> Documentation</h2>
-                <div class="documentation-section">
-                    <h3>Gear Parameters Explained</h3>
-                    
-                    <h4>Module (m)</h4>
-                    <p>The module is the fundamental size parameter of a gear. It represents the ratio of the pitch diameter to the number of teeth.</p>
-                    <p><code>Module = Pitch Diameter / Number of Teeth</code></p>
-                    
-                    <h4>Pressure Angle (α)</h4>
-                    <p>The pressure angle affects the tooth profile and determines the force transmission characteristics:</p>
-                    <ul>
-                        <li><strong>20°:</strong> Most common, good balance of strength and efficiency</li>
-                        <li><strong>14.5°:</strong> Legacy standard, smoother but weaker</li>
-                        <li><strong>25°:</strong> Higher load capacity, used in heavy-duty applications</li>
-                    </ul>
-                    
-                    <h4>Calculated Values</h4>
-                    <p><strong>Pitch Diameter:</strong> <code>d = m × z</code> (where z = number of teeth)</p>
-                    <p><strong>Circular Pitch:</strong> <code>p = π × m</code></p>
-                    <p><strong>Addendum:</strong> <code>a = m</code></p>
-                    <p><strong>Dedendum:</strong> <code>b = 1.25 × m</code></p>
-                    
-                    <h3>Export Formats</h3>
-                    <h4>STL (STereoLithography)</h4>
-                    <p>STL is a widely supported format for 3D printing and CAD software. It represents the surface geometry as a collection of triangles.</p>
-                    <p><strong>Best for:</strong> 3D printing, visual representation, basic CAD import</p>
-                    
-                    <h3>Technical Support</h3>
-                    <p>For technical questions or issues, please visit our <a href="https://github.com/JB07-198/GearGen-3D/issues" target="_blank">GitHub Issues</a> page.</p>
-                </div>
+                <h3>ISO 53 Gear Formulas</h3>
+                <p>Gears are generated strictly adhering to ISO 53 metric standardized involute gear profiles:</p>
+                <ul>
+                    <li><strong>Pitch Diameter (d):</strong> <code>d = m × z</code></li>
+                    <li><strong>Circular Pitch (p):</strong> <code>p = π × m</code></li>
+                    <li><strong>Base Diameter (db):</strong> <code>db = d × cos(α)</code></li>
+                    <li><strong>Addendum (ha):</strong> <code>ha = 1.0 × m</code></li>
+                    <li><strong>Dedendum (hf):</strong> <code>hf = 1.25 × m</code></li>
+                    <li><strong>Tip Diameter (da):</strong> <code>da = d + 2 × ha</code></li>
+                    <li><strong>Root Diameter (df):</strong> <code>df = d - 2 × hf</code></li>
+                </ul>
+                <h3>Standard Pressure Angles</h3>
+                <ul>
+                    <li><strong>20.0°:</strong> Universal ISO standard; optimal blend of strength, quietness, and efficiency.</li>
+                    <li><strong>14.5°:</strong> Legacy profile with lower radial separating forces.</li>
+                    <li><strong>25.0°:</strong> Heavy-duty high-load gears offering thick tooth root resistance.</li>
+                </ul>
+                <h3>Export Specifications</h3>
+                <p><strong>STL (Binary):</strong> Compact binary representation with normal vectors, 100% compatible with Cura, PrusaSlicer, Bambu Studio.</p>
+                <p><strong>STEP (AP214):</strong> Standard for Exchange of Product model data with faceted B-Rep solids, compatible with SolidWorks, Fusion 360, FreeCAD, NX.</p>
             `,
             fr: `
-                <h2><i class="fas fa-book"></i> Documentation</h2>
-                <div class="documentation-section">
-                    <h3>Explication des Paramètres d'Engrenage</h3>
-                    
-                    <h4>Module (m)</h4>
-                    <p>Le module est le paramètre de taille fondamental d'un engrenage. Il représente le rapport du diamètre primitif au nombre de dents.</p>
-                    <p><code>Module = Diamètre Primitif / Nombre de Dents</code></p>
-                    
-                    <h4>Angle de Pression (α)</h4>
-                    <p>L'angle de pression affecte le profil de la dent et détermine les caractéristiques de transmission de force :</p>
-                    <ul>
-                        <li><strong>20° :</strong> Le plus courant, bon équilibre entre résistance et efficacité</li>
-                        <li><strong>14.5° :</strong> Norme ancienne, plus doux mais plus faible</li>
-                        <li><strong>25° :</strong> Capacité de charge plus élevée, utilisé dans les applications lourdes</li>
-                    </ul>
-                    
-                    <h4>Valeurs Calculées</h4>
-                    <p><strong>Diamètre Primitif :</strong> <code>d = m × z</code> (où z = nombre de dents)</p>
-                    <p><strong>Pas Circulaire :</strong> <code>p = π × m</code></p>
-                    <p><strong>Saillie :</strong> <code>a = m</code></p>
-                    <p><strong>Creux :</strong> <code>b = 1.25 × m</code></p>
-                    
-                    <h3>Formats d'Exportation</h3>
-                    <h4>STL (STereoLithography)</h4>
-                    <p>STL est un format largement pris en charge pour l'impression 3D et les logiciels CAO. Il représente la géométrie de surface comme une collection de triangles.</p>
-                    <p><strong>Idéal pour :</strong> Impression 3D, représentation visuelle, importation CAO de base</p>
-                    
-                    <h3>Support Technique</h3>
-                    <p>Pour des questions techniques ou des problèmes, veuillez visiter notre page <a href="https://github.com/JB07-198/GearGen-3D/issues" target="_blank">GitHub Issues</a>.</p>
-                </div>
+                <h3>Formules d'Engrenages ISO 53</h3>
+                <p>Les profils sont calculés selon le standard métrique ISO 53 à développante de cercle :</p>
+                <ul>
+                    <li><strong>Diamètre primitif (d) :</strong> <code>d = m × z</code></li>
+                    <li><strong>Pas circulaire (p) :</strong> <code>p = π × m</code></li>
+                    <li><strong>Diamètre de base (db) :</strong> <code>db = d × cos(α)</code></li>
+                    <li><strong>Saillie (ha) :</strong> <code>ha = 1,0 × m</code></li>
+                    <li><strong>Creux (hf) :</strong> <code>hf = 1,25 × m</code></li>
+                    <li><strong>Diamètre de tête (da) :</strong> <code>da = d + 2 × ha</code></li>
+                    <li><strong>Diamètre de pied (df) :</strong> <code>df = d - 2 × hf</code></li>
+                </ul>
+                <h3>Angles de Pression Normalisés</h3>
+                <ul>
+                    <li><strong>20,0° :</strong> Standard mondial équilibré en résistance et rendement.</li>
+                    <li><strong>14,5° :</strong> Ancien profil limitant l'effort radial d'écartement.</li>
+                    <li><strong>25,0° :</strong> Forte charge, épaisseur de dent renforcée à la base.</li>
+                </ul>
+                <h3>Spécifications d'Exportation</h3>
+                <p><strong>STL (Binaire) :</strong> Format compact avec vecteurs normaux, prêt pour le tranchage 3D.</p>
+                <p><strong>STEP (AP214) :</strong> B-Rep géométrique facetté pour SolidWorks, Fusion 360, FreeCAD, Onshape.</p>
             `,
             ar: `
-                <h2><i class="fas fa-book"></i> التوثيق</h2>
-                <div class="documentation-section">
-                    <h3>شرح معاملات الترس</h3>
-                    
-                    <h4>المعامل (m)</h4>
-                    <p>المعامل هو معامل الحجم الأساسي للترس. يمثل نسبة القطر الأولي إلى عدد الأسنان.</p>
-                    <p><code>المعامل = القطر الأولي / عدد الأسنان</code></p>
-                    
-                    <h4>زاوية الضغط (α)</h4>
-                    <p>تؤثر زاوية الضغط على شكل السن وتحدد خصائص نقل القوة:</p>
-                    <ul>
-                        <li><strong>20°:</strong> الأكثر شيوعاً، توازن جيد بين القوة والكفاءة</li>
-                        <li><strong>14.5°:</strong> معيار قديم، أكثر نعومة ولكن أضعف</li>
-                        <li><strong>25°:</strong> قدرة تحمل أعلى، يستخدم في التطبيقات الثقيلة</li>
-                    </ul>
-                    
-                    <h4>القيم المحسوبة</h4>
-                    <p><strong>القطر الأولي:</strong> <code>d = m × z</code> (حيث z = عدد الأسنان)</p>
-                    <p><strong>الخطوة الدائرية:</strong> <code>p = π × m</code></p>
-                    <p><strong>الإضافة:</strong> <code>a = m</code></p>
-                    <p><strong>النقص:</strong> <code>b = 1.25 × m</code></p>
-                    
-                    <h3>تنسيقات التصدير</h3>
-                    <h4>STL (STereoLithography)</h4>
-                    <p>STL هو تنسيق مدعوم على نطاق واسع للطباعة ثلاثية الأبعاد وبرامج CAD. يمثل هندسة السطح كمجموعة من المثلثات.</p>
-                    <p><strong>الأفضل لـ:</strong> الطباعة ثلاثية الأبعاد، التمثيل المرئي، استيراد CAD الأساسي</p>
-                    
-                    <h3>الدعم الفني</h3>
-                    <p>للأسئلة التقنية أو المشاكل، يرجى زيارة صفحة <a href="https://github.com/JB07-198/GearGen-3D/issues" target="_blank">GitHub Issues</a> الخاصة بنا.</p>
-                </div>
+                <h3>المعادلات الهندسية القياسية ISO 53</h3>
+                <p>يتم توليد هندسة الأسنان وفقاً لمعيار ISO 53 المتري:</p>
+                <ul>
+                    <li><strong>القطر الأولي (d):</strong> <code>d = m × z</code></li>
+                    <li><strong>الخطوة الدائرية (p):</strong> <code>p = π × m</code></li>
+                    <li><strong>قطر القاعدة (db):</strong> <code>db = d × cos(α)</code></li>
+                    <li><strong>ارتفاع الرأس (ha):</strong> <code>ha = 1.0 × m</code></li>
+                    <li><strong>عمق القاع (hf):</strong> <code>hf = 1.25 × m</code></li>
+                </ul>
             `
         };
 
-        return content[lang] || content['en'];
+        const titles = {
+            en: '<i class="fas fa-book"></i> Engineering Documentation (ISO 53)',
+            fr: '<i class="fas fa-book"></i> Documentation Technique (ISO 53)',
+            ar: '<i class="fas fa-book"></i> التوثيق الهندسي (ISO 53)'
+        };
+
+        this.createModal('doc-modal', titles[lang] || titles['en'], content[lang] || content['en']);
+    }
+
+    showExportModal() {
+        if (window.exportUI) {
+            window.exportUI.openModal();
+        }
     }
 }
-
-// Initialize navigation
-document.addEventListener('DOMContentLoaded', () => {
-    window.navigation = new Navigation();
-});
