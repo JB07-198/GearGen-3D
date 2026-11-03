@@ -269,6 +269,47 @@ class ParameterUI {
         }
     }
 
+    renderValidation(diagnostics) {
+        const container = document.getElementById('validation-feedback');
+        if (!container) return;
+        container.innerHTML = '';
+        (diagnostics || []).forEach(d => {
+            const div = document.createElement('div');
+            div.className = 'validation-badge ' + (d.level || 'info');
+            const msg = window.i18n ? window.i18n.translate(d.messageKey) : d.messageKey;
+            div.textContent = msg;
+            container.appendChild(div);
+        });
+    }
+
+    setParameters(params) {
+        if (!params) return;
+        const keyMap = {
+            module: 'module',
+            teeth: 'teeth_count',
+            planetTeeth: 'planet_teeth',
+            planetCount: 'planet_count',
+            helixAngle: 'helix_angle',
+            pitchAngle: 'pitch_angle',
+            pressureAngle: 'pressure_angle',
+            faceWidth: 'face_width',
+            hubDiameter: 'hub_diameter',
+            boreDiameter: 'bore_diameter',
+            color: 'gear_color',
+            quality: 'mesh_quality'
+        };
+        Object.keys(params).forEach(key => {
+            const inputKey = keyMap[key] || key;
+            const input = this.inputs ? this.inputs[inputKey] : null;
+            if (input) {
+                input.value = params[key];
+            }
+        });
+        if (typeof this.updateLivePreview === 'function') {
+            this.updateLivePreview();
+        }
+    }
+
     getAllParameters() {
         return {
             module: parseFloat(this.inputs.module?.value) || 2.0,

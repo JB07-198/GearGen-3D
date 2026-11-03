@@ -23,6 +23,8 @@ class I18n {
                 'menu.file.reset': 'Reset All Parameters',
                 'menu.file.exportStl': 'Export STL...',
                 'menu.file.exportStep': 'Export STEP...',
+                'menu.file.exportConfig': 'Export Config JSON',
+                'menu.file.importConfig': 'Import Config JSON',
                 'menu.edit': 'Edit',
                 'menu.edit.resetBasic': 'Reset Basic Dimensions',
                 'menu.edit.resetBody': 'Reset Gear Body',

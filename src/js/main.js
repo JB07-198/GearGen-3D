@@ -28,14 +28,42 @@ class GearGenApp {
         window.exportUI = new ExportUI();
         window.mobileUI = new MobileUI();
 
+        // Managers
+        this.configManager = new ConfigManager(this);
+        this.urlStateManager = new UrlStateManager(this);
+        window.configManager = this.configManager;
+        window.urlStateManager = this.urlStateManager;
+
         // 4. Setup Event Listeners & Shortcuts
         this.setupGearTypeSelector();
         this.setupFloatingToolbar();
         this.setupKeyboardShortcuts();
         this.setupTopMenu();
 
-        // 5. No initial gear: 3D view stays empty until a type is chosen
-        this.updateExportStatus(false);
+        // 5. Restore state or show welcome modal
+        const urlState = this.urlStateManager ? this.urlStateManager.loadFromURL() : null;
+        const stored = (!urlState && this.configManager) ? this.configManager.loadFromLocalStorage() : null;
+        const restored = urlState || stored;
+
+        if (restored && restored.gearType) {
+            this.setGearType(restored.gearType);
+            if (restored.parameters && window.parameterUI) {
+                window.parameterUI.setParameters(restored.parameters);
+                this.generateGear();
+            }
+        } else {
+            // default fallback
+            let showWelcome = true;
+            try {
+                if (localStorage.getItem('geargen-show-welcome') === 'false') showWelcome = false;
+            } catch (e) {}
+            if (showWelcome && window.WelcomeModal) {
+                const modal = new WelcomeModal(this);
+                modal.show();
+            } else {
+                this.setGearType('spur');
+            }
+        }
     }
 
     setupGearTypeSelector() {
@@ -145,9 +173,19 @@ class GearGenApp {
 
             if (gearMesh && window.sceneManager) {
                 window.sceneManager.addGear(gearMesh);
-                this.updateExportStatus(true);
-            } else {
-                this.updateExportStatus(false);
+            }
+
+            const diagnostics = (window.GearValidator && params) ? window.GearValidator.validate(params, this.currentGearType) : [];
+            if (window.parameterUI && typeof window.parameterUI.renderValidation === 'function') {
+                window.parameterUI.renderValidation(diagnostics);
+            }
+            const hasErrors = diagnostics.some(d => d.level === 'error');
+            this.updateExportStatus(!!gearMesh && !hasErrors);
+
+            if (this.urlStateManager) this.urlStateManager.updateURL(params, this.currentGearType);
+            if (this.configManager) {
+                clearTimeout(this._saveTimer);
+                this._saveTimer = setTimeout(() => this.configManager.saveToLocalStorage(), 300);
             }
         } catch (error) {
             console.error('Error during gear generation:', error);
@@ -298,6 +336,21 @@ class GearGenApp {
             case 'EXPORT_STEP':
                 this.exportSTEP();
                 break;
+            case 'EXPORT_CONFIG':
+                if (this.configManager) this.configManager.exportJSON();
+                break;
+            case 'IMPORT_CONFIG': {
+                const input = document.getElementById('config-file-input');
+                if (input) {
+                    input.onchange = async (e) => {
+                        const file = e.target.files && e.target.files[0];
+                        if (file && this.configManager) await this.configManager.importJSON(file);
+                        e.target.value = '';
+                    };
+                    input.click();
+                }
+                break;
+            }
             case 'SET_VIEW':
                 if (target && window.sceneManager) window.sceneManager.setCameraView(target);
                 break;

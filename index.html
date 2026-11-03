@@ -54,6 +54,13 @@
                                 <span data-i18n="menu.file.reset">Reset All Parameters</span>
                             </button>
                             <div class="menu-separator"></div>
+                            <button class="menu-item" id="config_export" data-action="EXPORT_CONFIG">
+                                <span data-i18n="menu.file.exportConfig">Export Config JSON</span>
+                            </button>
+                            <button class="menu-item" id="config_import" data-action="IMPORT_CONFIG">
+                                <span data-i18n="menu.file.importConfig">Import Config JSON</span>
+                            </button>
+                            <div class="menu-separator"></div>
                             <button class="menu-item" id="export_stl" data-action="EXPORT_STL" disabled>
                                 <span data-i18n="menu.file.exportStl">Export STL...</span>
                                 <span class="menu-shortcut">.stl</span>
@@ -647,6 +654,12 @@
                                     <option value="High" data-i18n="param.quality.high">High (Detailed)</option>
                                 </select>
                             </div>
+
+                            <!-- Validation Feedback -->
+                            <div id="validation-feedback" class="validation-feedback"></div>
+
+                            <!-- Hidden file input for JSON import -->
+                            <input type="file" id="config-file-input" accept="application/json" style="display:none;">
                         </div>
 
                         <!-- Calculated Values KPI -->
@@ -709,12 +722,15 @@
     <script src="./src/js/renderer/gear-renderer.js"></script>
     <script src="./src/js/exporters/stl-exporter.js"></script>
     <script src="./src/js/exporters/step-exporter.js"></script>
+    <script src="./src/js/managers/ConfigManager.js"></script>
+    <script src="./src/js/managers/UrlStateManager.js"></script>
+    <script src="./src/js/validators/GearValidator.js"></script>
+    <script src="./src/js/components/WelcomeModal.js"></script>
     <script src="./src/js/ui/parameter-ui.js"></script>
     <script src="./src/js/ui/navigation.js"></script>
     <script src="./src/js/ui/export-ui.js"></script>
     <script src="./src/js/ui/mobile-ui.js"></script>
     <script src="./src/js/main.js"></script>
-    <script src="./test_in_chrome.js"></script>
 </body>
 
 </html>
