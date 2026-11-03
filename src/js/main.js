@@ -301,7 +301,7 @@ class GearGenApp {
                 if (item.disabled) return;
                 const action = item.dataset.action;
                 const target = item.dataset.target;
-                this.handleTopMenuAction(action, target, item);
+                this.handleTopMenuAction(action, target, item, item.dataset.param);
                 this.closeTopMenus();
             });
         });
@@ -312,7 +312,7 @@ class GearGenApp {
         document.querySelectorAll('.menu-btn').forEach(b => b.setAttribute('aria-expanded', 'false'));
     }
 
-    handleTopMenuAction(action, target, item) {
+    handleTopMenuAction(action, target, item, param) {
         switch (action) {
             case 'RESET_ALL_PARAMS':
                 if (window.parameterUI) {
@@ -321,14 +321,12 @@ class GearGenApp {
                     window.parameterUI.handleGroupReset('appearance');
                 }
                 break;
-            case 'RESET_BASIC':
-                if (window.parameterUI) window.parameterUI.handleGroupReset('basic');
-                break;
-            case 'RESET_BODY':
-                if (window.parameterUI) window.parameterUI.handleGroupReset('body');
-                break;
-            case 'RESET_APPEARANCE':
-                if (window.parameterUI) window.parameterUI.handleGroupReset('appearance');
+            case 'RESET_SECTION':
+                if (window.parameterUI) {
+                    if (target === 'basic_dimensions') window.parameterUI.handleGroupReset('basic');
+                    else if (target === 'gear_body') window.parameterUI.handleGroupReset('body');
+                    else if (target === 'appearance') window.parameterUI.handleGroupReset('appearance');
+                }
                 break;
             case 'EXPORT_STL':
                 this.exportSTL();
@@ -351,10 +349,10 @@ class GearGenApp {
                 }
                 break;
             }
-            case 'SET_VIEW':
-                if (target && window.sceneManager) window.sceneManager.setCameraView(target);
+            case 'SET_CAMERA_VIEW':
+                if (param && window.sceneManager) window.sceneManager.setCameraView(param);
                 break;
-            case 'RESET_VIEW':
+            case 'RESET_CAMERA':
                 if (window.sceneManager) window.sceneManager.resetCamera();
                 break;
             case 'TOGGLE_HELPER':
@@ -372,21 +370,23 @@ class GearGenApp {
                     if (item) item.classList.toggle('active', !!v);
                 }
                 break;
-            case 'OPEN_HELP':
-                if (window.navigation) window.navigation.showHelpModal();
+            case 'OPEN_MODAL':
+                if (target === 'help' && window.navigation) window.navigation.showHelpModal();
+                else if (target === 'documentation' && window.navigation) window.navigation.showDocumentationModal();
                 break;
-            case 'OPEN_DOCS':
-                if (window.navigation) window.navigation.showDocumentationModal();
+            case 'OPEN_EXTERNAL': {
+                const urlMap = {
+                    github_repo: 'https://github.com/JB07-198/GearGen-3D',
+                    github_issues: 'https://github.com/JB07-198/GearGen-3D/issues',
+                    contact_link: 'mailto:contacte.baiha@gmail.com'
+                };
+                const u = urlMap[item.dataset.url];
+                if (u) {
+                    if (u.startsWith('mailto')) window.location.href = u;
+                    else window.open(u, '_blank');
+                }
                 break;
-            case 'OPEN_GITHUB':
-                window.open('https://github.com/JB07-198/GearGen-3D', '_blank');
-                break;
-            case 'OPEN_REPORT':
-                window.open('https://github.com/JB07-198/GearGen-3D/issues', '_blank');
-                break;
-            case 'OPEN_CONTACT':
-                window.location.href = 'mailto:contacte.baiha@gmail.com';
-                break;
+            }
         }
     }
 
