@@ -39,6 +39,7 @@ class GearGenApp {
         this.setupFloatingToolbar();
         this.setupKeyboardShortcuts();
         this.setupTopMenu();
+        this.setupMenuDelegation();
 
         // 5. Restore state or show welcome modal
         const urlState = this.urlStateManager ? this.urlStateManager.loadFromURL() : null;
@@ -388,6 +389,39 @@ class GearGenApp {
                 break;
             }
         }
+    }
+
+    setupMenuDelegation() {
+        document.addEventListener('click', (e) => {
+            const btn = e.target.closest('.menu-btn');
+            if (btn) {
+                e.stopPropagation();
+                const menuId = 'menu-' + btn.dataset.menu;
+                const dropdown = document.getElementById(menuId);
+                const isOpen = dropdown && dropdown.classList.contains('open');
+                this.closeTopMenus();
+                if (dropdown && !isOpen) {
+                    dropdown.classList.add('open');
+                    btn.setAttribute('aria-expanded', 'true');
+                }
+                return;
+            }
+
+            const item = e.target.closest('.menu-item');
+            if (item) {
+                e.stopPropagation();
+                if (item.disabled) return;
+                const action = item.dataset.action;
+                const target = item.dataset.target;
+                this.handleTopMenuAction(action, target, item, item.dataset.param);
+                this.closeTopMenus();
+                return;
+            }
+
+            if (!e.target.closest('.menu-group')) {
+                this.closeTopMenus();
+            }
+        });
     }
 
     exportSTL() {
