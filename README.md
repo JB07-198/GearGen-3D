@@ -1,6 +1,6 @@
 # GearGen-3D — 3D Gear Generator
 
-![GearGen Logo](assets/images/GearGen_logo.png)
+![GearGen Logo](assets/logo_icon.svg)
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](https://opensource.org/licenses/MIT)
 [![Web-based](https://img.shields.io/badge/Platform-Web-brightgreen.svg)]()

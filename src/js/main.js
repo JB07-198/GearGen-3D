@@ -21,6 +21,7 @@ class GearGenApp {
         // 2. Initialize Exporters
         window.stlExporter = new STLExporter();
         window.stepExporter = new STEPExporter();
+        window.dxfExporter = new DXFExporter();
 
         // 3. Initialize UI Components
         window.parameterUI = new ParameterUI();
@@ -38,7 +39,6 @@ class GearGenApp {
         this.setupGearTypeSelector();
         this.setupFloatingToolbar();
         this.setupKeyboardShortcuts();
-        this.setupTopMenu();
         this.setupMenuDelegation();
 
         // 5. Restore state or show welcome modal
@@ -47,11 +47,11 @@ class GearGenApp {
         const restored = urlState || stored;
 
         if (restored && restored.gearType) {
-            this.setGearType(restored.gearType);
+            this.setGearType(restored.gearType, { generate: false });
             if (restored.parameters && window.parameterUI) {
                 window.parameterUI.setParameters(restored.parameters);
-                this.generateGear();
             }
+            this.generateGear();
         } else {
             // default fallback
             let showWelcome = true;
@@ -79,7 +79,7 @@ class GearGenApp {
         });
     }
 
-    setGearType(type) {
+    setGearType(type, { generate = true } = {}) {
         console.log(`Setting active gear type: ${type}`);
         this.currentGearType = type;
 
@@ -94,8 +94,10 @@ class GearGenApp {
             window.parameterUI.updateVisibility(type);
         }
 
-        // Generate geometry
-        this.generateGear();
+        // Generate geometry unless the caller is restoring parameters first.
+        if (generate) {
+            this.generateGear();
+        }
     }
 
     generateGear() {
@@ -197,12 +199,14 @@ class GearGenApp {
     updateExportStatus(hasValidMesh) {
         this.hasGeneratedMesh = hasValidMesh;
 
-        // Dynamically toggle File -> Export STL and STEP
+        // Dynamically toggle File -> Export STL, STEP and DXF
         const exportStlItem = document.getElementById('export_stl');
         const exportStepItem = document.getElementById('export_step');
+        const exportDxfItem = document.getElementById('export_dxf');
 
         if (exportStlItem) exportStlItem.disabled = !hasValidMesh;
         if (exportStepItem) exportStepItem.disabled = !hasValidMesh;
+        if (exportDxfItem) exportDxfItem.disabled = !hasValidMesh || this.currentGearType !== 'spur';
     }
 
     setupFloatingToolbar() {
@@ -276,57 +280,26 @@ class GearGenApp {
         });
     }
 
-    setupTopMenu() {
-        // Dropdown toggle
-        document.querySelectorAll('.menu-btn').forEach(btn => {
-            btn.addEventListener('click', (e) => {
-                e.stopPropagation();
-                const menuId = 'menu-' + btn.dataset.menu;
-                const dropdown = document.getElementById(menuId);
-                const isOpen = dropdown && dropdown.classList.contains('open');
-                this.closeTopMenus();
-                if (dropdown && !isOpen) {
-                    dropdown.classList.add('open');
-                    btn.setAttribute('aria-expanded', 'true');
-                }
-            });
-        });
-
-        document.addEventListener('click', (e) => {
-            if (!e.target.closest('.menu-group')) this.closeTopMenus();
-        });
-
-        // Menu item actions
-        document.querySelectorAll('.menu-item').forEach(item => {
-            item.addEventListener('click', (e) => {
-                if (item.disabled) return;
-                const action = item.dataset.action;
-                const target = item.dataset.target;
-                this.handleTopMenuAction(action, target, item, item.dataset.param);
-                this.closeTopMenus();
-            });
-        });
-    }
-
     closeTopMenus() {
         document.querySelectorAll('.menu-dropdown.open').forEach(d => d.classList.remove('open'));
         document.querySelectorAll('.menu-btn').forEach(b => b.setAttribute('aria-expanded', 'false'));
+    }
+
+    setFloatingButtonState(buttonId, isActive) {
+        const button = document.getElementById(buttonId);
+        if (button) button.classList.toggle('active', !!isActive);
     }
 
     handleTopMenuAction(action, target, item, param) {
         switch (action) {
             case 'RESET_ALL_PARAMS':
                 if (window.parameterUI) {
-                    window.parameterUI.handleGroupReset('basic');
-                    window.parameterUI.handleGroupReset('body');
-                    window.parameterUI.handleGroupReset('appearance');
+                    window.parameterUI.resetAll();
                 }
                 break;
             case 'RESET_SECTION':
-                if (window.parameterUI) {
-                    if (target === 'basic_dimensions') window.parameterUI.handleGroupReset('basic');
-                    else if (target === 'gear_body') window.parameterUI.handleGroupReset('body');
-                    else if (target === 'appearance') window.parameterUI.handleGroupReset('appearance');
+                if (window.parameterUI && target) {
+                    window.parameterUI.resetSection(target);
                 }
                 break;
             case 'EXPORT_STL':
@@ -334,6 +307,9 @@ class GearGenApp {
                 break;
             case 'EXPORT_STEP':
                 this.exportSTEP();
+                break;
+            case 'EXPORT_DXF':
+                this.exportDXF();
                 break;
             case 'EXPORT_CONFIG':
                 if (this.configManager) this.configManager.exportJSON();
@@ -360,15 +336,18 @@ class GearGenApp {
                 if (target === 'grid' && window.sceneManager) {
                     const v = window.sceneManager.toggleGrid();
                     if (item) item.classList.toggle('active', !!v);
+                    this.setFloatingButtonState('toggle_grid', v);
                 } else if (target === 'axis' && window.sceneManager) {
                     const v = window.sceneManager.toggleAxis();
                     if (item) item.classList.toggle('active', !!v);
+                    this.setFloatingButtonState('toggle_axis', v);
                 }
                 break;
             case 'TOGGLE_RENDER_MODE':
                 if (target === 'wireframe' && window.sceneManager) {
                     const v = window.sceneManager.toggleWireframe();
                     if (item) item.classList.toggle('active', !!v);
+                    this.setFloatingButtonState('toggle_wireframe', v);
                 }
                 break;
             case 'OPEN_MODAL':
@@ -395,7 +374,6 @@ class GearGenApp {
         document.addEventListener('click', (e) => {
             const btn = e.target.closest('.menu-btn');
             if (btn) {
-                e.stopPropagation();
                 const menuId = 'menu-' + btn.dataset.menu;
                 const dropdown = document.getElementById(menuId);
                 const isOpen = dropdown && dropdown.classList.contains('open');
@@ -409,8 +387,10 @@ class GearGenApp {
 
             const item = e.target.closest('.menu-item');
             if (item) {
-                e.stopPropagation();
-                if (item.disabled) return;
+                if (item.disabled) {
+                    this.closeTopMenus();
+                    return;
+                }
                 const action = item.dataset.action;
                 const target = item.dataset.target;
                 this.handleTopMenuAction(action, target, item, item.dataset.param);
@@ -457,6 +437,29 @@ class GearGenApp {
             if (window.exportUI) {
                 const name = `${params.type}gear_m${params.module}_Z${params.teeth}.step`;
                 const msg = `${window.i18n ? window.i18n.translate('export.success') : 'Downloaded'} ${name}`;
+                window.exportUI.showToast(msg);
+            }
+        }
+    }
+
+    exportDXF() {
+        if (this.currentGearType !== 'spur') {
+            alert(window.i18n ? window.i18n.translate('export.dxfSpurOnly') : 'DXF export is only available for spur gears.');
+            return;
+        }
+
+        if (!this.hasGeneratedMesh) {
+            alert(window.i18n ? window.i18n.translate('modal.export.noMesh') : 'No gear mesh available.');
+            return;
+        }
+
+        const params = window.parameterUI ? window.parameterUI.getAllParameters() : {};
+        params.type = this.currentGearType;
+
+        if (window.dxfExporter) {
+            const filename = window.dxfExporter.exportCurrentGear(params);
+            if (filename && window.exportUI) {
+                const msg = `${window.i18n ? window.i18n.translate('export.success') : 'Downloaded'} ${filename}`;
                 window.exportUI.showToast(msg);
             }
         }

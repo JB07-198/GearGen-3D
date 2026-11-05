@@ -23,6 +23,7 @@ class I18n {
                 'menu.file.reset': 'Reset All Parameters',
                 'menu.file.exportStl': 'Export STL...',
                 'menu.file.exportStep': 'Export STEP...',
+                'menu.file.exportDxf': 'Export DXF (2D)...',
                 'menu.file.exportConfig': 'Export Config JSON',
                 'menu.file.importConfig': 'Import Config JSON',
                 'menu.edit': 'Edit',
@@ -61,7 +62,6 @@ class I18n {
                 'gear.internal.desc': 'Teeth on inside surface',
                 'gear.planetary': 'Planetary Gear',
                 'gear.planetary.desc': 'Sun, planets & ring assembly',
-                'status.available': 'Available',
 
                 // Center Viewport: Floating Toolbar Tooltips
                 'section.preview': '3D Preview',
@@ -126,8 +126,11 @@ class I18n {
                 'modal.export.step': 'Download STEP',
                 'modal.export.stlDesc': 'Binary STL format. Optimal for 3D printing and slicers.',
                 'modal.export.stepDesc': 'Faceted B-Rep STEP (AP214). Suitable for mechanical CAD.',
+                'modal.export.dxf': 'Download DXF',
+                'modal.export.dxfDesc': '2D involute profile with central bore. Ready for laser cutting and CNC milling.',
                 'modal.export.estimatedSize': 'Estimated File Size',
                 'modal.export.noMesh': 'No 3D mesh currently available to export.',
+                'export.dxfSpurOnly': 'DXF export is only available for spur gears.',
                 'export.success': 'File downloaded successfully:'
             },
 
@@ -143,6 +146,9 @@ class I18n {
                 'menu.file.reset': 'Réinitialiser tous les paramètres',
                 'menu.file.exportStl': 'Exporter STL...',
                 'menu.file.exportStep': 'Exporter STEP...',
+                'menu.file.exportDxf': 'Exporter DXF (2D)...',
+                'menu.file.exportConfig': 'Exporter la config JSON',
+                'menu.file.importConfig': 'Importer la config JSON',
                 'menu.edit': 'Édition',
                 'menu.edit.resetBasic': 'Réinitialiser dimensions de base',
                 'menu.edit.resetBody': 'Réinitialiser corps d\'engrenage',
@@ -179,7 +185,6 @@ class I18n {
                 'gear.internal.desc': 'Denture sur surface intérieure',
                 'gear.planetary': 'Train Épicycloïdal',
                 'gear.planetary.desc': 'Solaire, satellites et couronne',
-                'status.available': 'Disponible',
 
                 // Center Viewport
                 'section.preview': 'Aperçu 3D',
@@ -244,8 +249,11 @@ class I18n {
                 'modal.export.step': 'Télécharger STEP',
                 'modal.export.stlDesc': 'Format STL binaire. Recommandé pour l\'impression 3D.',
                 'modal.export.stepDesc': 'Format STEP B-Rep facetté (AP214). Adapté aux logiciels CAO.',
+                'modal.export.dxf': 'Télécharger DXF',
+                'modal.export.dxfDesc': 'Profil 2D en développante avec alésage central. Prêt pour la découpe laser et le fraisage CNC.',
                 'modal.export.estimatedSize': 'Taille estimée du fichier',
                 'modal.export.noMesh': 'Aucun maillage 3D à exporter pour le moment.',
+                'export.dxfSpurOnly': 'L\'export DXF est uniquement disponible pour les engrenages droits.',
                 'export.success': 'Fichier téléchargé avec succès :'
             },
 
@@ -261,6 +269,9 @@ class I18n {
                 'menu.file.reset': 'إعادة تعيين كافة المعاملات',
                 'menu.file.exportStl': '...STL تصدير',
                 'menu.file.exportStep': '...STEP تصدير',
+                'menu.file.exportDxf': '...DXF (2D) تصدير',
+                'menu.file.exportConfig': '...JSON تصدير الإعدادات',
+                'menu.file.importConfig': '...JSON استيراد الإعدادات',
                 'menu.edit': 'تعديل',
                 'menu.edit.resetBasic': 'إعادة تعيين الأبعاد الأساسية',
                 'menu.edit.resetBody': 'إعادة تعيين جسم الترس',
@@ -297,7 +308,6 @@ class I18n {
                 'gear.internal.desc': 'أسنان على السطح الداخلي',
                 'gear.planetary': 'مجموعة كوكبية',
                 'gear.planetary.desc': 'ترس شمسي، كواكب وترس حلقي',
-                'status.available': 'متاح',
 
                 // Center Viewport
                 'section.preview': 'معاينة ثلاثية الأبعاد',
@@ -362,8 +372,11 @@ class I18n {
                 'modal.export.step': 'STEP تنزيل',
                 'modal.export.stlDesc': 'تنسيق STL ثنائي مثالي للطباعة ثلاثية الأبعاد.',
                 'modal.export.stepDesc': 'تنسيق STEP B-Rep ملائم لبرامج الهندسة الميكانيكية.',
+                'modal.export.dxf': 'DXF تنزيل',
+                'modal.export.dxfDesc': 'مقطع ثنائي الأبعاد بمنحنى تطوري مع تجويف مركزي. جاهز للقطع بالليزر والتفريز باستخدام الحاسوب.',
                 'modal.export.estimatedSize': 'الحجم المقدر للملف',
                 'modal.export.noMesh': 'لا يتوفر نموذج حالياً للتصدير.',
+                'export.dxfSpurOnly': 'تصدير DXF متاح فقط للتروس المستقيمة.',
                 'export.success': 'تم تنزيل الملف بنجاح:'
             }
         };

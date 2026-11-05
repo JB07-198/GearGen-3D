@@ -40,11 +40,6 @@ class GearRenderer {
             gearMesh.castShadow = true;
             gearMesh.receiveShadow = true;
 
-            // Add to scene
-            if (window.sceneManager) {
-                window.sceneManager.addGear(gearMesh);
-            }
-
             console.log('Gear created successfully');
             return gearMesh;
 
@@ -124,11 +119,6 @@ class GearRenderer {
             const gearMesh = new THREE.Mesh(geometry, material);
             gearMesh.castShadow = true;
             gearMesh.receiveShadow = true;
-
-            // Add to scene
-            if (window.sceneManager) {
-                window.sceneManager.addGear(gearMesh);
-            }
 
             console.log('Helical gear created successfully');
             return gearMesh;
@@ -211,10 +201,6 @@ class GearRenderer {
             gearMesh.castShadow = true;
             gearMesh.receiveShadow = true;
 
-            if (window.sceneManager) {
-                window.sceneManager.addGear(gearMesh);
-            }
-
             console.log('Bevel gear created successfully');
             return gearMesh;
 
@@ -237,7 +223,11 @@ class GearRenderer {
             // twist = (faceWidth / (PI * d * tan(gamma))) * 2 * PI = 2 * faceWidth / (d * tan(gamma))
             const gamma = gearData.leadAngle * Math.PI / 180;
             const d = gearData.pitchDiameter;
-            const twistAngle = (2 * gearData.faceWidth) / (d * Math.tan(gamma));
+            const tanGamma = Math.tan(gamma);
+            // A zero lead angle is valid (straight worm); avoid dividing by zero.
+            const twistAngle = Math.abs(tanGamma) > 1e-6
+                ? (2 * gearData.faceWidth) / (d * tanGamma)
+                : 0;
 
             const steps = quality === 'high' ? 64 : (quality === 'medium' ? 32 : 16);
             const extrudeSettings = {
@@ -285,10 +275,6 @@ class GearRenderer {
             const gearMesh = new THREE.Mesh(geometry, material);
             gearMesh.castShadow = true;
             gearMesh.receiveShadow = true;
-
-            if (window.sceneManager) {
-                window.sceneManager.addGear(gearMesh);
-            }
 
             console.log('Worm gear created successfully');
             return gearMesh;
@@ -357,10 +343,6 @@ class GearRenderer {
             gearMesh.castShadow = true;
             gearMesh.receiveShadow = true;
 
-            if (window.sceneManager) {
-                window.sceneManager.addGear(gearMesh);
-            }
-
             console.log('Rack gear created successfully');
             return gearMesh;
 
@@ -427,10 +409,6 @@ class GearRenderer {
             gearMesh.castShadow = true;
             gearMesh.receiveShadow = true;
 
-            if (window.sceneManager) {
-                window.sceneManager.addGear(gearMesh);
-            }
-
             console.log('Internal gear created successfully');
             return gearMesh;
 
@@ -469,10 +447,6 @@ class GearRenderer {
                 planetMesh.rotation.y = -angle * (sun.teeth / planet.teeth);
 
                 group.add(planetMesh);
-            }
-
-            if (window.sceneManager) {
-                window.sceneManager.addGear(group);
             }
 
             console.log('Planetary assembly created successfully');

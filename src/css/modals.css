@@ -277,6 +277,21 @@
     border-color: var(--accent-primary);
 }
 
+.export-format-card--wide {
+    grid-column: 1 / -1;
+}
+
+.btn-export.btn-dxf {
+    background: rgba(16, 185, 129, 0.15);
+    color: var(--accent-success);
+    border: 1px solid rgba(16, 185, 129, 0.35);
+}
+
+.btn-export.btn-dxf:hover:not(:disabled) {
+    background: rgba(16, 185, 129, 0.25);
+    border-color: var(--accent-success);
+}
+
 .export-file-info {
     display: flex;
     align-items: center;

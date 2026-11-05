@@ -37,7 +37,7 @@ class ConfigManager {
             return false;
         }
         if (this.app && typeof this.app.setGearType === 'function') {
-            this.app.setGearType(data.gearType);
+            this.app.setGearType(data.gearType, { generate: false });
         }
         if (window.parameterUI && typeof window.parameterUI.setParameters === 'function') {
             window.parameterUI.setParameters(data.parameters);

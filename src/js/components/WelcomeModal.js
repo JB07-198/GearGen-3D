@@ -63,11 +63,11 @@ class WelcomeModal {
             restoreBtn.addEventListener('click', () => {
                 const data = this.app.configManager.loadFromLocalStorage();
                 if (data && data.gearType) {
-                    this.app.setGearType(data.gearType);
+                    this.app.setGearType(data.gearType, { generate: false });
                     if (data.parameters && window.parameterUI) {
                         window.parameterUI.setParameters(data.parameters);
-                        this.app.generateGear();
                     }
+                    this.app.generateGear();
                 }
                 this.close(true);
             });

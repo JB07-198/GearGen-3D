@@ -37,10 +37,26 @@ class ExportUI {
         const gearType = window.gearGenApp ? window.gearGenApp.currentGearType : 'spur';
 
         const titles = {
-            en: '<i class="fas fa-download"></i> Export 3D Model',
-            fr: '<i class="fas fa-download"></i> Exporter le Modèle 3D',
-            ar: '<i class="fas fa-download"></i> تصدير النموذج ثلاثي الأبعاد'
+            en: '<i class="fas fa-download"></i> Export Model',
+            fr: '<i class="fas fa-download"></i> Exporter le Modèle',
+            ar: '<i class="fas fa-download"></i> تصدير النموذج'
         };
+
+        const dxfCard = gearType === 'spur' ? `
+                    <!-- DXF 2D Format Card (spur gears only) -->
+                    <div class="export-format-card export-format-card--wide">
+                        <div class="format-card-header">
+                            <span class="format-name">DXF (2D)</span>
+                            <span class="format-badge">Laser / CNC</span>
+                        </div>
+                        <p class="format-desc" data-i18n="modal.export.dxfDesc">
+                            2D involute profile with central bore. Ready for laser cutting and CNC milling.
+                        </p>
+                        <button class="btn-export btn-dxf" id="modal-export-dxf-btn" ${!hasMesh ? 'disabled' : ''}>
+                            <i class="fas fa-scissors"></i> <span data-i18n="modal.export.dxf">Download DXF</span>
+                        </button>
+                    </div>
+        ` : '';
 
         const modalHtml = `
             <div class="export-dialog-body">
@@ -96,6 +112,8 @@ class ExportUI {
                             <i class="fas fa-drafting-compass"></i> <span data-i18n="modal.export.step">Download STEP</span>
                         </button>
                     </div>
+
+                    ${dxfCard}
                 </div>
             </div>
         `;
@@ -121,6 +139,14 @@ class ExportUI {
         if (stepBtn) {
             stepBtn.addEventListener('click', () => {
                 if (window.gearGenApp) window.gearGenApp.exportSTEP();
+                modal.querySelector('.modal-close')?.click();
+            });
+        }
+
+        const dxfBtn = modal.querySelector('#modal-export-dxf-btn');
+        if (dxfBtn) {
+            dxfBtn.addEventListener('click', () => {
+                if (window.gearGenApp) window.gearGenApp.exportDXF();
                 modal.querySelector('.modal-close')?.click();
             });
         }

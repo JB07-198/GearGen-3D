@@ -13,12 +13,12 @@ class ParameterUI {
             planet_count: 3,
             helix_angle: 20,
             pitch_angle: 45,
-            pressure_angle: 20.0,
+            pressure_angle: 20,
             face_width: 10,
             hub_diameter: 10,
             bore_diameter: 5,
             gear_color: '#3B82F6',
-            mesh_quality: 'Medium'
+            mesh_quality: 'medium'
         };
 
         this.rafId = null;
@@ -208,6 +208,39 @@ class ParameterUI {
         input.value = val;
     }
 
+    readNumber(input, fallback) {
+        const value = parseFloat(input?.value);
+        return Number.isFinite(value) ? value : fallback;
+    }
+
+    setSelectValue(select, value) {
+        if (!select) return;
+
+        const raw = String(value);
+        const options = Array.from(select.options);
+        const direct = options.find(option => option.value === raw);
+        if (direct) {
+            select.value = direct.value;
+            return;
+        }
+
+        const caseInsensitive = options.find(
+            option => option.value.toLowerCase() === raw.toLowerCase()
+        );
+        if (caseInsensitive) {
+            select.value = caseInsensitive.value;
+            return;
+        }
+
+        const numeric = parseFloat(raw);
+        if (Number.isFinite(numeric)) {
+            const numericMatch = options.find(
+                option => parseFloat(option.value) === numeric
+            );
+            if (numericMatch) select.value = numericMatch.value;
+        }
+    }
+
     // Reset sections based on JSON spec functional inventory
     resetSection(section) {
         const groupFields = {
@@ -219,7 +252,13 @@ class ParameterUI {
         const fields = groupFields[section] || [];
         fields.forEach(field => {
             const def = this.defaults[field];
-            if (this.inputs[field]) this.inputs[field].value = def;
+            if (this.inputs[field]) {
+                if (field === 'pressure_angle' || field === 'mesh_quality') {
+                    this.setSelectValue(this.inputs[field], def);
+                } else {
+                    this.inputs[field].value = def;
+                }
+            }
             if (this.sliders[field]) this.sliders[field].value = def;
             this.updatePresetChips(field, def);
         });
@@ -255,8 +294,8 @@ class ParameterUI {
     // pitch_diameter = module * teeth_count (mm)
     // circular_pitch = PI * module (mm)
     updateCalculatedValues() {
-        const moduleVal = parseFloat(this.inputs.module?.value) || 2.0;
-        const teethVal = parseFloat(this.inputs.teeth_count?.value) || 20;
+        const moduleVal = this.readNumber(this.inputs.module, 2.0);
+        const teethVal = this.readNumber(this.inputs.teeth_count, 20);
 
         const pitchDiameter = moduleVal * teethVal;
         const circularPitch = Math.PI * moduleVal;
@@ -302,28 +341,47 @@ class ParameterUI {
             const inputKey = keyMap[key] || key;
             const input = this.inputs ? this.inputs[inputKey] : null;
             if (input) {
-                input.value = params[key];
+                if (inputKey === 'pressure_angle' || inputKey === 'mesh_quality') {
+                    this.setSelectValue(input, params[key]);
+                } else {
+                    input.value = params[key];
+                }
             }
+
+            const slider = this.sliders ? this.sliders[inputKey] : null;
+            if (slider) slider.value = params[key];
+
+            this.updatePresetChips(inputKey, params[key]);
         });
-        if (typeof this.updateLivePreview === 'function') {
-            this.updateLivePreview();
+
+        if (this.colorHexValue && this.inputs.gear_color) {
+            this.colorHexValue.textContent = this.inputs.gear_color.value.toUpperCase();
         }
+
+        this.updateCalculatedValues();
     }
 
     getAllParameters() {
+        // Validate numeric inputs with Number.isFinite so that a legitimate 0
+        // is never replaced by its default fallback.
+        const num = (input, fallback) => {
+            const value = parseFloat(input?.value);
+            return Number.isFinite(value) ? value : fallback;
+        };
+
         return {
-            module: parseFloat(this.inputs.module?.value) || 2.0,
-            teeth: parseFloat(this.inputs.teeth_count?.value) || 20,
-            planetTeeth: parseFloat(this.inputs.planet_teeth?.value) || 12,
-            planetCount: parseFloat(this.inputs.planet_count?.value) || 3,
-            helixAngle: parseFloat(this.inputs.helix_angle?.value) || 20,
-            pitchAngle: parseFloat(this.inputs.pitch_angle?.value) || 45,
-            pressureAngle: parseFloat(this.inputs.pressure_angle?.value) || 20.0,
-            faceWidth: parseFloat(this.inputs.face_width?.value) || 10,
-            hubDiameter: parseFloat(this.inputs.hub_diameter?.value) || 10,
-            boreDiameter: parseFloat(this.inputs.bore_diameter?.value) || 5,
+            module: num(this.inputs.module, 2.0),
+            teeth: num(this.inputs.teeth_count, 20),
+            planetTeeth: num(this.inputs.planet_teeth, 12),
+            planetCount: num(this.inputs.planet_count, 3),
+            helixAngle: num(this.inputs.helix_angle, 20),
+            pitchAngle: num(this.inputs.pitch_angle, 45),
+            pressureAngle: num(this.inputs.pressure_angle, 20),
+            faceWidth: num(this.inputs.face_width, 10),
+            hubDiameter: num(this.inputs.hub_diameter, 10),
+            boreDiameter: num(this.inputs.bore_diameter, 5),
             color: this.inputs.gear_color?.value || '#3B82F6',
-            quality: (this.inputs.mesh_quality?.value || 'Medium').toLowerCase()
+            quality: (this.inputs.mesh_quality?.value || 'medium').toLowerCase()
         };
     }
 

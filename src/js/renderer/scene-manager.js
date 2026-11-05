@@ -114,9 +114,40 @@ class SceneManager {
         if (controls) controls.update();
     }
 
+    disposeObject(root) {
+        if (!root) return;
+
+        root.traverse(child => {
+            if (child.geometry) {
+                child.geometry.dispose();
+            }
+
+            if (child.material) {
+                const materials = Array.isArray(child.material) ? child.material : [child.material];
+                materials.forEach(material => {
+                    if (!material) return;
+
+                    Object.values(material).forEach(value => {
+                        if (value && value.isTexture) value.dispose();
+                    });
+                    material.dispose();
+                });
+            }
+        });
+    }
+
     addGear(mesh) {
+        if (!mesh) return;
+
+        // Avoid disposing the mesh we are about to add again.
+        if (this.currentGear === mesh) {
+            this.updateStats(mesh);
+            return;
+        }
+
         if (this.currentGear) {
             this.scene.remove(this.currentGear);
+            this.disposeObject(this.currentGear);
         }
 
         this.currentGear = mesh;

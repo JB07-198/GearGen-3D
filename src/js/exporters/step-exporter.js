@@ -67,7 +67,6 @@ class STEPExporter {
                 return { x: vec.x, y: vec.y, z: vec.z };
             };
             const count = idx ? idx.count : pos.count;
-            const step = idx ? 3 : 3;
             for (let i = 0; i < count; i += 3) {
                 let a, b, c;
                 if (idx) {
@@ -109,14 +108,13 @@ class STEPExporter {
             return id;
         };
 
-        // Edge helper: create or reuse not required; create per triangle side
-        const edgeIds = [];
         const faceIds = [];
 
-        // Direction helper
-        const getDirId = (dx, dy, dz) => {
+        // LINE requires a point and a VECTOR (not a raw DIRECTION).
+        const getVectorId = (dx, dy, dz) => {
             const len = Math.hypot(dx, dy, dz) || 1;
-            return add(`DIRECTION('',(${fmt(dx / len)},${fmt(dy / len)},${fmt(dz / len)}))`);
+            const dirId = add(`DIRECTION('',(${fmt(dx / len)},${fmt(dy / len)},${fmt(dz / len)}))`);
+            return add(`VECTOR('',#${dirId},1.)`);
         };
 
         triangles.forEach((tri) => {
@@ -127,18 +125,16 @@ class STEPExporter {
             const pb = getPointId(tri.p1);
             const pc = getPointId(tri.p2);
 
-            // edges
-            const makeEdge = (v1, v2, pA, pB) => {
-                const dx = (triangles.length ? 0 : 0);
-                const dir = getDirId(pB.x - pA.x, pB.y - pA.y, pB.z - pA.z);
-                const lineId = add(`LINE('',#${pA},#${dir})`);
+            // Edges reference CARTESIAN_POINT ids, never the point objects.
+            const makeEdge = (v1, v2, pAId, pBId, pA, pB) => {
+                const vectorId = getVectorId(pB.x - pA.x, pB.y - pA.y, pB.z - pA.z);
+                const lineId = add(`LINE('',#${pAId},#${vectorId})`);
                 return add(`EDGE_CURVE('',#${v1},#${v2},#${lineId},.T.)`);
             };
 
-            // Need point objects for direction; use tri points
-            const e01 = makeEdge(va, vb, tri.p0, tri.p1);
-            const e12 = makeEdge(vb, vc, tri.p1, tri.p2);
-            const e20 = makeEdge(vc, va, tri.p2, tri.p0);
+            const e01 = makeEdge(va, vb, pa, pb, tri.p0, tri.p1);
+            const e12 = makeEdge(vb, vc, pb, pc, tri.p1, tri.p2);
+            const e20 = makeEdge(vc, va, pc, pa, tri.p2, tri.p0);
 
             // oriented edges
             const oe01 = add(`ORIENTED_EDGE('',*,*,#${e01},.T.)`);
@@ -160,18 +156,20 @@ class STEPExporter {
         const shellId = add(`CLOSED_SHELL('',(${faceIds.map((id) => `#${id}`).join(',')}))`);
         const brepId = add(`FACETED_BREP('',#${shellId})`);
 
-        // Product / representation context
+        // Units and representation context
         const unitsId = add(`( LENGTH_UNIT() NAMED_UNIT(*) SI_UNIT(.MILLI.,.METRE.) )`);
-        // uncertainty
-        const uncId = add(`UNCERTAINTY_MEASURE_WITH_UNIT(LENGTH_MEASURE(0.001),#${add(`GLOBAL_UNIT_ASSIGNED_CONTEXT((#${unitsId})) GLOBAL_CONTEXT('',ANY) REPRESENTATION_CONTEXT('3D','3D')`)},'distance accuracy')`);
-        // representation context
+        const uncId = add(`UNCERTAINTY_MEASURE_WITH_UNIT(LENGTH_MEASURE(0.001),#${unitsId},'distance accuracy')`);
         const repCtxId = add(`( GEOMETRIC_REPRESENTATION_CONTEXT(3) GLOBAL_UNCERTAINTY_ASSIGNED_CONTEXT((#${uncId})) GLOBAL_UNIT_ASSIGNED_CONTEXT((#${unitsId})) REPRESENTATION_CONTEXT('','3D') )`);
 
         const shapeRepId = add(`ADVANCED_BREP_SHAPE_REPRESENTATION('',(#${brepId}),#${repCtxId})`);
 
-        const prodId = add(`PRODUCT('Gear','Gear','',(#${add(`PRODUCT_CONTEXT('',#${add(`APPLICATION_CONTEXT('managed model based 3d engineering')`)}, 'mechanical')`)})`);
+        // Product definition
+        const appCtxId = add(`APPLICATION_CONTEXT('managed model based 3d engineering')`);
+        const prodCtxId = add(`PRODUCT_CONTEXT('',#${appCtxId},'mechanical')`);
+        const prodId = add(`PRODUCT('Gear','Gear','',(#${prodCtxId}))`);
         const pdfId = add(`PRODUCT_DEFINITION_FORMATION('','',#${prodId})`);
-        const pdId = add(`PRODUCT_DEFINITION('design','',#${pdfId},#${add(`PRODUCT_DEFINITION_CONTEXT('part definition',#${add(`APPLICATION_CONTEXT('managed model based 3d engineering')`)},'design')`)})`);
+        const pdCtxId = add(`PRODUCT_DEFINITION_CONTEXT('part definition',#${appCtxId},'design')`);
+        const pdId = add(`PRODUCT_DEFINITION('design','',#${pdfId},#${pdCtxId})`);
         const pdsId = add(`PRODUCT_DEFINITION_SHAPE('','',#${pdId})`);
         add(`SHAPE_DEFINITION_REPRESENTATION(#${pdsId},#${shapeRepId})`);
 

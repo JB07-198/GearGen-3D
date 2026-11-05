@@ -5,7 +5,10 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>GearGen-3D - Parametric 3D Gear Generator</title>
-    
+
+    <!-- Favicon -->
+    <link rel="icon" type="image/svg+xml" href="./assets/favicon.svg">
+
     <!-- Typography: Inter & JetBrains Mono as per JSON Spec -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -37,7 +40,7 @@
             <!-- Left: Branding & CAD Menu Bar -->
             <div class="top-bar-left">
                 <div class="branding">
-                    <img src="./assets/images/GearGen_logo.png" alt="GearGen-3D Logo" class="logo-img">
+                    <img src="./assets/logo_icon.svg" alt="GearGen-3D Logo" class="logo-img">
                     <div class="branding-text">
                         <span class="branding-title">GearGen-3D</span>
                         <span class="branding-tagline" data-i18n="branding.tagline">Parametric 3D Gear Generator</span>
@@ -68,6 +71,10 @@
                             <button class="menu-item" id="export_step" data-action="EXPORT_STEP" disabled>
                                 <span data-i18n="menu.file.exportStep">Export STEP...</span>
                                 <span class="menu-shortcut">.step</span>
+                            </button>
+                            <button class="menu-item" id="export_dxf" data-action="EXPORT_DXF" disabled>
+                                <span data-i18n="menu.file.exportDxf">Export DXF (2D)...</span>
+                                <span class="menu-shortcut">.dxf</span>
                             </button>
                         </div>
                     </div>
@@ -219,7 +226,6 @@
                                     </div>
                                     <span class="gear-card-title" data-i18n="gear.spur">Spur Gear</span>
                                 </div>
-                                <span class="status-badge status-available" data-i18n="status.available">Available</span>
                             </div>
                             <p class="gear-card-desc" data-i18n="gear.spur.desc">Straight teeth parallel to axis</p>
                         </div>
@@ -233,7 +239,6 @@
                                     </div>
                                     <span class="gear-card-title" data-i18n="gear.helical">Helical Gear</span>
                                 </div>
-                                <span class="status-badge status-available" data-i18n="status.available">Available</span>
                             </div>
                             <p class="gear-card-desc" data-i18n="gear.helical.desc">Angled teeth for smoother operation</p>
                         </div>
@@ -247,7 +252,6 @@
                                     </div>
                                     <span class="gear-card-title" data-i18n="gear.bevel">Bevel Gear</span>
                                 </div>
-                                <span class="status-badge status-available" data-i18n="status.available">Available</span>
                             </div>
                             <p class="gear-card-desc" data-i18n="gear.bevel.desc">Conical shape for right-angle drive</p>
                         </div>
@@ -261,7 +265,6 @@
                                     </div>
                                     <span class="gear-card-title" data-i18n="gear.worm">Worm Gear</span>
                                 </div>
-                                <span class="status-badge status-available" data-i18n="status.available">Available</span>
                             </div>
                             <p class="gear-card-desc" data-i18n="gear.worm.desc">Screw-like gear for high reduction</p>
                         </div>
@@ -275,7 +278,6 @@
                                     </div>
                                     <span class="gear-card-title" data-i18n="gear.rack">Rack Gear</span>
                                 </div>
-                                <span class="status-badge status-available" data-i18n="status.available">Available</span>
                             </div>
                             <p class="gear-card-desc" data-i18n="gear.rack.desc">Linear gear for conversion</p>
                         </div>
@@ -289,7 +291,6 @@
                                     </div>
                                     <span class="gear-card-title" data-i18n="gear.internal">Internal Gear</span>
                                 </div>
-                                <span class="status-badge status-available" data-i18n="status.available">Available</span>
                             </div>
                             <p class="gear-card-desc" data-i18n="gear.internal.desc">Teeth on inside surface</p>
                         </div>
@@ -303,7 +304,6 @@
                                     </div>
                                     <span class="gear-card-title" data-i18n="gear.planetary">Planetary Gear</span>
                                 </div>
-                                <span class="status-badge status-available" data-i18n="status.available">Available</span>
                             </div>
                             <p class="gear-card-desc" data-i18n="gear.planetary.desc">Sun, planets & ring assembly</p>
                         </div>
@@ -534,9 +534,9 @@
                                     </div>
                                 </div>
                                 <select class="cad-select" id="pressure_angle">
-                                    <option value="20.0" selected>20.0° (ISO Standard)</option>
+                                    <option value="20" selected>20.0° (ISO Standard)</option>
                                     <option value="14.5">14.5° (Legacy)</option>
-                                    <option value="25.0">25.0° (High Load)</option>
+                                    <option value="25">25.0° (High Load)</option>
                                 </select>
                             </div>
                         </div>
@@ -649,9 +649,9 @@
                                     </div>
                                 </div>
                                 <select class="cad-select" id="mesh_quality">
-                                    <option value="Low" data-i18n="param.quality.low">Low (Fast)</option>
-                                    <option value="Medium" selected data-i18n="param.quality.medium">Medium (Recommended)</option>
-                                    <option value="High" data-i18n="param.quality.high">High (Detailed)</option>
+                                    <option value="low" data-i18n="param.quality.low">Low (Fast)</option>
+                                    <option value="medium" selected data-i18n="param.quality.medium">Medium (Recommended)</option>
+                                    <option value="high" data-i18n="param.quality.high">High (Detailed)</option>
                                 </select>
                             </div>
 
@@ -722,6 +722,7 @@
     <script src="./src/js/renderer/gear-renderer.js"></script>
     <script src="./src/js/exporters/stl-exporter.js"></script>
     <script src="./src/js/exporters/step-exporter.js"></script>
+    <script src="./src/js/exporters/dxf-exporter.js"></script>
     <script src="./src/js/managers/ConfigManager.js"></script>
     <script src="./src/js/managers/UrlStateManager.js"></script>
     <script src="./src/js/validators/GearValidator.js"></script>
@@ -731,74 +732,6 @@
     <script src="./src/js/ui/export-ui.js"></script>
     <script src="./src/js/ui/mobile-ui.js"></script>
     <script src="./src/js/main.js"></script>
-    <script>
-    (function() {
-        function bindMenus() {
-            document.querySelectorAll('.menu-btn').forEach(function(btn) {
-                btn.addEventListener('click', function(e) {
-                    e.stopPropagation();
-                    var menuId = 'menu-' + btn.dataset.menu;
-                    var dropdown = document.getElementById(menuId);
-                    var isOpen = dropdown && dropdown.classList.contains('open');
-                    document.querySelectorAll('.menu-dropdown.open').forEach(function(d){ d.classList.remove('open'); });
-                    document.querySelectorAll('.menu-btn').forEach(function(b){ b.setAttribute('aria-expanded','false'); });
-                    if (dropdown && !isOpen) {
-                        dropdown.classList.add('open');
-                        btn.setAttribute('aria-expanded','true');
-                    }
-                });
-            });
-            document.querySelectorAll('.menu-item').forEach(function(item) {
-                item.addEventListener('click', function(e) {
-                    e.stopPropagation();
-                    if (item.disabled) return;
-                    var action = item.dataset.action;
-                    var target = item.dataset.target;
-                    var param = item.dataset.param;
-                    var app = window.gearGenApp;
-                    if (action === 'RESET_ALL_PARAMS' && app) {
-                        if (window.parameterUI) { window.parameterUI.handleGroupReset('basic'); window.parameterUI.handleGroupReset('body'); window.parameterUI.handleGroupReset('appearance'); }
-                    } else if (action === 'RESET_SECTION' && window.parameterUI) {
-                        if (target === 'basic_dimensions') window.parameterUI.handleGroupReset('basic');
-                        else if (target === 'gear_body') window.parameterUI.handleGroupReset('body');
-                        else if (target === 'appearance') window.parameterUI.handleGroupReset('appearance');
-                    } else if (action === 'EXPORT_STL' && app) { app.exportSTL(); }
-                    else if (action === 'EXPORT_STEP' && app) { app.exportSTEP(); }
-                    else if (action === 'EXPORT_CONFIG' && app && app.configManager) { app.configManager.exportJSON(); }
-                    else if (action === 'IMPORT_CONFIG') {
-                        var input = document.getElementById('config-file-input');
-                        if (input) { input.onchange = async function(ev){ var f = ev.target.files && ev.target.files[0]; if (f && app && app.configManager) await app.configManager.importJSON(f); ev.target.value=''; }; input.click(); }
-                    } else if (action === 'SET_CAMERA_VIEW' && window.sceneManager) { window.sceneManager.setCameraView(param); }
-                    else if (action === 'RESET_CAMERA' && window.sceneManager) { window.sceneManager.resetCamera(); }
-                    else if (action === 'TOGGLE_HELPER' && window.sceneManager) {
-                        if (target === 'grid') window.sceneManager.toggleGrid();
-                        else if (target === 'axis') window.sceneManager.toggleAxis();
-                    } else if (action === 'TOGGLE_RENDER_MODE' && window.sceneManager) {
-                        if (target === 'wireframe') window.sceneManager.toggleWireframe();
-                    } else if (action === 'OPEN_MODAL' && window.navigation) {
-                        if (target === 'help') window.navigation.showHelpModal();
-                        else if (target === 'documentation') window.navigation.showDocumentationModal();
-                    } else if (action === 'OPEN_EXTERNAL') {
-                        var urlMap = { github_repo: 'https://github.com/JB07-198/GearGen-3D', github_issues: 'https://github.com/JB07-198/GearGen-3D/issues', contact_link: 'mailto:contacte.baiha@gmail.com' };
-                        var u = urlMap[item.dataset.url];
-                        if (u) { if (u.startsWith('mailto')) window.location.href = u; else window.open(u, '_blank'); }
-                    }
-                    document.querySelectorAll('.menu-dropdown.open').forEach(function(d){ d.classList.remove('open'); });
-                });
-            });
-            document.addEventListener('click', function(e) {
-                if (!e.target.closest('.menu-group')) {
-                    document.querySelectorAll('.menu-dropdown.open').forEach(function(d){ d.classList.remove('open'); });
-                }
-            });
-        }
-        if (document.readyState === 'loading') {
-            document.addEventListener('DOMContentLoaded', bindMenus);
-        } else {
-            bindMenus();
-        }
-    })();
-    </script>
 </body>
 
 </html>

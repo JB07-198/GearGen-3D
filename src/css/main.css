@@ -6,7 +6,7 @@
 /* Custom Fonts */
 @font-face {
     font-family: 'LogoFont';
-    src: url('../../assets/fonts/Logo_font.ttf') format('truetype');
+    src: url('../../assets/fonts/Logo_font.otf') format('opentype');
     font-weight: normal;
     font-style: normal;
     font-display: swap;
@@ -92,16 +92,18 @@ html, body {
 }
 
 .branding-title {
+    font-family: 'LogoFont', var(--font-ui);
     font-size: 1.15rem;
-    font-weight: 700;
+    font-weight: 400;
     letter-spacing: -0.3px;
     color: var(--text-primary);
     line-height: 1.1;
 }
 
 .branding-tagline {
+    font-family: 'SloganFont', var(--font-ui);
     font-size: 0.7rem;
-    font-weight: 500;
+    font-weight: 400;
     color: var(--text-secondary);
     line-height: 1.1;
     white-space: nowrap;
@@ -390,32 +392,6 @@ html, body {
     color: var(--text-secondary);
     line-height: 1.35;
     padding-left: 2px;
-}
-
-.status-badge {
-    display: inline-flex;
-    align-items: center;
-    gap: 4px;
-    font-size: 0.68rem;
-    font-weight: 600;
-    padding: 2px 8px;
-    border-radius: var(--radius-full);
-    text-transform: uppercase;
-    letter-spacing: 0.4px;
-}
-
-.status-available {
-    background: rgba(16, 185, 129, 0.15);
-    color: var(--accent-success);
-    border: 1px solid rgba(16, 185, 129, 0.3);
-}
-
-.status-available::before {
-    content: '';
-    width: 5px;
-    height: 5px;
-    border-radius: 50%;
-    background: var(--accent-success);
 }
 
 /* ==========================================================================
