@@ -145,7 +145,7 @@ class GearGenApp {
                 case 'worm': {
                     const data = calculateWormGear(
                         params.module, params.teeth, params.pressureAngle,
-                        params.helixAngle, params.faceWidth, params.hubDiameter, params.boreDiameter, params.quality
+                        params.wormQuotient, params.faceWidth, params.hubDiameter, params.boreDiameter, params.quality
                     );
                     gearMesh = window.gearRenderer.createWormGear(data, params.color, params.quality);
                     break;

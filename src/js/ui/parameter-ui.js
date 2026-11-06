@@ -8,8 +8,9 @@ class ParameterUI {
         this.defaults = {
             module: 2.0,
             teeth_count: 20,
-            planet_teeth: 12,
+            planet_teeth: 10,
             planet_count: 3,
+            worm_quotient: 10,
             helix_angle: 20,
             pitch_angle: 45,
             pressure_angle: 20,
@@ -21,6 +22,7 @@ class ParameterUI {
         };
 
         this.isPendingUpdate = false;
+        this.gearType = null;
         this.integerFields = new Set(['teeth_count', 'planet_teeth', 'planet_count']);
         this.paramKeys = {
             module: 'module',
@@ -29,6 +31,7 @@ class ParameterUI {
             planetCount: 'planet_count',
             helixAngle: 'helix_angle',
             pitchAngle: 'pitch_angle',
+            wormQuotient: 'worm_quotient',
             pressureAngle: 'pressure_angle',
             faceWidth: 'face_width',
             hubDiameter: 'hub_diameter',
@@ -58,6 +61,7 @@ class ParameterUI {
             planet_count: document.getElementById('planet_count'),
             helix_angle: document.getElementById('helix_angle'),
             pitch_angle: document.getElementById('pitch_angle'),
+            worm_quotient: document.getElementById('worm_quotient'),
             pressure_angle: document.getElementById('pressure_angle'),
             face_width: document.getElementById('face_width'),
             hub_diameter: document.getElementById('hub_diameter'),
@@ -73,6 +77,7 @@ class ParameterUI {
             planet_count: document.getElementById('planet_count-slider'),
             helix_angle: document.getElementById('helix_angle-slider'),
             pitch_angle: document.getElementById('pitch_angle-slider'),
+            worm_quotient: document.getElementById('worm_quotient-slider'),
             face_width: document.getElementById('face_width-slider'),
             hub_diameter: document.getElementById('hub_diameter-slider'),
             bore_diameter: document.getElementById('bore_diameter-slider')
@@ -80,11 +85,16 @@ class ParameterUI {
 
         this.kpiPitchDiameter = document.getElementById('kpi-pitch-diameter');
         this.kpiCircularPitch = document.getElementById('kpi-circular-pitch');
+        this.kpiLeadAngle = document.getElementById('kpi-lead-angle');
+        this.kpiLeadAngleRow = document.getElementById('kpi-row-lead-angle');
+        this.teethTitle = document.querySelector('#container-teeth_count .parameter-title');
+        this.teethDesc = document.querySelector('#container-teeth_count .parameter-desc');
         this.colorHexValue = document.getElementById('color-hex-value');
 
         // Conditional containers
         this.helixAngleContainer = document.getElementById('container-helix_angle');
         this.pitchAngleContainer = document.getElementById('container-pitch_angle');
+        this.wormQuotientContainer = document.getElementById('container-worm_quotient');
         this.planetTeethContainer = document.getElementById('container-planet_teeth');
         this.planetCountContainer = document.getElementById('container-planet_count');
         this.hubDiameterContainer = document.getElementById('container-hub_diameter');
@@ -258,8 +268,15 @@ class ParameterUI {
         }
     }
 
+    // The "teeth" field holds the number of threads on a worm.
+    teethLimits(gearType) {
+        return gearType === 'worm'
+            ? { min: 1, max: 4, default: 1 }
+            : { min: 8, max: 200, default: this.defaults.teeth_count };
+    }
+
     // Accepted values for every parameter, read from the form so that limits live in one place.
-    getParameterRules() {
+    getParameterRules(gearType = this.gearType) {
         const rules = {};
         Object.keys(this.paramKeys).forEach(param => {
             const key = this.paramKeys[param];
@@ -270,6 +287,9 @@ class ParameterUI {
                 rules[param] = { type: 'enum', values: Array.from(input.options).map(o => o.value.toLowerCase()) };
             } else if (key === 'gear_color') {
                 rules[param] = { type: 'color' };
+            } else if (key === 'teeth_count') {
+                const { min, max } = this.teethLimits(gearType);
+                rules[param] = { type: 'integer', min, max };
             } else {
                 rules[param] = {
                     type: this.integerFields.has(key) ? 'integer' : 'number',
@@ -312,14 +332,14 @@ class ParameterUI {
     // Reset sections
     resetSection(section) {
         const groupFields = {
-            basic_dimensions: ['module', 'teeth_count', 'planet_teeth', 'planet_count', 'helix_angle', 'pitch_angle', 'pressure_angle'],
+            basic_dimensions: ['module', 'teeth_count', 'planet_teeth', 'planet_count', 'helix_angle', 'pitch_angle', 'worm_quotient', 'pressure_angle'],
             gear_body: ['face_width', 'hub_diameter', 'bore_diameter'],
             appearance: ['gear_color', 'mesh_quality']
         };
 
         const fields = groupFields[section] || [];
         fields.forEach(field => {
-            const def = this.defaults[field];
+            const def = field === 'teeth_count' ? this.teethLimits(this.gearType).default : this.defaults[field];
             if (this.sliders[field]) {
                 this.commitValue(field, def);
             } else if (this.inputs[field]) {
@@ -365,9 +385,16 @@ class ParameterUI {
     updateCalculatedValues() {
         const moduleVal = this.committed.module;
         const teethVal = this.committed.teeth_count;
+        const isWorm = this.gearType === 'worm';
 
-        const pitchDiameter = moduleVal * teethVal;
+        const pitchDiameter = moduleVal * (isWorm ? this.committed.worm_quotient : teethVal);
         const circularPitch = Math.PI * moduleVal;
+
+        if (this.kpiLeadAngleRow) this.kpiLeadAngleRow.style.display = isWorm ? 'flex' : 'none';
+        if (isWorm && this.kpiLeadAngle) {
+            const leadAngle = Math.atan(teethVal / this.committed.worm_quotient) * 180 / Math.PI;
+            this.kpiLeadAngle.textContent = `${leadAngle.toFixed(2)}°`;
+        }
 
         if (this.kpiPitchDiameter) {
             this.kpiPitchDiameter.textContent = `${pitchDiameter.toFixed(2)} mm`;
@@ -428,6 +455,7 @@ class ParameterUI {
             planetCount: this.committed.planet_count,
             helixAngle: this.committed.helix_angle,
             pitchAngle: this.committed.pitch_angle,
+            wormQuotient: this.committed.worm_quotient,
             pressureAngle: parseFloat(this.inputs.pressure_angle?.value) || 20,
             faceWidth: this.committed.face_width,
             hubDiameter: this.committed.hub_diameter,
@@ -437,9 +465,42 @@ class ParameterUI {
         };
     }
 
+    // Adapts the "teeth" field to the gear type: limits, label, and a value that fits them.
+    applyTeethField(gearType) {
+        const input = this.inputs.teeth_count;
+        const slider = this.sliders.teeth_count;
+        const limits = this.teethLimits(gearType);
+
+        [input, slider].forEach(el => {
+            el.min = limits.min;
+            el.max = limits.max;
+        });
+
+        const isWorm = gearType === 'worm';
+        const labels = [
+            [this.teethTitle, isWorm ? 'param.starts' : 'param.teeth'],
+            [this.teethDesc, isWorm ? 'param.starts.desc' : 'param.teeth.desc']
+        ];
+        labels.forEach(([el, key]) => {
+            if (!el) return;
+            el.setAttribute('data-i18n', key);
+            if (window.i18n) el.textContent = window.i18n.translate(key);
+        });
+
+        const current = this.committed.teeth_count;
+        this.commitValue('teeth_count', this.isValidValue('teeth_count', current) ? current : limits.default);
+    }
+
     updateVisibility(gearType) {
+        this.gearType = gearType;
+        this.applyTeethField(gearType);
+
         if (this.helixAngleContainer) {
-            this.helixAngleContainer.style.display = (gearType === 'helical' || gearType === 'worm') ? 'flex' : 'none';
+            this.helixAngleContainer.style.display = gearType === 'helical' ? 'flex' : 'none';
+        }
+
+        if (this.wormQuotientContainer) {
+            this.wormQuotientContainer.style.display = gearType === 'worm' ? 'flex' : 'none';
         }
 
         if (this.pitchAngleContainer) {

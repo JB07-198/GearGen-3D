@@ -9,7 +9,7 @@ class UrlStateManager {
         const sp = new URLSearchParams();
         sp.set('type', gearType);
         // encode a compact subset of keys
-        const keys = ['module','teeth','pressureAngle','faceWidth','hubDiameter','boreDiameter','helixAngle','pitchAngle','planetTeeth','planetCount','quality','color'];
+        const keys = ['module','teeth','pressureAngle','faceWidth','hubDiameter','boreDiameter','helixAngle','pitchAngle','wormQuotient','planetTeeth','planetCount','quality','color'];
         keys.forEach(k => {
             if (params[k] !== undefined && params[k] !== null) {
                 sp.set(k, params[k]);
@@ -34,7 +34,7 @@ class UrlStateManager {
         sp.forEach((v, k) => {
             if (k !== 'type') raw[k] = v;
         });
-        const { parameters, invalid } = GearValidator.sanitizeParameters(raw, window.parameterUI.getParameterRules());
+        const { parameters, invalid } = GearValidator.sanitizeParameters(raw, window.parameterUI.getParameterRules(type));
         return { gearType: type, parameters, ignored: invalid };
     }
 }

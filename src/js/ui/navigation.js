@@ -126,13 +126,13 @@ class Navigation {
         const content = {
             en: `
                 <h3>Welcome to GearGen-3D</h3>
-                <p>GearGen-3D is an engineering-grade 3D gear generator adhering to ISO 53 standards, running in real-time WebGL.</p>
+                <p>GearGen-3D is a parametric 3D gear generator running in real-time WebGL. Tooth proportions follow the ISO 53 basic rack; see the documentation for its simplifications.</p>
                 <h3>Basic Workflow</h3>
                 <ol>
                     <li><strong>Gear Type:</strong> Select one of the 7 supported gear types in the left panel.</li>
                     <li><strong>Parameters:</strong> Adjust Module, Teeth, Pressure Angle, and dimensions in the right panel.</li>
                     <li><strong>3D View:</strong> Inspect geometry using OrbitControls (rotate, pan, zoom) and camera shortcuts.</li>
-                    <li><strong>Export:</strong> Download binary STL (for 3D printing) or faceted B-Rep STEP via the File menu or Export button.</li>
+                    <li><strong>Export:</strong> Download binary STL (for 3D printing) or a STEP solid via the File menu or Export button.</li>
                 </ol>
                 <h3>Key Shortcuts</h3>
                 <ul>
@@ -144,7 +144,7 @@ class Navigation {
             `,
             fr: `
                 <h3>Bienvenue sur GearGen-3D</h3>
-                <p>GearGen-3D est un générateur d'engrenages 3D de précision industrielle basé sur la norme ISO 53, propulsé en WebGL temps réel.</p>
+                <p>GearGen-3D est un générateur d'engrenages 3D paramétrique, en WebGL temps réel. Les proportions des dents suivent le profil de référence ISO 53 ; la documentation précise ses simplifications.</p>
                 <h3>Procédure d'Utilisation</h3>
                 <ol>
                     <li><strong>Type d'engrenage :</strong> Choisissez parmi les 7 types disponibles dans le volet de gauche.</li>
@@ -162,7 +162,7 @@ class Navigation {
             `,
             ar: `
                 <h3>مرحباً بك في GearGen-3D</h3>
-                <p>برنامج GearGen-3D هو مولد هندسي للتروس ثلاثية الأبعاد مطابق لمعايير ISO 53 ويعمل بتقنية WebGL في الوقت الفعلي.</p>
+                <p>برنامج GearGen-3D هو مولد بارامتري للتروس ثلاثية الأبعاد يعمل بتقنية WebGL في الوقت الفعلي. تتبع نسب الأسنان الجريدة المرجعية ISO 53، وتوضح الوثائق التبسيطات المعتمدة.</p>
                 <h3>طريقة الاستخدام</h3>
                 <ol>
                     <li><strong>نوع الترس:</strong> اختر أحد الأنواع السبعة المتوفرة في اللوحة اليمنى/اليسرى.</li>
@@ -192,8 +192,8 @@ class Navigation {
         const lang = window.i18n ? window.i18n.getCurrentLanguage() : 'en';
         const content = {
             en: `
-                <h3>ISO 53 Gear Formulas</h3>
-                <p>Gears are generated strictly adhering to ISO 53 metric standardized involute gear profiles:</p>
+                <h3>Gear Formulas</h3>
+                <p>Involute profiles use the proportions of the ISO 53 basic rack. Simplifications: no root fillet, no profile shift and no backlash, so printed parts may need clearance.</p>
                 <ul>
                     <li><strong>Pitch Diameter (d):</strong> <code>d = m × z</code></li>
                     <li><strong>Circular Pitch (p):</strong> <code>p = π × m</code></li>
@@ -203,6 +203,13 @@ class Navigation {
                     <li><strong>Tip Diameter (da):</strong> <code>da = d + 2 × ha</code></li>
                     <li><strong>Root Diameter (df):</strong> <code>df = d - 2 × hf</code></li>
                 </ul>
+                <h3>Specific Models</h3>
+                <ul>
+                    <li><strong>Bevel:</strong> virtual gear <code>zv = z / cos(δ)</code> (Tredgold), <code>da = d + 2m × cos(δ)</code>; face width is measured along the cone.</li>
+                    <li><strong>Worm:</strong> <code>d1 = q × m</code>, axial pitch <code>π × m</code>, lead angle <code>tan(γ) = z1 / q</code>, thread depth <code>2.25 × m</code>.</li>
+                    <li><strong>Helical:</strong> the module is the transverse module, so <code>d = m × z</code>.</li>
+                    <li><strong>Hub:</strong> cylinder on the top side, of length half the face width.</li>
+                </ul>
                 <h3>Standard Pressure Angles</h3>
                 <ul>
                     <li><strong>20.0°:</strong> Universal ISO standard; optimal blend of strength, quietness, and efficiency.</li>
@@ -210,12 +217,12 @@ class Navigation {
                     <li><strong>25.0°:</strong> Heavy-duty high-load gears offering thick tooth root resistance.</li>
                 </ul>
                 <h3>Export Specifications</h3>
-                <p><strong>STL (Binary):</strong> Compact binary representation with normal vectors, 100% compatible with Cura, PrusaSlicer, Bambu Studio.</p>
-                <p><strong>STEP (AP214):</strong> Standard for Exchange of Product model data with faceted B-Rep solids, compatible with SolidWorks, Fusion 360, FreeCAD, NX.</p>
+                <p><strong>STL (Binary):</strong> Compact binary format for slicers, with the gear axis on Z.</p>
+                <p><strong>STEP (AP214):</strong> One closed solid per part, made of planar faces. It can be measured and cut, but flanks and bores are facets rather than analytic surfaces.</p>
             `,
             fr: `
-                <h3>Formules d'Engrenages ISO 53</h3>
-                <p>Les profils sont calculés selon le standard métrique ISO 53 à développante de cercle :</p>
+                <h3>Formules d'Engrenages</h3>
+                <p>Les profils en développante utilisent les proportions du profil de référence ISO 53. Simplifications : pas de congé de pied, de déport ni de jeu, donc des pièces imprimées peuvent demander du jeu.</p>
                 <ul>
                     <li><strong>Diamètre primitif (d) :</strong> <code>d = m × z</code></li>
                     <li><strong>Pas circulaire (p) :</strong> <code>p = π × m</code></li>
@@ -225,6 +232,13 @@ class Navigation {
                     <li><strong>Diamètre de tête (da) :</strong> <code>da = d + 2 × ha</code></li>
                     <li><strong>Diamètre de pied (df) :</strong> <code>df = d - 2 × hf</code></li>
                 </ul>
+                <h3>Modèles Spécifiques</h3>
+                <ul>
+                    <li><strong>Conique :</strong> roue virtuelle <code>zv = z / cos(δ)</code> (Tredgold), <code>da = d + 2m × cos(δ)</code> ; la largeur se mesure le long du cône.</li>
+                    <li><strong>Vis sans fin :</strong> <code>d1 = q × m</code>, pas axial <code>π × m</code>, angle d'hélice <code>tan(γ) = z1 / q</code>, hauteur de filet <code>2,25 × m</code>.</li>
+                    <li><strong>Hélicoïdal :</strong> le module est le module apparent, donc <code>d = m × z</code>.</li>
+                    <li><strong>Moyeu :</strong> cylindre côté supérieur, de longueur égale à la moitié de la largeur.</li>
+                </ul>
                 <h3>Angles de Pression Normalisés</h3>
                 <ul>
                     <li><strong>20,0° :</strong> Standard mondial équilibré en résistance et rendement.</li>
@@ -232,12 +246,12 @@ class Navigation {
                     <li><strong>25,0° :</strong> Forte charge, épaisseur de dent renforcée à la base.</li>
                 </ul>
                 <h3>Spécifications d'Exportation</h3>
-                <p><strong>STL (Binaire) :</strong> Format compact avec vecteurs normaux, prêt pour le tranchage 3D.</p>
-                <p><strong>STEP (AP214) :</strong> B-Rep géométrique facetté pour SolidWorks, Fusion 360, FreeCAD, Onshape.</p>
+                <p><strong>STL (Binaire) :</strong> Format compact pour le tranchage 3D, avec l'axe de l'engrenage sur Z.</p>
+                <p><strong>STEP (AP214) :</strong> Un solide fermé par pièce, à faces planes. Il se mesure et se coupe, mais flancs et alésages sont des facettes, pas des surfaces analytiques.</p>
             `,
             ar: `
-                <h3>المعادلات الهندسية القياسية ISO 53</h3>
-                <p>يتم توليد هندسة الأسنان وفقاً لمعيار ISO 53 المتري:</p>
+                <h3>معادلات التروس</h3>
+                <p>تستخدم المقاطع نسب الجريدة المرجعية ISO 53، دون تدوير عند الجذر ودون إزاحة أو خلوص.</p>
                 <ul>
                     <li><strong>القطر الأولي (d):</strong> <code>d = m × z</code></li>
                     <li><strong>الخطوة الدائرية (p):</strong> <code>p = π × m</code></li>
@@ -249,9 +263,9 @@ class Navigation {
         };
 
         const titles = {
-            en: '<i class="fas fa-book"></i> Engineering Documentation (ISO 53)',
-            fr: '<i class="fas fa-book"></i> Documentation Technique (ISO 53)',
-            ar: '<i class="fas fa-book"></i> التوثيق الهندسي (ISO 53)'
+            en: '<i class="fas fa-book"></i> Engineering Documentation',
+            fr: '<i class="fas fa-book"></i> Documentation Technique',
+            ar: '<i class="fas fa-book"></i> التوثيق الهندسي'
         };
 
         this.createModal('doc-modal', titles[lang] || titles['en'], content[lang] || content['en']);

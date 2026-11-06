@@ -92,6 +92,10 @@ class I18n {
                 'param.planetTeeth.desc': 'Number of teeth on planet gears',
                 'param.planetCount': 'Planet Count',
                 'param.planetCount.desc': 'Number of planet gears in assembly',
+                'param.starts': 'Number of Threads (z1)',
+                'param.starts.desc': 'Thread starts on the worm',
+                'param.wormQuotient': 'Diametral Quotient (q)',
+                'param.wormQuotient.desc': 'Pitch diameter divided by the module',
                 'param.helixAngle': 'Helix Angle (°)',
                 'param.helixAngle.desc': 'Angle of teeth relative to axis',
                 'param.pitchAngle': 'Pitch Angle (°)',
@@ -117,13 +121,14 @@ class I18n {
                 // Calculated KPIs
                 'calc.pitchDiameter': 'Pitch Diameter',
                 'calc.circularPitch': 'Circular Pitch',
+                'calc.leadAngle': 'Lead Angle',
 
                 // Export Modal & Mobile
                 'section.export': 'Export',
                 'modal.export.stl': 'Download STL',
                 'modal.export.step': 'Download STEP',
                 'modal.export.stlDesc': 'Binary STL format. Optimal for 3D printing and slicers.',
-                'modal.export.stepDesc': 'Faceted B-Rep STEP (AP214). Suitable for mechanical CAD.',
+                'modal.export.stepDesc': 'Closed solid made of planar faces (AP214), one per part.',
                 'modal.export.dxf': 'Download DXF',
                 'modal.export.dxfDesc': '2D involute profile with central bore. Ready for laser cutting and CNC milling.',
                 'modal.export.estimatedSize': 'Estimated File Size',
@@ -137,11 +142,15 @@ class I18n {
                 'validation.ignoredParams': 'Invalid values ignored (link or saved state): {fields}.',
                 'validation.hubBelowBore': 'Hub ignored: its diameter ({hubDiameter} mm) must exceed the bore ({boreDiameter} mm).',
                 'validation.hubTooLarge': 'Hub ignored: its diameter ({hubDiameter} mm) must stay below the root diameter ({dedendumDiameter} mm).',
+                'validation.planetsOverlap': 'The {count} planets overlap: {spacing} mm between axes for a tip diameter of {tipDiameter} mm.',
+                'validation.bevelFaceWidth': 'Face width of {requestedWidth} mm above the recommended third of the cone distance ({limit} mm).',
+                'validation.bevelFaceClamped': 'Face width limited to {maxWidth} mm instead of {requestedWidth} mm: the teeth would reach the apex of the cone.',
                 'config.invalidJson': 'Invalid JSON file.',
                 'config.invalidSchema': 'Unsupported or invalid config schema.',
                 'config.unknownType': 'Unknown gear type in this file.',
                 'config.invalidParams': 'Invalid values in this file: {fields}.',
                 'export.dxfSpurOnly': 'DXF export is only available for spur gears.',
+                'export.stepNotClosed': 'STEP export cancelled: {count} part(s) of this model are not closed, so no valid solid can be written.',
                 'export.success': 'File downloaded successfully:'
             },
 
@@ -226,6 +235,10 @@ class I18n {
                 'param.planetTeeth.desc': 'Nombre de dents par satellite',
                 'param.planetCount': 'Nombre de Satellites',
                 'param.planetCount.desc': 'Quantité de satellites dans l\'ensemble',
+                'param.starts': 'Nombre de Filets (z1)',
+                'param.starts.desc': 'Filets de la vis sans fin',
+                'param.wormQuotient': 'Quotient Diamétral (q)',
+                'param.wormQuotient.desc': 'Diamètre primitif divisé par le module',
                 'param.helixAngle': 'Angle d\'Hélice (°)',
                 'param.helixAngle.desc': 'Angle des dents par rapport à l\'axe',
                 'param.pitchAngle': 'Angle Primitif (°)',
@@ -251,13 +264,14 @@ class I18n {
                 // Calculated KPIs
                 'calc.pitchDiameter': 'Diamètre Primitif',
                 'calc.circularPitch': 'Pas Circulaire',
+                'calc.leadAngle': 'Angle d\'Hélice',
 
                 // Export Modal & Mobile
                 'section.export': 'Exporter',
                 'modal.export.stl': 'Télécharger STL',
                 'modal.export.step': 'Télécharger STEP',
                 'modal.export.stlDesc': 'Format STL binaire. Recommandé pour l\'impression 3D.',
-                'modal.export.stepDesc': 'Format STEP B-Rep facetté (AP214). Adapté aux logiciels CAO.',
+                'modal.export.stepDesc': 'Solide fermé à faces planes (AP214), un par pièce.',
                 'modal.export.dxf': 'Télécharger DXF',
                 'modal.export.dxfDesc': 'Profil 2D en développante avec alésage central. Prêt pour la découpe laser et le fraisage CNC.',
                 'modal.export.estimatedSize': 'Taille estimée du fichier',
@@ -271,11 +285,15 @@ class I18n {
                 'validation.ignoredParams': 'Valeurs invalides ignorées (lien ou état enregistré) : {fields}.',
                 'validation.hubBelowBore': 'Moyeu ignoré : son diamètre ({hubDiameter} mm) doit dépasser l\'alésage ({boreDiameter} mm).',
                 'validation.hubTooLarge': 'Moyeu ignoré : son diamètre ({hubDiameter} mm) doit rester sous le diamètre de pied ({dedendumDiameter} mm).',
+                'validation.planetsOverlap': 'Les {count} satellites se chevauchent : {spacing} mm entre axes pour un diamètre de tête de {tipDiameter} mm.',
+                'validation.bevelFaceWidth': 'Largeur de {requestedWidth} mm au-delà du tiers recommandé de la génératrice ({limit} mm).',
+                'validation.bevelFaceClamped': 'Largeur limitée à {maxWidth} mm au lieu de {requestedWidth} mm : les dents atteindraient le sommet du cône.',
                 'config.invalidJson': 'Fichier JSON invalide.',
                 'config.invalidSchema': 'Schéma de configuration invalide ou non pris en charge.',
                 'config.unknownType': 'Type d\'engrenage inconnu dans ce fichier.',
                 'config.invalidParams': 'Valeurs invalides dans ce fichier : {fields}.',
                 'export.dxfSpurOnly': 'L\'export DXF est uniquement disponible pour les engrenages droits.',
+                'export.stepNotClosed': 'Export STEP annulé : {count} pièce(s) de ce modèle ne sont pas fermées, aucun solide valide ne peut être écrit.',
                 'export.success': 'Fichier téléchargé avec succès :'
             },
 
@@ -360,6 +378,10 @@ class I18n {
                 'param.planetTeeth.desc': 'عدد الأسنان على كل ترس كوكبي',
                 'param.planetCount': 'عدد الكواكب',
                 'param.planetCount.desc': 'عدد التروس الكوكبية في النظام',
+                'param.starts': 'عدد البدايات (z1)',
+                'param.starts.desc': 'بدايات لولب الدودة',
+                'param.wormQuotient': 'الحاصل القطري (q)',
+                'param.wormQuotient.desc': 'قطر الخطوة مقسومًا على الموديول',
                 'param.helixAngle': 'زاوية الحلزون (°)',
                 'param.helixAngle.desc': 'زاوية ميل الأسنان بالنسبة للمحور',
                 'param.pitchAngle': 'زاوية الخطوة (°)',
@@ -385,13 +407,14 @@ class I18n {
                 // Calculated KPIs
                 'calc.pitchDiameter': 'القطر الأولي',
                 'calc.circularPitch': 'الخطوة الدائرية',
+                'calc.leadAngle': 'زاوية التقدم',
 
                 // Export Modal & Mobile
                 'section.export': 'تصدير',
                 'modal.export.stl': 'STL تنزيل',
                 'modal.export.step': 'STEP تنزيل',
                 'modal.export.stlDesc': 'تنسيق STL ثنائي مثالي للطباعة ثلاثية الأبعاد.',
-                'modal.export.stepDesc': 'تنسيق STEP B-Rep ملائم لبرامج الهندسة الميكانيكية.',
+                'modal.export.stepDesc': 'مجسم مغلق بوجوه مستوية (AP214)، مجسم لكل قطعة.',
                 'modal.export.dxf': 'DXF تنزيل',
                 'modal.export.dxfDesc': 'مقطع ثنائي الأبعاد بمنحنى تطوري مع تجويف مركزي. جاهز للقطع بالليزر والتفريز باستخدام الحاسوب.',
                 'modal.export.estimatedSize': 'الحجم المقدر للملف',
@@ -405,11 +428,15 @@ class I18n {
                 'validation.ignoredParams': 'تم تجاهل القيم غير الصالحة (الرابط أو الحالة المحفوظة): {fields}.',
                 'validation.hubBelowBore': 'تم تجاهل المحور: يجب أن يتجاوز قطره ({hubDiameter} مم) قطر التجويف ({boreDiameter} مم).',
                 'validation.hubTooLarge': 'تم تجاهل المحور: يجب أن يبقى قطره ({hubDiameter} مم) أقل من قطر الجذر ({dedendumDiameter} مم).',
+                'validation.planetsOverlap': 'الكواكب الـ {count} متداخلة: {spacing} مم بين المحاور مقابل قطر رأس {tipDiameter} مم.',
+                'validation.bevelFaceWidth': 'عرض الوجه {requestedWidth} مم يتجاوز الثلث الموصى به من مسافة المخروط ({limit} مم).',
+                'validation.bevelFaceClamped': 'تم تحديد عرض الوجه عند {maxWidth} مم بدلاً من {requestedWidth} مم: ستصل الأسنان إلى قمة المخروط.',
                 'config.invalidJson': 'ملف JSON غير صالح.',
                 'config.invalidSchema': 'مخطط الإعدادات غير مدعوم أو غير صالح.',
                 'config.unknownType': 'نوع الترس في هذا الملف غير معروف.',
                 'config.invalidParams': 'قيم غير صالحة في هذا الملف: {fields}.',
                 'export.dxfSpurOnly': 'تصدير DXF متاح فقط للتروس المستقيمة.',
+                'export.stepNotClosed': 'تم إلغاء تصدير STEP: عدد القطع غير المغلقة في هذا النموذج {count}، ولا يمكن كتابة مجسم صالح.',
                 'export.success': 'تم تنزيل الملف بنجاح:'
             }
         };

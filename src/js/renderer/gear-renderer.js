@@ -34,20 +34,24 @@ class GearRenderer {
 
     createBevelGear(gearData, color = '#3498db', quality = 'medium') {
         try {
-            // Large radius R = pitchDiameter / 2, small radius r = R - faceWidth * sin(delta)
-            const delta = gearData.pitchAngle * Math.PI / 180;
-            const R = gearData.pitchDiameter / 2;
-            const faceWidth = gearData.faceWidth;
-            const taperFactor = (R - faceWidth * Math.sin(delta)) / R;
+            const { coneDistance, apexDistance, faceWidth } = gearData;
+            const steps = quality === 'high' ? 8 : (quality === 'medium' ? 4 : 2);
+
+            // Every point of the large end moves in a straight line towards the apex of the cone.
+            const contour = this._gearContour(gearData);
+            const rings = [];
+            for (let i = 0; i <= steps; i++) {
+                const s = 1 - (faceWidth / coneDistance) * (i / steps);
+                rings.push(contour.map(p => ({
+                    x: p.x * s,
+                    y: p.y * s,
+                    z: apexDistance + s * (p.z - apexDistance)
+                })));
+            }
 
             const geometry = this._buildGearGeometry(gearData, {
                 chamfer: Math.min(0.2, gearData.module * 0.1),
-                steps: quality === 'high' ? 8 : (quality === 'medium' ? 4 : 2),
-                // z = 0 is the large end, z = faceWidth the small end
-                deform: (x, y, z) => {
-                    const s = 1.0 - (1.0 - taperFactor) * (z / faceWidth);
-                    return [x * s, y * s];
-                }
+                rings
             });
             return this._createMesh(geometry, color);
         } catch (error) {
@@ -58,17 +62,16 @@ class GearRenderer {
 
     createWormGear(gearData, color = '#3498db', quality = 'medium') {
         try {
-            // twist = 2 * faceWidth / (d * tan(gamma)); a zero lead angle gives a straight worm.
-            const gamma = gearData.leadAngle * Math.PI / 180;
-            const tanGamma = Math.tan(gamma);
-            const twistAngle = Math.abs(tanGamma) > 1e-6
-                ? (2 * gearData.faceWidth) / (gearData.pitchDiameter * tanGamma)
-                : 0;
+            // The section of a thread is the same all along the axis, turned by one revolution per lead.
+            const twistAngle = 2 * Math.PI * gearData.faceWidth / gearData.lead;
+            const stepsPerTurn = quality === 'high' ? 144 : (quality === 'medium' ? 72 : 36);
+            const steps = Math.min(2000, Math.max(8, Math.ceil((twistAngle / (2 * Math.PI)) * stepsPerTurn)));
 
             const geometry = this._buildGearGeometry(gearData, {
                 chamfer: Math.min(0.2, gearData.module * 0.1),
-                steps: quality === 'high' ? 64 : (quality === 'medium' ? 32 : 16),
-                deform: this._twist(twistAngle, gearData.faceWidth)
+                steps,
+                deform: this._twist(twistAngle, gearData.faceWidth),
+                splitAlongTwist: true
             });
             return this._createMesh(geometry, color);
         } catch (error) {
@@ -86,35 +89,28 @@ class GearRenderer {
             // Centering: start at - (teeth * p) / 2
             const p = circularPitch;
             const startX = -(teeth * p) / 2;
+            const endX = startX + teeth * p;
+            const rootY = -gearData.dedendum;
+            const baseY = rootY - module * 2; // Extra depth for the rack body
 
-            // Start at bottom left of first tooth
-            const firstPt = displayPoints[0];
-            shape.moveTo(startX + firstPt.x, firstPt.y);
+            // Body, with a root land at each end so that the length is exactly teeth * pitch
+            shape.moveTo(startX, baseY);
+            shape.lineTo(startX, rootY);
 
             for (let i = 0; i < teeth; i++) {
                 const offsetX = startX + i * p + p / 2;
-
-                displayPoints.forEach((pt, index) => {
-                    // Skip first point of first tooth
-                    if (i === 0 && index === 0) return;
-                    shape.lineTo(offsetX + pt.x, pt.y);
-                });
+                displayPoints.forEach(pt => shape.lineTo(offsetX + pt.x, pt.y));
             }
 
-            // Add back and bottom to close the rack body
-            const endX = startX + teeth * p;
-            const baseDepth = module * 2; // Extra depth for the rack body
-            const rootY = -gearData.dedendum;
-
-            shape.lineTo(endX, rootY - baseDepth);
-            shape.lineTo(startX, rootY - baseDepth);
+            shape.lineTo(endX, rootY);
+            shape.lineTo(endX, baseY);
             shape.closePath();
 
-            const geometry = new THREE.ExtrudeGeometry(
-                shape,
-                this._nominalExtrudeSettings(faceWidth, Math.min(0.2, module * 0.1), 12)
-            );
-            geometry.center();
+            const settings = this._nominalExtrudeSettings(faceWidth, Math.min(0.2, module * 0.1), 12);
+            const geometry = new THREE.ExtrudeGeometry(shape, settings);
+
+            // Pitch line kept on y = 0, so that a mating gear sits at its pitch radius from it.
+            geometry.translate(0, 0, -settings.depth / 2);
             geometry.rotateX(Math.PI / 2);
 
             return this._createMesh(geometry, color);
@@ -136,13 +132,15 @@ class GearRenderer {
     createPlanetaryGear(assemblyData, color = '#3498db', quality = 'medium') {
         try {
             const group = new THREE.Group();
-            const { sun, planet, ring, planetCount, centerDistance } = assemblyData;
+            const { sun, planet, ring, planetCount, centerDistance, sunTeeth, planetTeeth, ringTeeth } = assemblyData;
 
             // 1. Sun
             group.add(this._createPlanetarySpurMesh(sun, color));
 
-            // 2. Ring
-            group.add(this._createInternalMesh(ring, color));
+            // 2. Ring: it has a tooth on the first planet's axis, where a planet with an odd tooth count has one too.
+            const ringMesh = this._createInternalMesh(ring, color);
+            if (planetTeeth % 2 === 1) ringMesh.rotation.y = -Math.PI / ringTeeth;
+            group.add(ringMesh);
 
             // 3. Planets
             const planetColor = new THREE.Color(color).multiplyScalar(0.8);
@@ -153,8 +151,9 @@ class GearRenderer {
                 planetMesh.position.x = centerDistance * Math.cos(angle);
                 planetMesh.position.z = centerDistance * Math.sin(angle);
 
-                // Rotation for meshing (rough approximation)
-                planetMesh.rotation.y = -angle * (sun.teeth / planet.teeth);
+                // Phase: a space faces the sun tooth at the first planet, then the planet rolls around the sun.
+                const phase = Math.PI - Math.PI / planetTeeth + angle * (1 + sunTeeth / planetTeeth);
+                planetMesh.rotation.y = -phase;
 
                 group.add(planetMesh);
             }
@@ -209,10 +208,7 @@ class GearRenderer {
     _createMesh(geometry, color, specular = 0x222222, side = THREE.FrontSide) {
         const options = { color, shininess: 60, side };
         if (specular !== null) options.specular = specular;
-        const mesh = new THREE.Mesh(geometry, new THREE.MeshPhongMaterial(options));
-        mesh.castShadow = true;
-        mesh.receiveShadow = true;
-        return mesh;
+        return new THREE.Mesh(geometry, new THREE.MeshPhongMaterial(options));
     }
 
     // ExtrudeGeometry grows the outline by bevelSize and the depth by 2 * bevelThickness.
@@ -254,7 +250,7 @@ class GearRenderer {
             const cosR = Math.cos(tooth * toothAngle);
             const sinR = Math.sin(tooth * toothAngle);
             displayPoints.forEach(pt => {
-                const point = { x: pt.x * cosR - pt.y * sinR, y: pt.x * sinR + pt.y * cosR };
+                const point = { x: pt.x * cosR - pt.y * sinR, y: pt.x * sinR + pt.y * cosR, z: pt.z || 0 };
                 if (contour.length === 0 || !isSame(contour[contour.length - 1], point)) {
                     contour.push(point);
                 }
@@ -269,8 +265,9 @@ class GearRenderer {
     //   - toothed wall, from z = 0 to z = faceWidth, with a tip chamfer at both ends;
     //   - cylindrical bore through the whole part;
     //   - optional hub on the z < 0 side, of diameter hubDiameter and length faceWidth / 2.
-    // `deform` (twist, taper) applies to the toothed wall only: bore and hub stay true cylinders.
-    _buildGearGeometry(gearData, { chamfer = 0, steps = 1, deform = null } = {}) {
+    // `deform` (twist) and `rings` (ready-made toothed wall, ends not necessarily flat) concern the
+    // teeth only: bore and hub stay true cylinders. `splitAlongTwist` follows a steep helix in the mesh.
+    _buildGearGeometry(gearData, { chamfer = 0, steps = 1, deform = null, rings: presetRings = null, splitAlongTwist = false } = {}) {
         const F = gearData.faceWidth;
         const tipR = gearData.outerRadius;
         const positions = [];
@@ -283,8 +280,13 @@ class GearRenderer {
             for (let i = 0; i < n; i++) {
                 const j = (i + 1) % n;
                 const a = lower[i], b = lower[j], d = upper[j], e = upper[i];
-                positions.push(a.x, a.y, a.z, b.x, b.y, b.z, d.x, d.y, d.z);
-                positions.push(a.x, a.y, a.z, d.x, d.y, d.z, e.x, e.y, e.z);
+                if (splitAlongTwist) {
+                    positions.push(a.x, a.y, a.z, b.x, b.y, b.z, e.x, e.y, e.z);
+                    positions.push(b.x, b.y, b.z, d.x, d.y, d.z, e.x, e.y, e.z);
+                } else {
+                    positions.push(a.x, a.y, a.z, b.x, b.y, b.z, d.x, d.y, d.z);
+                    positions.push(a.x, a.y, a.z, d.x, d.y, d.z, e.x, e.y, e.z);
+                }
             }
         };
 
@@ -301,8 +303,7 @@ class GearRenderer {
         };
 
         // Clockwise for walls facing the axis (bore), counter-clockwise for walls facing outwards (hub).
-        const circle = (radius, z, clockwise) => {
-            const segments = 64;
+        const circle = (radius, z, clockwise, segments = 64) => {
             const ring = [];
             for (let i = 0; i < segments; i++) {
                 const a = (i / segments) * Math.PI * 2 * (clockwise ? -1 : 1);
@@ -312,27 +313,50 @@ class GearRenderer {
         };
 
         // Toothed wall: at each end the outline is cut by a smaller tip circle, so flanks stay on profile.
-        const contour = this._gearContour(gearData);
-        const toothedRing = (z, maxRadius) => contour.map(p => {
-            const r = Math.hypot(p.x, p.y);
-            const k = r > maxRadius ? maxRadius / r : 1;
-            const [x, y] = deform ? deform(p.x * k, p.y * k, z) : [p.x * k, p.y * k];
-            return { x, y, z };
-        });
+        let rings = presetRings;
+        if (!rings) {
+            const contour = this._gearContour(gearData);
+            const toothedRing = (z, maxRadius) => contour.map(p => {
+                const r = Math.hypot(p.x, p.y);
+                const k = r > maxRadius ? maxRadius / r : 1;
+                const [x, y] = deform ? deform(p.x * k, p.y * k, z) : [p.x * k, p.y * k];
+                return { x, y, z };
+            });
 
-        const zLevels = [];
-        if (c > 0) zLevels.push({ z: 0, maxRadius: tipR - c });
-        for (let i = 0; i <= steps; i++) {
-            zLevels.push({ z: c + (F - 2 * c) * (i / steps), maxRadius: tipR });
+            const zLevels = [];
+            if (c > 0) zLevels.push({ z: 0, maxRadius: tipR - c });
+            for (let i = 0; i <= steps; i++) {
+                zLevels.push({ z: c + (F - 2 * c) * (i / steps), maxRadius: tipR });
+            }
+            if (c > 0) zLevels.push({ z: F, maxRadius: tipR - c });
+
+            rings = zLevels.map(level => toothedRing(level.z, level.maxRadius));
         }
-        if (c > 0) zLevels.push({ z: F, maxRadius: tipR - c });
-
-        const rings = zLevels.map(level => toothedRing(level.z, level.maxRadius));
         for (let i = 0; i < rings.length - 1; i++) addWall(rings[i], rings[i + 1]);
 
         const bottomRing = rings[0];
         const topRing = rings[rings.length - 1];
         const minRadius = ring => ring.reduce((min, p) => Math.min(min, Math.hypot(p.x, p.y)), Infinity);
+
+        // The flat part of an end is at the height of its lowest point (the tooth root on a cone).
+        const flatLevel = ring => ring.reduce((min, p) => Math.min(min, p.z), Infinity);
+        const bottomLevel = flatLevel(bottomRing);
+        const topLevel = flatLevel(topRing);
+
+        // On a conical end, the teeth are closed down to a circle under their root, then flat to the hole.
+        const addEnd = (ring, hole, faceUp) => {
+            const level = flatLevel(ring);
+            const isFlat = ring.every(p => Math.abs(p.z - level) < 1e-9);
+            const holeRadius = hole ? Math.hypot(hole[0].x, hole[0].y) : 0;
+            const innerRadius = minRadius(ring) * Math.cos(Math.PI / gearData.teeth) * 0.995;
+            if (isFlat || innerRadius <= holeRadius) {
+                addLid(ring, hole, faceUp);
+                return;
+            }
+            const inner = circle(innerRadius, level, true, Math.max(64, 4 * gearData.teeth));
+            addLid(ring, inner, faceUp);
+            addLid(inner, hole, faceUp);
+        };
 
         // Bore and hub: the validator reports the values that cannot be built.
         const boreR = (gearData.boreDiameter || 0) / 2;
@@ -342,32 +366,32 @@ class GearRenderer {
 
         const roomForBoreChamfer = Math.min(minRadius(topRing), hasHub ? requestedHubR : minRadius(bottomRing)) - boreR;
         const boreChamfer = boreR > 0 ? Math.max(0, Math.min(c, roomForBoreChamfer / 4)) : 0;
-        const zStart = hasHub ? -hubLength : 0;
+        const zStart = hasHub ? bottomLevel - hubLength : bottomLevel;
 
         const boreBottom = boreR > 0 ? circle(boreR + boreChamfer, zStart, true) : null;
-        const boreTop = boreR > 0 ? circle(boreR + boreChamfer, F, true) : null;
+        const boreTop = boreR > 0 ? circle(boreR + boreChamfer, topLevel, true) : null;
 
         if (boreR > 0) {
             const lower = circle(boreR, zStart + boreChamfer, true);
-            const upper = circle(boreR, F - boreChamfer, true);
+            const upper = circle(boreR, topLevel - boreChamfer, true);
             addWall(boreBottom, lower);
             addWall(lower, upper);
             addWall(upper, boreTop);
         }
 
-        addLid(topRing, boreTop, true);
+        addEnd(topRing, boreTop, true);
 
         if (hasHub) {
             const hubChamfer = Math.min(c, (requestedHubR - boreR) / 4, hubLength / 4);
-            const hubEnd = circle(requestedHubR - hubChamfer, -hubLength, false);
-            const hubBody = circle(requestedHubR, -hubLength + hubChamfer, false);
-            const hubBase = circle(requestedHubR, 0, false);
+            const hubEnd = circle(requestedHubR - hubChamfer, zStart, false);
+            const hubBody = circle(requestedHubR, zStart + hubChamfer, false);
+            const hubBase = circle(requestedHubR, bottomLevel, false);
             addWall(hubEnd, hubBody);
             addWall(hubBody, hubBase);
             addLid(hubEnd, boreBottom, false);
-            addLid(bottomRing, hubBase, false);
+            addEnd(bottomRing, hubBase, false);
         } else {
-            addLid(bottomRing, boreBottom, false);
+            addEnd(bottomRing, boreBottom, false);
         }
 
         const geometry = new THREE.BufferGeometry();
@@ -375,7 +399,7 @@ class GearRenderer {
         geometry.computeVertexNormals();
 
         // Teeth centred on the origin along the axis, then scene orientation (axis on Y).
-        geometry.translate(0, 0, -F / 2);
+        geometry.translate(0, 0, -(bottomLevel + topLevel) / 2);
         geometry.rotateX(Math.PI / 2);
         return geometry;
     }

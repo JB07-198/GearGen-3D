@@ -68,7 +68,7 @@ class ExportUI {
                         <span class="summary-value" data-summary="module"></span>
                     </div>
                     <div class="summary-item">
-                        <span class="summary-label" data-i18n="param.teeth">Teeth</span>
+                        <span class="summary-label" data-i18n="${gearType === 'worm' ? 'param.starts' : 'param.teeth'}">Teeth</span>
                         <span class="summary-value" data-summary="teeth"></span>
                     </div>
                     <div class="summary-item">
@@ -90,7 +90,7 @@ class ExportUI {
                             <span class="format-badge">3D Print</span>
                         </div>
                         <p class="format-desc" data-i18n="modal.export.stlDesc">
-                            Binary STL format. Optimal for slicing, Cura, Bambu Studio & 3D printing.
+                            Binary STL format. Optimal for 3D printing and slicers.
                         </p>
                         <button class="btn-export" id="modal-export-stl-btn" ${!hasMesh ? 'disabled' : ''}>
                             <i class="fas fa-cube"></i> <span data-i18n="modal.export.stl">Download STL</span>
@@ -104,7 +104,7 @@ class ExportUI {
                             <span class="format-badge">CAD B-Rep</span>
                         </div>
                         <p class="format-desc" data-i18n="modal.export.stepDesc">
-                            Faceted B-Rep STEP (AP214). Suitable for SolidWorks, Fusion 360, FreeCAD.
+                            Closed solid made of planar faces (AP214), one per part.
                         </p>
                         <button class="btn-export btn-step" id="modal-export-step-btn" ${!hasMesh ? 'disabled' : ''}>
                             <i class="fas fa-drafting-compass"></i> <span data-i18n="modal.export.step">Download STEP</span>

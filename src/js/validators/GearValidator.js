@@ -2,8 +2,8 @@
 class GearValidator {
     static GEAR_TYPES = ['spur', 'helical', 'bevel', 'worm', 'rack', 'internal', 'planetary'];
     static TYPES_WITH_BORE = ['spur', 'helical', 'bevel', 'worm'];
-    static TYPES_WITH_UNDERCUT_CHECK = ['spur', 'helical'];
-    static TYPES_WITH_EXTERNAL_TEETH = ['spur', 'helical', 'bevel', 'worm', 'planetary'];
+    static TYPES_WITH_UNDERCUT_CHECK = ['spur', 'helical', 'bevel'];
+    static TYPES_WITH_EXTERNAL_TEETH = ['spur', 'helical', 'bevel', 'planetary'];
 
     static isKnownType(type) {
         return GearValidator.GEAR_TYPES.includes(type);
@@ -57,8 +57,20 @@ class GearValidator {
         const pressureAngle = parseFloat(params.pressureAngle) || 20;
         const boreDiameter = parseFloat(params.boreDiameter) || 0;
         const hubDiameter = parseFloat(params.hubDiameter) || 0;
-        const pitchDiameter = module * teeth;
-        const dedendumDiameter = pitchDiameter - 2.5 * module;
+        const delta = (parseFloat(params.pitchAngle) || 45) * Math.PI / 180;
+
+        let pitchDiameter = module * teeth;
+        let dedendumDiameter = pitchDiameter - 2.5 * module;
+        let effectiveTeeth = teeth;     // virtual teeth for tooth shape checks on a cone
+        let tipScale = 1;               // size of the small end of a cone relative to its large end
+
+        if (gearType === 'worm') {
+            pitchDiameter = module * (parseFloat(params.wormQuotient) || 10);
+            dedendumDiameter = pitchDiameter - 2.5 * module;
+        } else if (gearType === 'bevel') {
+            dedendumDiameter = pitchDiameter - 2.5 * module * Math.cos(delta);
+            effectiveTeeth = teeth / Math.cos(delta);
+        }
 
         // 1. Bore collision
         // Rack, internal and planetary have no bore field, so its stored value must not block them.
@@ -66,13 +78,22 @@ class GearValidator {
             diagnostics.push({ level: 'error', code: 'bore_collision', messageKey: 'validation.boreCollision', params: { boreDiameter, dedendumDiameter } });
         }
 
-        // The cone narrows towards the small end, so that is where the bore has the least room.
-        if (gearType === 'bevel' && boreDiameter > 0) {
-            const delta = (parseFloat(params.pitchAngle) || 45) * Math.PI / 180;
-            const R = pitchDiameter / 2;
-            const faceWidth = Math.min(parseFloat(params.faceWidth) || 0, Math.max(1, (R / Math.sin(delta)) * 0.9));
-            const smallEndRoot = dedendumDiameter * (R - faceWidth * Math.sin(delta)) / R;
-            if (boreDiameter < dedendumDiameter && boreDiameter >= smallEndRoot) {
+        if (gearType === 'bevel' && module > 0 && teeth > 0) {
+            const coneDistance = (pitchDiameter / 2) / Math.sin(delta);
+            const requestedWidth = parseFloat(params.faceWidth) || 0;
+            const maxWidth = Math.max(1, coneDistance * 0.9);
+            const faceWidth = Math.min(requestedWidth, maxWidth);
+            tipScale = 1 - faceWidth / coneDistance;
+
+            if (requestedWidth > maxWidth) {
+                diagnostics.push({ level: 'warning', code: 'bevel_face_clamped', messageKey: 'validation.bevelFaceClamped', params: { requestedWidth, maxWidth } });
+            } else if (requestedWidth > coneDistance / 3) {
+                diagnostics.push({ level: 'warning', code: 'bevel_face_width', messageKey: 'validation.bevelFaceWidth', params: { requestedWidth, limit: coneDistance / 3 } });
+            }
+
+            // The cone narrows towards the small end, so that is where the bore has the least room.
+            const smallEndRoot = dedendumDiameter * tipScale;
+            if (boreDiameter > 0 && boreDiameter < dedendumDiameter && boreDiameter >= smallEndRoot) {
                 diagnostics.push({ level: 'error', code: 'bore_collision', messageKey: 'validation.boreCollision', params: { boreDiameter, dedendumDiameter: smallEndRoot } });
             }
         }
@@ -91,8 +112,8 @@ class GearValidator {
             let minTeeth = 17;
             if (pressureAngle <= 14.5) minTeeth = 32;
             else if (pressureAngle >= 25) minTeeth = 12;
-            if (teeth > 0 && teeth < minTeeth) {
-                diagnostics.push({ level: 'warning', code: 'undercut', messageKey: 'validation.undercut', params: { teeth, minTeeth, pressureAngle } });
+            if (teeth > 0 && effectiveTeeth < minTeeth) {
+                diagnostics.push({ level: 'warning', code: 'undercut', messageKey: 'validation.undercut', params: { teeth: effectiveTeeth, minTeeth, pressureAngle } });
             }
         }
 
@@ -105,18 +126,25 @@ class GearValidator {
             if (count > 0 && (sun + ring) % count !== 0) {
                 diagnostics.push({ level: 'error', code: 'planetary_equidistance', messageKey: 'validation.planetaryEquidistance', params: { sun, planet, ring, count } });
             }
+
+            // Neighbouring planets must not touch: distance between their axes vs. their tip diameter.
+            const spacing = module * (sun + planet) * Math.sin(Math.PI / count);
+            const tipDiameter = module * planet + 2 * module;
+            if (count > 0 && spacing <= tipDiameter) {
+                diagnostics.push({ level: 'error', code: 'planets_overlap', messageKey: 'validation.planetsOverlap', params: { count, spacing, tipDiameter } });
+            }
         }
 
         // 4. DFM thin tip
         // approximate top land thickness at outer radius (formula valid for external teeth only)
         if (GearValidator.TYPES_WITH_EXTERNAL_TEETH.includes(gearType) && module > 0 && teeth > 0) {
-            const baseRadius = (module * teeth * Math.cos(pressureAngle * Math.PI / 180)) / 2;
-            const outerRadius = (module * teeth) / 2 + module;
+            const baseRadius = (module * effectiveTeeth * Math.cos(pressureAngle * Math.PI / 180)) / 2;
+            const outerRadius = (module * effectiveTeeth) / 2 + module;
             const invR = GearMath.getInvoluteVal(outerRadius, baseRadius);
-            const halfThick = Math.PI / (2 * teeth);
+            const halfThick = Math.PI / (2 * effectiveTeeth);
             const invAlpha = Math.tan(pressureAngle * Math.PI / 180) - (pressureAngle * Math.PI / 180);
             const theta = halfThick + invAlpha - invR;
-            const topLand = 2 * outerRadius * Math.sin(theta); // approx linear thickness
+            const topLand = 2 * outerRadius * Math.sin(theta) * tipScale; // approx linear thickness
             if (topLand < 0.8) {
                 diagnostics.push({ level: 'warning', code: 'dfm_thin_tip', messageKey: 'validation.dfmThinTip', params: { topLand } });
             }

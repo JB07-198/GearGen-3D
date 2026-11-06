@@ -42,7 +42,7 @@ class ConfigManager {
             return false;
         }
         // A file is an explicit action: it is applied in full or refused, never partly.
-        const { parameters, invalid } = GearValidator.sanitizeParameters(data.parameters, window.parameterUI.getParameterRules());
+        const { parameters, invalid } = GearValidator.sanitizeParameters(data.parameters, window.parameterUI.getParameterRules(data.gearType));
         if (invalid.length > 0) {
             alert(t('config.invalidParams', { fields: invalid.join(', ') }));
             return false;
@@ -79,7 +79,7 @@ class ConfigManager {
             if (!raw) return null;
             const data = JSON.parse(raw);
             if (!data || data.schema_version !== '1.0' || !GearValidator.isKnownType(data.gearType)) return null;
-            const { parameters, invalid } = GearValidator.sanitizeParameters(data.parameters, window.parameterUI.getParameterRules());
+            const { parameters, invalid } = GearValidator.sanitizeParameters(data.parameters, window.parameterUI.getParameterRules(data.gearType));
             return { gearType: data.gearType, parameters, ignored: invalid };
         } catch (e) {
             return null;

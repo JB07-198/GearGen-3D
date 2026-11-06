@@ -42,8 +42,6 @@ class ThreeJSSetup {
         });
         this.renderer.setSize(width, height);
         this.renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
-        this.renderer.shadowMap.enabled = true;
-        this.renderer.shadowMap.type = THREE.PCFSoftShadowMap;
 
         // Clear previous canvas if any
         this.container.innerHTML = '';
@@ -63,22 +61,23 @@ class ThreeJSSetup {
     }
 
     setupLights() {
-        const ambientLight = new THREE.AmbientLight(0xffffff, 0.65);
+        const ambientLight = new THREE.AmbientLight(0xffffff, 0.45);
         this.scene.add(ambientLight);
 
-        const dirLight = new THREE.DirectionalLight(0xffffff, 0.85);
+        const dirLight = new THREE.DirectionalLight(0xffffff, 0.6);
         dirLight.position.set(60, 120, 60);
-        dirLight.castShadow = true;
-        dirLight.shadow.mapSize.width = 1024;
-        dirLight.shadow.mapSize.height = 1024;
-        dirLight.shadow.camera.near = 10;
-        dirLight.shadow.camera.far = 300;
-        dirLight.shadow.bias = -0.001;
         this.scene.add(dirLight);
 
-        const fillLight = new THREE.DirectionalLight(0x60A5FA, 0.4);
+        const fillLight = new THREE.DirectionalLight(0x60A5FA, 0.3);
         fillLight.position.set(-60, -30, -60);
         this.scene.add(fillLight);
+
+        // Follows the camera: every visible face is lit, so none stays flat dark under ambient light alone.
+        const headLight = new THREE.DirectionalLight(0xffffff, 0.45);
+        this.camera.add(headLight);
+        this.camera.add(headLight.target);
+        headLight.target.position.set(0, 0, -1);
+        this.scene.add(this.camera);
     }
 
     setupControls() {

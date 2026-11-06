@@ -282,6 +282,41 @@ const GearMath = {
         return fullProfile;
     },
 
+    // Transverse section of a worm, over one thread. The axial profile is a rack: at axial
+    // offset u from the middle of a thread, the section sits at angle -u * 2PI / lead.
+    generateWormSection: (gearData, quality = 'medium') => {
+        const { pitchRadius, outerRadius, rootRadius, axialPitch, lead, pressureAngleRad } = gearData;
+        const segmentsPerTurn = { low: 48, medium: 96, high: 192 }[quality] || 96;
+        const flankSteps = { low: 3, medium: 6, high: 12 }[quality] || 6;
+
+        const tanA = Math.tan(pressureAngleRad);
+        const tipHalf = axialPitch / 4 - (outerRadius - pitchRadius) * tanA;
+        const rootHalf = axialPitch / 4 + (pitchRadius - rootRadius) * tanA;
+        const end = axialPitch / 2;
+
+        // From one groove to the next: root, flank, tip, flank, root (u decreasing, angle increasing).
+        const spans = [
+            { from: end, to: rootHalf, rFrom: rootRadius, rTo: rootRadius },
+            { from: rootHalf, to: tipHalf, rFrom: rootRadius, rTo: outerRadius, steps: flankSteps },
+            { from: tipHalf, to: -tipHalf, rFrom: outerRadius, rTo: outerRadius },
+            { from: -tipHalf, to: -rootHalf, rFrom: outerRadius, rTo: rootRadius, steps: flankSteps },
+            { from: -rootHalf, to: -end, rFrom: rootRadius, rTo: rootRadius }
+        ];
+
+        const section = [];
+        spans.forEach(span => {
+            const steps = span.steps || Math.max(2, Math.round(((span.from - span.to) / lead) * segmentsPerTurn));
+            for (let i = 0; i <= steps; i++) {
+                const t = i / steps;
+                const u = span.from + (span.to - span.from) * t;
+                const r = span.rFrom + (span.rTo - span.rFrom) * t;
+                const angle = -u * 2 * Math.PI / lead;
+                section.push({ x: r * Math.cos(angle), y: r * Math.sin(angle) });
+            }
+        });
+        return section;
+    },
+
     // NEW: Calculate Rack Tooth Profile (Straight-sided)
     calculateRackProfile: (module, pressureAngleDeg, faceWidth) => {
         const p = Math.PI * module; // Circular pitch
@@ -340,18 +375,33 @@ function calculateBevelGear(module, teeth, pressureAngle, pitchAngle, faceWidth,
     const profile = GearMath.calculateToothProfile(module, teeth, pressureAngle);
 
     const delta = (pitchAngle || 45) * Math.PI / 180;
-    const R = profile.pitchDiameter / 2;
-    const maxFaceWidth = Math.max(1, (R / Math.sin(delta)) * 0.9);
-    const clampedFaceWidth = Math.min(faceWidth, maxFaceWidth);
+    const cosD = Math.cos(delta);
+    const sinD = Math.sin(delta);
+    const R = profile.pitchRadius;
+    const coneDistance = R / sinD;
 
-    // Add additional parameters
-    profile.faceWidth = clampedFaceWidth;
+    // Addendum and dedendum are measured on the back cone, perpendicular to the pitch cone.
+    profile.outerRadius = R + module * cosD;
+    profile.outerDiameter = 2 * profile.outerRadius;
+    profile.rootRadius = R - 1.25 * module * cosD;
+    profile.rootDiameter = 2 * profile.rootRadius;
+
+    profile.coneDistance = coneDistance;
+    profile.apexDistance = R / Math.tan(delta);
+    profile.faceWidth = Math.min(faceWidth, Math.max(1, coneDistance * 0.9));
     profile.hubDiameter = hubDiameter;
     profile.boreDiameter = boreDiameter;
     profile.pitchAngle = pitchAngle;
 
-    // Generate display profile
-    profile.displayPoints = GearMath.generateCompleteToothProfile(profile, quality);
+    // Tredgold: the tooth is that of a virtual spur gear of z / cos(delta) teeth, wrapped on the back cone.
+    const virtual = GearMath.calculateToothProfile(module, teeth / cosD, pressureAngle);
+    profile.virtualTeeth = virtual.teeth;
+    profile.displayPoints = GearMath.generateCompleteToothProfile(virtual, quality).map(point => {
+        const height = Math.hypot(point.x, point.y) - virtual.pitchRadius;
+        const radius = R + height * cosD;
+        const angle = Math.atan2(point.y, point.x) / cosD;
+        return { x: radius * Math.cos(angle), y: radius * Math.sin(angle), z: height * sinD };
+    });
 
     return profile;
 }
@@ -424,19 +474,29 @@ function calculatePlanetaryGear(module, sunTeeth, planetTeeth, planetCount, pres
 }
 
 // Calculate worm gear dimensions
-function calculateWormGear(module, starts, pressureAngle, leadAngle, faceWidth, hubDiameter, boreDiameter, quality = 'medium') {
-    // For a worm, "teeth" is the number of starts
-    const profile = GearMath.calculateToothProfile(module, starts, pressureAngle);
+function calculateWormGear(module, starts, pressureAngle, quotient, faceWidth, hubDiameter, boreDiameter, quality = 'medium') {
+    const pitchDiameter = quotient * module;
+    const axialPitch = Math.PI * module;
+    const profile = {
+        module,
+        teeth: starts, // the section repeats once per thread
+        starts,
+        quotient,
+        pressureAngle,
+        pressureAngleRad: pressureAngle * Math.PI / 180,
+        pitchDiameter,
+        pitchRadius: pitchDiameter / 2,
+        outerRadius: pitchDiameter / 2 + module,
+        rootRadius: pitchDiameter / 2 - 1.25 * module,
+        axialPitch,
+        lead: axialPitch * starts,
+        leadAngle: Math.atan(starts / quotient) * 180 / Math.PI,
+        faceWidth,
+        hubDiameter,
+        boreDiameter
+    };
 
-    // Add additional parameters
-    profile.faceWidth = faceWidth;
-    profile.hubDiameter = hubDiameter;
-    profile.boreDiameter = boreDiameter;
-    profile.leadAngle = leadAngle;
-    profile.starts = starts;
-
-    // Generate display profile
-    profile.displayPoints = GearMath.generateCompleteToothProfile(profile, quality);
+    profile.displayPoints = GearMath.generateWormSection(profile, quality);
 
     return profile;
 }
