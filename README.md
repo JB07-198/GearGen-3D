@@ -61,7 +61,7 @@ On the body of the teeth, the exported geometry sits on the nominal dimensions. 
 | STEP (AP214) | One `MANIFOLD_SOLID_BREP` per part (5 for a 3-planet system), same frame as the STL | All |
 | DXF (R12) | 2D profile and bore | Spur only |
 
-STEP files were checked with OpenCASCADE: closed, valid solids with no free edge, whose volume matches the mesh. They have not been tested in commercial CAD software. Their faces are planar facets, not analytic surfaces: a solid can be measured and cut, but a bore is not recognised as a cylinder, and helical gears and worms carry about 20,000 faces. Export is refused if a mesh is not closed.
+STEP files were checked with OpenCASCADE: closed, valid solids with no free edge, whose volume matches the mesh. They have not been tested in commercial CAD software. Their faces are planar facets, not analytic surfaces: a solid can be measured and cut, but a bore is not recognised as a cylinder, and helical gears and worms can reach tens of thousands of faces. Export is refused if a mesh is not closed.
 
 ## Usage
 - Select a gear type from the left panel.
