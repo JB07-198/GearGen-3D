@@ -28,14 +28,14 @@ class UrlStateManager {
         if (!hash) return null;
         const sp = new URLSearchParams(hash);
         const type = sp.get('type');
-        if (!type) return null;
-        const params = {};
+        if (!GearValidator.isKnownType(type)) return null;
+
+        const raw = {};
         sp.forEach((v, k) => {
-            if (k === 'type') return;
-            const num = parseFloat(v);
-            params[k] = isNaN(num) ? v : num;
+            if (k !== 'type') raw[k] = v;
         });
-        return { gearType: type, parameters: params };
+        const { parameters, invalid } = GearValidator.sanitizeParameters(raw, window.parameterUI.getParameterRules());
+        return { gearType: type, parameters, ignored: invalid };
     }
 }
 window.UrlStateManager = UrlStateManager;

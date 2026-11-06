@@ -1,7 +1,6 @@
 // ==========================================================================
 // GearGen-3D Parameter UI Management
 // Dual-control Synchronization, Real-Time KPIs & 60 FPS Throttled Generation
-// JSON Spec Compliant
 // ==========================================================================
 
 class ParameterUI {
@@ -21,14 +20,32 @@ class ParameterUI {
             mesh_quality: 'medium'
         };
 
-        this.rafId = null;
         this.isPendingUpdate = false;
+        this.integerFields = new Set(['teeth_count', 'planet_teeth', 'planet_count']);
+        this.paramKeys = {
+            module: 'module',
+            teeth: 'teeth_count',
+            planetTeeth: 'planet_teeth',
+            planetCount: 'planet_count',
+            helixAngle: 'helix_angle',
+            pitchAngle: 'pitch_angle',
+            pressureAngle: 'pressure_angle',
+            faceWidth: 'face_width',
+            hubDiameter: 'hub_diameter',
+            boreDiameter: 'bore_diameter',
+            color: 'gear_color',
+            quality: 'mesh_quality'
+        };
+        this.committed = {};      // last valid value of each numeric field; the only values the model reads
+        this.lastDiagnostics = [];
         this.init();
     }
 
     init() {
-        console.log('Initializing CAD Parameter UI...');
         this.cacheElements();
+        Object.keys(this.sliders).forEach(key => {
+            this.committed[key] = parseFloat(this.inputs[key].value);
+        });
         this.setupEventListeners();
         this.updateCalculatedValues();
     }
@@ -81,19 +98,30 @@ class ParameterUI {
             const slider = this.sliders[key];
 
             if (input && slider) {
-                // Number input changes
+                // While typing, the text is never rewritten: a value is applied only if it is valid.
                 input.addEventListener('input', () => {
-                    this.validateInput(input);
-                    slider.value = input.value;
-                    this.updatePresetChips(key, input.value);
+                    const value = parseFloat(input.value);
+                    const valid = this.isValidValue(key, value);
+                    input.classList.toggle('input-invalid', !valid);
+                    input.setAttribute('aria-invalid', String(!valid));
+                    if (!valid) return;
+
+                    this.committed[key] = value;
+                    slider.value = value;
+                    this.updatePresetChips(key, value);
                     this.updateCalculatedValues();
                     this.scheduleThrottledUpdate();
                 });
 
+                // Leaving the field or pressing Enter settles the text on a valid value.
+                input.addEventListener('blur', () => this.finalizeInput(key));
+                input.addEventListener('keydown', (e) => {
+                    if (e.key === 'Enter') this.finalizeInput(key);
+                });
+
                 // Slider changes
                 slider.addEventListener('input', () => {
-                    input.value = slider.value;
-                    this.updatePresetChips(key, slider.value);
+                    this.commitValue(key, parseFloat(slider.value));
                     this.updateCalculatedValues();
                     this.scheduleThrottledUpdate();
                 });
@@ -114,7 +142,7 @@ class ParameterUI {
             chip.addEventListener('click', () => {
                 const targetId = chip.parentElement.getAttribute('data-target');
                 const val = chip.getAttribute('data-value');
-                this.handlePresetSelect(targetId, val, chip);
+                this.handlePresetSelect(targetId, val);
             });
         });
 
@@ -139,7 +167,10 @@ class ParameterUI {
             });
         }
 
-        // 5. Section / Group Reset Buttons
+        // 5. Validation messages follow the interface language
+        window.addEventListener('languageChanged', () => this.renderValidation(this.lastDiagnostics));
+
+        // 6. Section / Group Reset Buttons
         document.querySelectorAll('.group-reset-btn').forEach(btn => {
             btn.addEventListener('click', () => {
                 const section = btn.getAttribute('data-section');
@@ -150,33 +181,23 @@ class ParameterUI {
 
     handleStep(id, isPlus) {
         const input = this.inputs[id];
-        const slider = this.sliders[id];
         if (!input) return;
 
         const step = parseFloat(input.step) || 1;
-        let val = parseFloat(input.value) || 0;
-        val = isPlus ? val + step : val - step;
+        const base = this.committed[id];
+        // Round to the precision in play so that 2.2 + 0.1 gives 2.3, not 2.3000000000000003.
+        const decimals = Math.max(this.countDecimals(step), this.countDecimals(base));
+        const next = parseFloat((isPlus ? base + step : base - step).toFixed(decimals));
 
-        input.value = val;
-        this.validateInput(input);
-        if (slider) slider.value = input.value;
-
-        this.updatePresetChips(id, input.value);
+        this.commitValue(id, this.clampToField(id, next));
         this.updateCalculatedValues();
         this.scheduleThrottledUpdate();
     }
 
-    handlePresetSelect(id, value, activeChip) {
-        const input = this.inputs[id];
-        const slider = this.sliders[id];
-        if (!input) return;
+    handlePresetSelect(id, value) {
+        if (!this.inputs[id]) return;
 
-        input.value = value;
-        if (slider) slider.value = value;
-
-        activeChip.parentElement.querySelectorAll('.preset-chip').forEach(c => c.classList.remove('active'));
-        activeChip.classList.add('active');
-
+        this.commitValue(id, parseFloat(value));
         this.updateCalculatedValues();
         this.scheduleThrottledUpdate();
     }
@@ -196,21 +217,68 @@ class ParameterUI {
         });
     }
 
-    validateInput(input) {
-        const min = parseFloat(input.min);
-        const max = parseFloat(input.max);
-        let val = parseFloat(input.value);
-
-        if (isNaN(val)) val = min;
-        if (val < min) val = min;
-        if (val > max) val = max;
-
-        input.value = val;
+    countDecimals(value) {
+        return (String(value).split('.')[1] || '').length;
     }
 
-    readNumber(input, fallback) {
-        const value = parseFloat(input?.value);
-        return Number.isFinite(value) ? value : fallback;
+    clampToField(key, value) {
+        const input = this.inputs[key];
+        return Math.min(parseFloat(input.max), Math.max(parseFloat(input.min), value));
+    }
+
+    isValidValue(key, value) {
+        if (!Number.isFinite(value)) return false;
+        if (this.integerFields.has(key) && !Number.isInteger(value)) return false;
+        return this.clampToField(key, value) === value;
+    }
+
+    // Applies a valid value to the field, its slider and its preset chips.
+    commitValue(key, value) {
+        const input = this.inputs[key];
+        this.committed[key] = value;
+        if (parseFloat(input.value) !== value) input.value = value;
+        input.classList.remove('input-invalid');
+        input.removeAttribute('aria-invalid');
+        if (this.sliders[key]) this.sliders[key].value = value;
+        this.updatePresetChips(key, value);
+    }
+
+    // Empty text returns to the last valid value; anything else is rounded and clamped.
+    finalizeInput(key) {
+        let value = parseFloat(this.inputs[key].value);
+        if (!Number.isFinite(value)) value = this.committed[key];
+        if (this.integerFields.has(key)) value = Math.round(value);
+        value = this.clampToField(key, value);
+
+        const changed = value !== this.committed[key];
+        this.commitValue(key, value);
+        if (changed) {
+            this.updateCalculatedValues();
+            this.scheduleThrottledUpdate();
+        }
+    }
+
+    // Accepted values for every parameter, read from the form so that limits live in one place.
+    getParameterRules() {
+        const rules = {};
+        Object.keys(this.paramKeys).forEach(param => {
+            const key = this.paramKeys[param];
+            const input = this.inputs[key];
+            if (key === 'pressure_angle') {
+                rules[param] = { type: 'enum', numeric: true, values: Array.from(input.options).map(o => parseFloat(o.value)) };
+            } else if (key === 'mesh_quality') {
+                rules[param] = { type: 'enum', values: Array.from(input.options).map(o => o.value.toLowerCase()) };
+            } else if (key === 'gear_color') {
+                rules[param] = { type: 'color' };
+            } else {
+                rules[param] = {
+                    type: this.integerFields.has(key) ? 'integer' : 'number',
+                    min: parseFloat(input.min),
+                    max: parseFloat(input.max)
+                };
+            }
+        });
+        return rules;
     }
 
     setSelectValue(select, value) {
@@ -241,7 +309,7 @@ class ParameterUI {
         }
     }
 
-    // Reset sections based on JSON spec functional inventory
+    // Reset sections
     resetSection(section) {
         const groupFields = {
             basic_dimensions: ['module', 'teeth_count', 'planet_teeth', 'planet_count', 'helix_angle', 'pitch_angle', 'pressure_angle'],
@@ -252,15 +320,16 @@ class ParameterUI {
         const fields = groupFields[section] || [];
         fields.forEach(field => {
             const def = this.defaults[field];
-            if (this.inputs[field]) {
+            if (this.sliders[field]) {
+                this.commitValue(field, def);
+            } else if (this.inputs[field]) {
                 if (field === 'pressure_angle' || field === 'mesh_quality') {
                     this.setSelectValue(this.inputs[field], def);
                 } else {
                     this.inputs[field].value = def;
                 }
+                this.updatePresetChips(field, def);
             }
-            if (this.sliders[field]) this.sliders[field].value = def;
-            this.updatePresetChips(field, def);
         });
 
         if (section === 'appearance' && this.colorHexValue && this.inputs.gear_color) {
@@ -282,7 +351,7 @@ class ParameterUI {
         if (this.isPendingUpdate) return;
         this.isPendingUpdate = true;
 
-        this.rafId = requestAnimationFrame(() => {
+        requestAnimationFrame(() => {
             if (window.gearGenApp) {
                 window.gearGenApp.generateGear();
             }
@@ -290,12 +359,12 @@ class ParameterUI {
         });
     }
 
-    // KPI Formulas as specified in JSON:
+    // KPI Formulas:
     // pitch_diameter = module * teeth_count (mm)
     // circular_pitch = PI * module (mm)
     updateCalculatedValues() {
-        const moduleVal = this.readNumber(this.inputs.module, 2.0);
-        const teethVal = this.readNumber(this.inputs.teeth_count, 20);
+        const moduleVal = this.committed.module;
+        const teethVal = this.committed.teeth_count;
 
         const pitchDiameter = moduleVal * teethVal;
         const circularPitch = Math.PI * moduleVal;
@@ -311,11 +380,12 @@ class ParameterUI {
     renderValidation(diagnostics) {
         const container = document.getElementById('validation-feedback');
         if (!container) return;
+        this.lastDiagnostics = diagnostics || [];
         container.innerHTML = '';
-        (diagnostics || []).forEach(d => {
+        this.lastDiagnostics.forEach(d => {
             const div = document.createElement('div');
             div.className = 'validation-badge ' + (d.level || 'info');
-            const msg = window.i18n ? window.i18n.translate(d.messageKey) : d.messageKey;
+            const msg = window.i18n ? window.i18n.translate(d.messageKey, d.params) : d.messageKey;
             div.textContent = msg;
             container.appendChild(div);
         });
@@ -323,35 +393,23 @@ class ParameterUI {
 
     setParameters(params) {
         if (!params) return;
-        const keyMap = {
-            module: 'module',
-            teeth: 'teeth_count',
-            planetTeeth: 'planet_teeth',
-            planetCount: 'planet_count',
-            helixAngle: 'helix_angle',
-            pitchAngle: 'pitch_angle',
-            pressureAngle: 'pressure_angle',
-            faceWidth: 'face_width',
-            hubDiameter: 'hub_diameter',
-            boreDiameter: 'bore_diameter',
-            color: 'gear_color',
-            quality: 'mesh_quality'
-        };
         Object.keys(params).forEach(key => {
-            const inputKey = keyMap[key] || key;
-            const input = this.inputs ? this.inputs[inputKey] : null;
-            if (input) {
+            const inputKey = this.paramKeys[key] || key;
+            const input = this.inputs[inputKey];
+            if (!input) return;
+
+            if (this.sliders[inputKey]) {
+                // An invalid value can never reach the model, whatever its origin.
+                const value = Number(params[key]);
+                if (this.isValidValue(inputKey, value)) this.commitValue(inputKey, value);
+            } else {
                 if (inputKey === 'pressure_angle' || inputKey === 'mesh_quality') {
                     this.setSelectValue(input, params[key]);
                 } else {
                     input.value = params[key];
                 }
+                this.updatePresetChips(inputKey, params[key]);
             }
-
-            const slider = this.sliders ? this.sliders[inputKey] : null;
-            if (slider) slider.value = params[key];
-
-            this.updatePresetChips(inputKey, params[key]);
         });
 
         if (this.colorHexValue && this.inputs.gear_color) {
@@ -362,24 +420,18 @@ class ParameterUI {
     }
 
     getAllParameters() {
-        // Validate numeric inputs with Number.isFinite so that a legitimate 0
-        // is never replaced by its default fallback.
-        const num = (input, fallback) => {
-            const value = parseFloat(input?.value);
-            return Number.isFinite(value) ? value : fallback;
-        };
-
+        // Text being typed is ignored: the model only sees the last valid values.
         return {
-            module: num(this.inputs.module, 2.0),
-            teeth: num(this.inputs.teeth_count, 20),
-            planetTeeth: num(this.inputs.planet_teeth, 12),
-            planetCount: num(this.inputs.planet_count, 3),
-            helixAngle: num(this.inputs.helix_angle, 20),
-            pitchAngle: num(this.inputs.pitch_angle, 45),
-            pressureAngle: num(this.inputs.pressure_angle, 20),
-            faceWidth: num(this.inputs.face_width, 10),
-            hubDiameter: num(this.inputs.hub_diameter, 10),
-            boreDiameter: num(this.inputs.bore_diameter, 5),
+            module: this.committed.module,
+            teeth: this.committed.teeth_count,
+            planetTeeth: this.committed.planet_teeth,
+            planetCount: this.committed.planet_count,
+            helixAngle: this.committed.helix_angle,
+            pitchAngle: this.committed.pitch_angle,
+            pressureAngle: parseFloat(this.inputs.pressure_angle?.value) || 20,
+            faceWidth: this.committed.face_width,
+            hubDiameter: this.committed.hub_diameter,
+            boreDiameter: this.committed.bore_diameter,
             color: this.inputs.gear_color?.value || '#3B82F6',
             quality: (this.inputs.mesh_quality?.value || 'medium').toLowerCase()
         };

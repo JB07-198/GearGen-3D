@@ -5,15 +5,6 @@ class WelcomeModal {
         this.root = null;
     }
 
-    shouldShow() {
-        try {
-            const pref = localStorage.getItem('geargen-show-welcome');
-            if (pref === 'false') return false;
-        } catch (e) {}
-        // Show only if no hash and no stored config? We'll let caller decide.
-        return true;
-    }
-
     show() {
         if (this.root) return;
         const types = [

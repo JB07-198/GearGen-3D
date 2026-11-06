@@ -1,6 +1,6 @@
 // ==========================================================================
 // GearGen-3D Mobile UI Controller
-// Bottom Navigation with Drawers & Swipe-Down Gesture (JSON Spec Compliant)
+// Bottom Navigation with Drawers & Swipe-Down Gesture
 // ==========================================================================
 
 class MobileUI {
@@ -14,7 +14,6 @@ class MobileUI {
     }
 
     init() {
-        console.log('Initializing CAD Mobile UI controller...');
         this.setupBottomNav();
         this.setupSwipeDownGestures();
         this.setupOverlay();

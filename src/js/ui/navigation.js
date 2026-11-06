@@ -1,6 +1,6 @@
 // ==========================================================================
 // GearGen-3D Navigation & Menu Bar Controller
-// Top Bar Dropdowns, Modals & Quick Actions (JSON Spec Compliant)
+// Top Bar Dropdowns, Modals & Quick Actions
 // ==========================================================================
 
 class Navigation {
@@ -9,7 +9,6 @@ class Navigation {
     }
 
     init() {
-        console.log('Initializing CAD Navigation controller...');
         this.setupQuickActions();
         this.setupLanguageSwitcher();
     }
@@ -256,11 +255,5 @@ class Navigation {
         };
 
         this.createModal('doc-modal', titles[lang] || titles['en'], content[lang] || content['en']);
-    }
-
-    showExportModal() {
-        if (window.exportUI) {
-            window.exportUI.openModal();
-        }
     }
 }

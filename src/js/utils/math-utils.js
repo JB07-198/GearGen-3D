@@ -33,18 +33,6 @@ const GearMath = {
         const circularPitch = Math.PI * m;
         const toothThicknessAtPitch = circularPitch / 2;
 
-        // Involute parameters - CORRECTION IMPORTANTE
-        // Angle where involute starts on base circle
-        const involuteStartAngle = Math.tan(alpha) - alpha; // evolvent angle at pitch circle
-
-        // Maximum involute angle on addendum circle
-        const addendumInvoluteAngle = Math.sqrt(
-            Math.pow(outerRadius / baseRadius, 2) - 1
-        );
-
-        // Pressure angle at addendum circle
-        const alphaA = Math.acos(baseRadius / outerRadius);
-
         return {
             module: m,
             teeth: z,
@@ -70,11 +58,6 @@ const GearMath = {
             circularPitch,
             toothThicknessAtPitch,
 
-            // Involute parameters
-            involuteStartAngle,
-            addendumInvoluteAngle,
-            alphaA,
-
             // Clearance
             clearance: dedendum - addendum
         };
@@ -98,8 +81,7 @@ const GearMath = {
             rootRadius,
             pitchRadius,
             pressureAngleRad,
-            module,
-            isInternal
+            module
         } = gearData;
 
         // Quality settings
@@ -122,13 +104,8 @@ const GearMath = {
             const effR = Math.max(r, baseRadius);
             const invR = GearMath.getInvoluteVal(effR, baseRadius);
 
-            if (isInternal) {
-                // For internal gears, tooth thickness increases with radius
-                return halfThickPitch - invAlpha + invR;
-            } else {
-                // For external gears, tooth thickness decreases with radius
-                return halfThickPitch + invAlpha - invR;
-            }
+            // For external gears, tooth thickness decreases with radius
+            return halfThickPitch + invAlpha - invR;
         };
 
         // 1. Root to Base (Left Side/Upper)
@@ -401,7 +378,7 @@ function calculateInternalGear(module, teeth, pressureAngle, faceWidth, quality 
     const pitchRadius = profile.pitchRadius;
     const m = module;
 
-    // Set parameters for generateCompleteToothProfile
+    // Set parameters for generateFullInternalProfile
     // Internal tooth: root is at large radius, tip is at small radius
     profile.rootRadius = pitchRadius + 1.25 * m;
     profile.outerRadius = pitchRadius - m; // generator's "tip"
@@ -412,7 +389,6 @@ function calculateInternalGear(module, teeth, pressureAngle, faceWidth, quality 
     profile.outerRadiusRim = profile.rimRadius; // For storage
 
     profile.faceWidth = faceWidth;
-    profile.isInternal = true;
 
     // Generate the FULL internal loop (all teeth as one polygon)
     profile.displayPoints = GearMath.generateFullInternalProfile(profile, quality);

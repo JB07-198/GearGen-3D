@@ -120,8 +120,6 @@ class I18n {
 
                 // Export Modal & Mobile
                 'section.export': 'Export',
-                'modal.export.title': 'Export 3D Model',
-                'modal.export.gear': 'Gear Model',
                 'modal.export.stl': 'Download STL',
                 'modal.export.step': 'Download STEP',
                 'modal.export.stlDesc': 'Binary STL format. Optimal for 3D printing and slicers.',
@@ -130,6 +128,19 @@ class I18n {
                 'modal.export.dxfDesc': '2D involute profile with central bore. Ready for laser cutting and CNC milling.',
                 'modal.export.estimatedSize': 'Estimated File Size',
                 'modal.export.noMesh': 'No 3D mesh currently available to export.',
+
+                'validation.valid': 'Parameters are valid.',
+                'validation.boreCollision': 'Bore ({boreDiameter} mm) reaches the tooth root (Ø {dedendumDiameter} mm). Reduce the bore or enlarge the gear.',
+                'validation.undercut': 'Undercut risk: {teeth} teeth, minimum {minTeeth} at {pressureAngle}°.',
+                'validation.planetaryEquidistance': 'Planets cannot be evenly spaced: sun {sun} + ring {ring} must be divisible by {count}.',
+                'validation.dfmThinTip': 'Thin tooth tip ({topLand} mm): below the 0.8 mm recommended for manufacturing.',
+                'validation.ignoredParams': 'Invalid values ignored (link or saved state): {fields}.',
+                'validation.hubBelowBore': 'Hub ignored: its diameter ({hubDiameter} mm) must exceed the bore ({boreDiameter} mm).',
+                'validation.hubTooLarge': 'Hub ignored: its diameter ({hubDiameter} mm) must stay below the root diameter ({dedendumDiameter} mm).',
+                'config.invalidJson': 'Invalid JSON file.',
+                'config.invalidSchema': 'Unsupported or invalid config schema.',
+                'config.unknownType': 'Unknown gear type in this file.',
+                'config.invalidParams': 'Invalid values in this file: {fields}.',
                 'export.dxfSpurOnly': 'DXF export is only available for spur gears.',
                 'export.success': 'File downloaded successfully:'
             },
@@ -243,8 +254,6 @@ class I18n {
 
                 // Export Modal & Mobile
                 'section.export': 'Exporter',
-                'modal.export.title': 'Exporter le Modèle 3D',
-                'modal.export.gear': 'Modèle d\'Engrenage',
                 'modal.export.stl': 'Télécharger STL',
                 'modal.export.step': 'Télécharger STEP',
                 'modal.export.stlDesc': 'Format STL binaire. Recommandé pour l\'impression 3D.',
@@ -253,6 +262,19 @@ class I18n {
                 'modal.export.dxfDesc': 'Profil 2D en développante avec alésage central. Prêt pour la découpe laser et le fraisage CNC.',
                 'modal.export.estimatedSize': 'Taille estimée du fichier',
                 'modal.export.noMesh': 'Aucun maillage 3D à exporter pour le moment.',
+
+                'validation.valid': 'Paramètres valides.',
+                'validation.boreCollision': 'L\'alésage ({boreDiameter} mm) atteint le pied de dent (Ø {dedendumDiameter} mm). Réduisez l\'alésage ou agrandissez l\'engrenage.',
+                'validation.undercut': 'Risque d\'interférence de taillage : {teeth} dents, minimum {minTeeth} à {pressureAngle}°.',
+                'validation.planetaryEquidistance': 'Satellites impossibles à répartir régulièrement : solaire {sun} + couronne {ring} doit être divisible par {count}.',
+                'validation.dfmThinTip': 'Tête de dent fine ({topLand} mm) : sous les 0,8 mm recommandés pour la fabrication.',
+                'validation.ignoredParams': 'Valeurs invalides ignorées (lien ou état enregistré) : {fields}.',
+                'validation.hubBelowBore': 'Moyeu ignoré : son diamètre ({hubDiameter} mm) doit dépasser l\'alésage ({boreDiameter} mm).',
+                'validation.hubTooLarge': 'Moyeu ignoré : son diamètre ({hubDiameter} mm) doit rester sous le diamètre de pied ({dedendumDiameter} mm).',
+                'config.invalidJson': 'Fichier JSON invalide.',
+                'config.invalidSchema': 'Schéma de configuration invalide ou non pris en charge.',
+                'config.unknownType': 'Type d\'engrenage inconnu dans ce fichier.',
+                'config.invalidParams': 'Valeurs invalides dans ce fichier : {fields}.',
                 'export.dxfSpurOnly': 'L\'export DXF est uniquement disponible pour les engrenages droits.',
                 'export.success': 'Fichier téléchargé avec succès :'
             },
@@ -366,8 +388,6 @@ class I18n {
 
                 // Export Modal & Mobile
                 'section.export': 'تصدير',
-                'modal.export.title': 'تصدير النموذج ثلاثي الأبعاد',
-                'modal.export.gear': 'نموذج الترس',
                 'modal.export.stl': 'STL تنزيل',
                 'modal.export.step': 'STEP تنزيل',
                 'modal.export.stlDesc': 'تنسيق STL ثنائي مثالي للطباعة ثلاثية الأبعاد.',
@@ -376,6 +396,19 @@ class I18n {
                 'modal.export.dxfDesc': 'مقطع ثنائي الأبعاد بمنحنى تطوري مع تجويف مركزي. جاهز للقطع بالليزر والتفريز باستخدام الحاسوب.',
                 'modal.export.estimatedSize': 'الحجم المقدر للملف',
                 'modal.export.noMesh': 'لا يتوفر نموذج حالياً للتصدير.',
+
+                'validation.valid': 'المعلمات صالحة.',
+                'validation.boreCollision': 'التجويف ({boreDiameter} مم) يصل إلى جذر السن (Ø {dedendumDiameter} مم). قلّل قطر التجويف أو كبّر الترس.',
+                'validation.undercut': 'خطر القطع السفلي: {teeth} سنًا، والحد الأدنى {minTeeth} عند {pressureAngle}°.',
+                'validation.planetaryEquidistance': 'لا يمكن توزيع الكواكب بالتساوي: يجب أن يقبل مجموع الشمس {sun} والحلقة {ring} القسمة على {count}.',
+                'validation.dfmThinTip': 'طرف السن رفيع ({topLand} مم): أقل من 0.8 مم الموصى بها للتصنيع.',
+                'validation.ignoredParams': 'تم تجاهل القيم غير الصالحة (الرابط أو الحالة المحفوظة): {fields}.',
+                'validation.hubBelowBore': 'تم تجاهل المحور: يجب أن يتجاوز قطره ({hubDiameter} مم) قطر التجويف ({boreDiameter} مم).',
+                'validation.hubTooLarge': 'تم تجاهل المحور: يجب أن يبقى قطره ({hubDiameter} مم) أقل من قطر الجذر ({dedendumDiameter} مم).',
+                'config.invalidJson': 'ملف JSON غير صالح.',
+                'config.invalidSchema': 'مخطط الإعدادات غير مدعوم أو غير صالح.',
+                'config.unknownType': 'نوع الترس في هذا الملف غير معروف.',
+                'config.invalidParams': 'قيم غير صالحة في هذا الملف: {fields}.',
                 'export.dxfSpurOnly': 'تصدير DXF متاح فقط للتروس المستقيمة.',
                 'export.success': 'تم تنزيل الملف بنجاح:'
             }
@@ -406,9 +439,16 @@ class I18n {
         }
     }
 
-    translate(key) {
+    // {name} placeholders are filled from params; numbers are shown with at most 2 decimals.
+    translate(key, params = null) {
         const langData = this.translations[this.currentLanguage] || this.translations['en'];
-        return langData[key] || this.translations['en'][key] || key;
+        const text = langData[key] || this.translations['en'][key] || key;
+        if (!params) return text;
+        return text.replace(/\{(\w+)\}/g, (placeholder, name) => {
+            const value = params[name];
+            if (value === undefined) return placeholder;
+            return typeof value === 'number' ? String(parseFloat(value.toFixed(2))) : String(value);
+        });
     }
 
     applyLanguage(lang) {

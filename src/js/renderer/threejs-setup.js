@@ -15,15 +15,13 @@ class ThreeJSSetup {
     }
 
     init() {
-        console.log('Initializing Three.js WebGL engine...');
-
         this.container = document.getElementById('preview-canvas');
         if (!this.container) {
             console.error('Preview canvas container (#preview-canvas) not found!');
             return;
         }
 
-        // 1. Scene with JSON Spec background color (#0F172A)
+        // 1. Scene with background color (#0F172A)
         this.scene = new THREE.Scene();
         this.scene.background = new THREE.Color(0x0F172A);
 
@@ -62,8 +60,6 @@ class ThreeJSSetup {
 
         // 7. Render Loop
         this.animate();
-
-        console.log('Three.js setup successfully initialized.');
     }
 
     setupLights() {
@@ -127,13 +123,5 @@ class ThreeJSSetup {
 
     getScene() {
         return this.scene;
-    }
-
-    getCamera() {
-        return this.camera;
-    }
-
-    getControls() {
-        return this.controls;
     }
 }

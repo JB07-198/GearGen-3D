@@ -1,17 +1,11 @@
 // STEP (ISO 10303-21) exporter
 // Produces a faceted B-Rep STEP file (AP214) from the current Three.js mesh.
 class STEPExporter {
-    constructor() {
-        console.log('STEP exporter initialized');
-    }
-
     exportCurrentGear(params = null) {
-        console.log('Exporting current gear as STEP...');
-
-        const gear = window.sceneManager ? window.sceneManager.getCurrentGear() : null;
+        const gear = window.sceneManager ? window.sceneManager.getExportObject() : null;
         if (!gear) {
             alert('No gear to export! Please generate a gear first.');
-            return;
+            return null;
         }
 
         try {
@@ -30,11 +24,11 @@ class STEPExporter {
             }
 
             this.downloadSTEP(stepText, filename);
-            this.showExportSuccess(filename);
-            console.log('STEP export successful');
+            return filename;
         } catch (error) {
             console.error('STEP export error:', error);
             alert('Error exporting STEP file. Please check console for details.');
+            return null;
         }
     }
 
@@ -210,33 +204,4 @@ END-ISO-10303-21;
         link.click();
         document.body.removeChild(link);
     }
-
-    showExportSuccess(filename) {
-        const notification = document.createElement('div');
-        notification.style.cssText = `
-            position: fixed;
-            top: 20px;
-            right: 20px;
-            background: #27ae60;
-            color: white;
-            padding: 15px 20px;
-            border-radius: 8px;
-            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
-            z-index: 1000;
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            animation: slideIn 0.3s ease;
-        `;
-        notification.innerHTML = `<i class="fas fa-check-circle" style="font-size: 1.2em;"></i><div><strong>Export Successful!</strong><br>${filename} downloaded</div>`;
-        document.body.appendChild(notification);
-        setTimeout(() => {
-            notification.style.animation = 'slideOut 0.3s ease';
-            setTimeout(() => { if (notification.parentNode) notification.parentNode.removeChild(notification); }, 300);
-        }, 3000);
-    }
 }
-
-document.addEventListener('DOMContentLoaded', () => {
-    window.stepExporter = new STEPExporter();
-});

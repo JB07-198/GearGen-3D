@@ -82,7 +82,6 @@ class SceneManager {
                 camera.position.set(dist, 0, 0);
                 break;
             case 'isometric':
-            case 'iso':
                 camera.position.set(dist * 0.7, dist * 0.7, dist * 0.7);
                 break;
             case 'reset':
@@ -139,12 +138,6 @@ class SceneManager {
     addGear(mesh) {
         if (!mesh) return;
 
-        // Avoid disposing the mesh we are about to add again.
-        if (this.currentGear === mesh) {
-            this.updateStats(mesh);
-            return;
-        }
-
         if (this.currentGear) {
             this.scene.remove(this.currentGear);
             this.disposeObject(this.currentGear);
@@ -194,6 +187,17 @@ class SceneManager {
             const maxDim = Math.max(size.x, size.y, size.z);
             sizeEl.textContent = `${maxDim.toFixed(1)} mm`;
         }
+    }
+
+    // Copy of the current gear in the export frame: what points up on screen (+Y) points to +Z,
+    // as expected by slicers and CAD. The copy shares its geometry; the scene is left untouched.
+    getExportObject() {
+        if (!this.currentGear) return null;
+        const root = new THREE.Group();
+        root.rotation.x = Math.PI / 2;
+        root.add(this.currentGear.clone());
+        root.updateMatrixWorld(true);
+        return root;
     }
 
     getCurrentGear() {

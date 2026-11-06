@@ -1,18 +1,17 @@
 // ==========================================================================
 // GearGen-3D Main Application Controller
-// Front-End & Three.js Engineering Orchestrator (JSON Spec Compliant)
+// Front-End & Three.js Engineering Orchestrator
 // ==========================================================================
 
 class GearGenApp {
     constructor() {
         this.currentGearType = null;
         this.hasGeneratedMesh = false;
+        this.pendingDiagnostics = [];
         this.init();
     }
 
     init() {
-        console.log('GearGen-3D Application Initializing...');
-
         // 1. Initialize Core 3D Engine
         window.threeJSSetup = new ThreeJSSetup();
         window.sceneManager = new SceneManager();
@@ -47,6 +46,9 @@ class GearGenApp {
         const restored = urlState || stored;
 
         if (restored && restored.gearType) {
+            if (restored.ignored && restored.ignored.length > 0) {
+                this.pendingDiagnostics.push({ level: 'warning', code: 'ignored_params', messageKey: 'validation.ignoredParams', params: { fields: restored.ignored.join(', ') } });
+            }
             this.setGearType(restored.gearType, { generate: false });
             if (restored.parameters && window.parameterUI) {
                 window.parameterUI.setParameters(restored.parameters);
@@ -80,7 +82,10 @@ class GearGenApp {
     }
 
     setGearType(type, { generate = true } = {}) {
-        console.log(`Setting active gear type: ${type}`);
+        if (!GearValidator.isKnownType(type)) {
+            console.warn('Ignoring unknown gear type.');
+            return;
+        }
         this.currentGearType = type;
 
         // Update card active states
@@ -108,7 +113,6 @@ class GearGenApp {
         if (!window.parameterUI || !window.gearRenderer) return;
 
         const params = window.parameterUI.getAllParameters();
-        console.log(`Generating 3D gear [${this.currentGearType}] with parameters:`, params);
 
         let gearMesh = null;
 
@@ -179,6 +183,7 @@ class GearGenApp {
             }
 
             const diagnostics = (window.GearValidator && params) ? window.GearValidator.validate(params, this.currentGearType) : [];
+            diagnostics.push(...this.pendingDiagnostics.splice(0));
             if (window.parameterUI && typeof window.parameterUI.renderValidation === 'function') {
                 window.parameterUI.renderValidation(diagnostics);
             }
@@ -244,7 +249,7 @@ class GearGenApp {
     }
 
     setupKeyboardShortcuts() {
-        // Keyboard Shortcuts mapping exactly as defined in JSON spec
+        // Keyboard Shortcuts mapping
         document.addEventListener('keydown', (e) => {
             // Do not fire shortcuts while typing in inputs
             const tag = e.target.tagName;
@@ -414,10 +419,9 @@ class GearGenApp {
         params.type = this.currentGearType;
 
         if (window.stlExporter) {
-            window.stlExporter.exportCurrentGear(params);
-            if (window.exportUI) {
-                const name = `${params.type}gear_m${params.module}_Z${params.teeth}.stl`;
-                const msg = `${window.i18n ? window.i18n.translate('export.success') : 'Downloaded'} ${name}`;
+            const filename = window.stlExporter.exportCurrentGear(params);
+            if (filename && window.exportUI) {
+                const msg = `${window.i18n ? window.i18n.translate('export.success') : 'Downloaded'} ${filename}`;
                 window.exportUI.showToast(msg);
             }
         }
@@ -433,10 +437,9 @@ class GearGenApp {
         params.type = this.currentGearType;
 
         if (window.stepExporter) {
-            window.stepExporter.exportCurrentGear(params);
-            if (window.exportUI) {
-                const name = `${params.type}gear_m${params.module}_Z${params.teeth}.step`;
-                const msg = `${window.i18n ? window.i18n.translate('export.success') : 'Downloaded'} ${name}`;
+            const filename = window.stepExporter.exportCurrentGear(params);
+            if (filename && window.exportUI) {
+                const msg = `${window.i18n ? window.i18n.translate('export.success') : 'Downloaded'} ${filename}`;
                 window.exportUI.showToast(msg);
             }
         }

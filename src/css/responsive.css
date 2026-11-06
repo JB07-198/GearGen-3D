@@ -1,29 +1,14 @@
 /* ==========================================================================
    GearGen-3D Responsive Stylesheet
    Desktop (>=1024px) 3-Panel Workspace & Mobile (<1024px) Bottom Nav with Drawers
-   JSON Spec Compliant
    ========================================================================== */
 
 /* ==========================================================================
    1. Desktop Mode (min-width: 1024px)
    ========================================================================== */
 @media (min-width: 1024px) {
-    .workspace-layout {
-        display: grid;
-        grid-template-columns: var(--left-sidebar-width) 1fr var(--right-sidebar-width);
-        gap: 12px;
-        height: calc(100vh - var(--header-height));
-        padding: 12px;
-    }
-
-    .mobile-nav,
-    .mobile-overlay,
-    .mobile-drawer-header {
-        display: none !important;
-    }
-
+    /* A swipe interrupted on touch can leave an inline transform on a drawer. */
     .workspace-panel {
-        display: flex !important;
         transform: none !important;
     }
 }

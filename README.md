@@ -31,19 +31,18 @@ GearGen-3D is an interactive, client-side web application for designing and gene
 GearGen-3D/
 ├── index.html
 ├── assets/
-├── src/
-│   ├── css/
-│   ├── js/
-│   │   ├── main.js
-│   │   ├── gear-types/
-│   │   ├── renderer/
-│   │   ├── exporters/
-│   │   ├── managers/
-│   │   ├── validators/
-│   │   ├── components/
-│   │   └── ui/
-│   └── ...
-└── docs/
+└── src/
+    ├── css/
+    └── js/
+        ├── main.js
+        ├── gear-types/
+        ├── renderer/
+        ├── exporters/
+        ├── managers/
+        ├── validators/
+        ├── components/
+        ├── ui/
+        └── utils/
 ```
 
 ## Usage

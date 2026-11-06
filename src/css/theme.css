@@ -1,13 +1,9 @@
 /* ==========================================================================
    GearGen-3D Theme Specification
-   Machine-Readable JSON Spec Compliant
    ========================================================================== */
 
 :root {
-    /* Theme Mode */
-    --theme-mode: dark;
-
-    /* Colors specified in JSON */
+    /* Colors */
     --background-primary: #0F172A;
     --background-panel: #1E293B;
     --background-panel-hover: #273549;
@@ -18,9 +14,6 @@
     --accent-primary-hover: #2563EB;
     --accent-primary-glow: rgba(59, 130, 246, 0.25);
     --accent-success: #10B981;
-    --accent-success-hover: #059669;
-    --accent-danger: #EF4444;
-    --accent-warning: #F59E0B;
     --text-primary: #F8FAFC;
     --text-secondary: #94A3B8;
     --text-muted: #64748B;
@@ -28,19 +21,12 @@
     /* Legacy CSS Variable Compatibility */
     --background: var(--background-primary);
     --surface: var(--background-panel);
-    --surface-glass: rgba(30, 41, 59, 0.85);
     --primary: var(--accent-primary);
-    --primary-hover: var(--accent-primary-hover);
-    --primary-light: #60A5FA;
-    --primary-glow: var(--accent-primary-glow);
     --secondary: #1E293B;
-    --secondary-light: #334155;
 
     /* Typography */
     --font-ui: 'Inter', system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
     --font-mono: 'JetBrains Mono', Consolas, "Courier New", monospace;
-    --font-heading: 'Inter', system-ui, sans-serif;
-    --font-body: var(--font-ui);
 
     /* Dimensions */
     --header-height: 56px;

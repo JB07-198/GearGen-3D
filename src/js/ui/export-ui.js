@@ -1,7 +1,6 @@
 // ==========================================================================
 // GearGen-3D Export UI Management
 // Modal Export Dialog, Live File Size Estimation & Toast Notifications
-// JSON Spec Compliant
 // ==========================================================================
 
 class ExportUI {
@@ -10,7 +9,6 @@ class ExportUI {
     }
 
     init() {
-        console.log('Initializing CAD Export UI...');
     }
 
     getEstimatedSize() {
@@ -63,25 +61,25 @@ class ExportUI {
                 <div class="export-gear-summary">
                     <div class="summary-item">
                         <span class="summary-label" data-i18n="section.gearType">Gear Type</span>
-                        <span class="summary-value">${gearType.toUpperCase()}</span>
+                        <span class="summary-value" data-summary="type"></span>
                     </div>
                     <div class="summary-item">
                         <span class="summary-label" data-i18n="param.module">Module</span>
-                        <span class="summary-value">${params.module || 2.0} mm</span>
+                        <span class="summary-value" data-summary="module"></span>
                     </div>
                     <div class="summary-item">
                         <span class="summary-label" data-i18n="param.teeth">Teeth</span>
-                        <span class="summary-value">${params.teeth || 20}</span>
+                        <span class="summary-value" data-summary="teeth"></span>
                     </div>
                     <div class="summary-item">
                         <span class="summary-label" data-i18n="param.faceWidth">Face Width</span>
-                        <span class="summary-value">${params.faceWidth || 10} mm</span>
+                        <span class="summary-value" data-summary="faceWidth"></span>
                     </div>
                 </div>
 
                 <div class="export-file-info">
                     <span><i class="fas fa-database"></i> <span data-i18n="modal.export.estimatedSize">Estimated File Size</span>:</span>
-                    <span class="file-size-tag">${estimatedSize}</span>
+                    <span class="file-size-tag" data-summary="size"></span>
                 </div>
 
                 <div class="export-formats-grid">
@@ -124,7 +122,20 @@ class ExportUI {
             modalHtml
         );
 
-        if (window.i18n) window.i18n.applyLanguage();
+        // Dynamic values are written as text, never parsed as HTML.
+        const summary = {
+            type: gearType.toUpperCase(),
+            module: `${params.module || 2.0} mm`,
+            teeth: String(params.teeth || 20),
+            faceWidth: `${params.faceWidth || 10} mm`,
+            size: estimatedSize
+        };
+        Object.keys(summary).forEach(key => {
+            const el = modal.querySelector(`[data-summary="${key}"]`);
+            if (el) el.textContent = summary[key];
+        });
+
+        if (window.i18n) window.i18n.applyLanguage(window.i18n.getCurrentLanguage());
 
         // Wire download buttons
         const stlBtn = modal.querySelector('#modal-export-stl-btn');
@@ -162,7 +173,11 @@ class ExportUI {
 
         const toast = document.createElement('div');
         toast.className = 'toast';
-        toast.innerHTML = `<i class="fas fa-check-circle"></i> <span>${message}</span>`;
+        const icon = document.createElement('i');
+        icon.className = 'fas fa-check-circle';
+        const text = document.createElement('span');
+        text.textContent = message;
+        toast.append(icon, text);
         container.appendChild(toast);
 
         setTimeout(() => {

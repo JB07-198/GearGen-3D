@@ -1,48 +1,13 @@
-// Gear Renderer for creating 3D meshes with corrected tooth profile
+// Gear Renderer: builds 3D meshes whose dimensions match the nominal gear data.
+// Chamfers only ever remove material, so tip diameter, tooth thickness, bore and
+// face width are exact on the body of the teeth.
 class GearRenderer {
-    constructor() {
-        console.log('Gear renderer initialized');
-    }
-
     createSpurGear(gearData, color = '#3498db', quality = 'medium') {
-        console.log('Creating spur gear with corrected profile...', gearData);
-
         try {
-            // Create gear shape with corrected tooth profile
-            const gearShape = this.createCorrectedGearShape(gearData, quality);
-
-            // Create gear geometry
-            const extrudeSettings = {
-                depth: gearData.faceWidth,
-                bevelEnabled: true,
-                bevelThickness: Math.min(0.5, gearData.module * 0.2),
-                bevelSize: Math.min(0.5, gearData.module * 0.2),
-                bevelSegments: 2,
-                curveSegments: 24
-            };
-
-            const geometry = new THREE.ExtrudeGeometry(gearShape, extrudeSettings);
-
-            // Center and orient correctly
-            geometry.center();
-            geometry.rotateX(Math.PI / 2);
-
-            // Create material
-            const material = new THREE.MeshPhongMaterial({
-                color: color,
-                shininess: 60,
-                specular: 0x222222,
-                flatShading: false
+            const geometry = this._buildGearGeometry(gearData, {
+                chamfer: Math.min(0.5, gearData.module * 0.2)
             });
-
-            // Create mesh
-            const gearMesh = new THREE.Mesh(geometry, material);
-            gearMesh.castShadow = true;
-            gearMesh.receiveShadow = true;
-
-            console.log('Gear created successfully');
-            return gearMesh;
-
+            return this._createMesh(geometry, color);
         } catch (error) {
             console.error('Error creating gear:', error);
             return null;
@@ -50,79 +15,17 @@ class GearRenderer {
     }
 
     createHelicalGear(gearData, color = '#3498db', quality = 'medium') {
-        console.log('Creating helical gear with helical twist...', gearData);
-
         try {
-            const gearShape = this.createCorrectedGearShape(gearData, quality);
-
-            // Calculate total twist angle (in radians)
-            // helixAngle is beta
             // twist = faceWidth * tan(beta) / pitchRadius
             const beta = gearData.helixAngle * Math.PI / 180;
             const twistAngle = (gearData.faceWidth * Math.tan(beta)) / (gearData.pitchDiameter / 2);
 
-            // Create gear geometry with multiple steps for smooth twist
-            const steps = quality === 'high' ? 32 : (quality === 'medium' ? 16 : 8);
-            const extrudeSettings = {
-                depth: gearData.faceWidth,
-                steps: steps,
-                bevelEnabled: true,
-                bevelThickness: Math.min(0.5, gearData.module * 0.2),
-                bevelSize: Math.min(0.5, gearData.module * 0.2),
-                bevelSegments: 2,
-                curveSegments: 24
-            };
-
-            const geometry = new THREE.ExtrudeGeometry(gearShape, extrudeSettings);
-
-            // Center geometry first
-            geometry.center();
-
-            // Apply helical twist by rotating vertices
-            const positions = geometry.attributes.position;
-            const faceWidth = gearData.faceWidth;
-
-            for (let i = 0; i < positions.count; i++) {
-                const x = positions.getX(i);
-                const y = positions.getY(i);
-                const z = positions.getZ(i);
-
-                // Calculate twist for this Z position
-                // Z is centered, so it goes from -faceWidth/2 to +faceWidth/2
-                const angle = (z / faceWidth) * twistAngle;
-
-                const cosA = Math.cos(angle);
-                const sinA = Math.sin(angle);
-
-                const newX = x * cosA - y * sinA;
-                const newY = x * sinA + y * cosA;
-
-                positions.setXY(i, newX, newY);
-            }
-
-            // Normals need to be recalculated after vertex manipulation
-            geometry.computeVertexNormals();
-
-            // Orient correctly (Three.js extrudes along Z, but we want gear axis to be vertical in our scene or as per spur gear)
-            // Spur gear uses geometry.rotateX(Math.PI / 2); Let's stay consistent.
-            geometry.rotateX(Math.PI / 2);
-
-            // Create material
-            const material = new THREE.MeshPhongMaterial({
-                color: color,
-                shininess: 60,
-                specular: 0x222222,
-                flatShading: false
+            const geometry = this._buildGearGeometry(gearData, {
+                chamfer: Math.min(0.5, gearData.module * 0.2),
+                steps: quality === 'high' ? 32 : (quality === 'medium' ? 16 : 8),
+                deform: this._twist(twistAngle, gearData.faceWidth)
             });
-
-            // Create mesh
-            const gearMesh = new THREE.Mesh(geometry, material);
-            gearMesh.castShadow = true;
-            gearMesh.receiveShadow = true;
-
-            console.log('Helical gear created successfully');
-            return gearMesh;
-
+            return this._createMesh(geometry, color);
         } catch (error) {
             console.error('Error creating helical gear:', error);
             return null;
@@ -130,80 +33,23 @@ class GearRenderer {
     }
 
     createBevelGear(gearData, color = '#3498db', quality = 'medium') {
-        console.log('Creating bevel gear with conical taper...', gearData);
-
         try {
-            const gearShape = this.createCorrectedGearShape(gearData, quality);
-
-            // Calculate taper factor
-            // delta is pitchAngle
-            // Large radius R = pitchDiameter / 2
-            // Small radius r = R - faceWidth * sin(delta)
-            // Taper factor at small end = r / R
+            // Large radius R = pitchDiameter / 2, small radius r = R - faceWidth * sin(delta)
             const delta = gearData.pitchAngle * Math.PI / 180;
             const R = gearData.pitchDiameter / 2;
             const faceWidth = gearData.faceWidth;
-            const r = R - faceWidth * Math.sin(delta);
-            const taperFactor = r / R;
+            const taperFactor = (R - faceWidth * Math.sin(delta)) / R;
 
-            // Offset the gear for conical alignment
-            // The apex of the cone should be at (0, 0, Z_apex)
-            // Z_apex = R / tan(delta)
-            const zApex = R / Math.tan(delta);
-
-            const steps = quality === 'high' ? 8 : (quality === 'medium' ? 4 : 2);
-            const extrudeSettings = {
-                depth: faceWidth,
-                steps: steps,
-                bevelEnabled: true,
-                bevelThickness: Math.min(0.2, gearData.module * 0.1),
-                bevelSize: Math.min(0.2, gearData.module * 0.1),
-                bevelSegments: 2,
-                curveSegments: 24
-            };
-
-            const geometry = new THREE.ExtrudeGeometry(gearShape, extrudeSettings);
-
-            // We want to taper towards the apex. 
-            // In Three.js, extrude is from Z=0 to Z=depth.
-            // Let's assume Z=0 is the LARGE end and Z=faceWidth is the SMALL end.
-            const positions = geometry.attributes.position;
-
-            for (let i = 0; i < positions.count; i++) {
-                const x = positions.getX(i);
-                const y = positions.getY(i);
-                const z = positions.getZ(i);
-
-                // Normalizing z factor: 0 at large end, 1 at small end
-                const zFactor = z / faceWidth;
-
-                // Current scale at this Z
-                const s = 1.0 - (1.0 - taperFactor) * zFactor;
-
-                positions.setXY(i, x * s, y * s);
-
-                // We could also adjust Z to follow the cone angle strictly if needed,
-                // but linear interpolation between planes is usually fine for display.
-            }
-
-            geometry.computeVertexNormals();
-            geometry.center();
-            geometry.rotateX(Math.PI / 2);
-
-            const material = new THREE.MeshPhongMaterial({
-                color: color,
-                shininess: 60,
-                specular: 0x222222,
-                flatShading: false
+            const geometry = this._buildGearGeometry(gearData, {
+                chamfer: Math.min(0.2, gearData.module * 0.1),
+                steps: quality === 'high' ? 8 : (quality === 'medium' ? 4 : 2),
+                // z = 0 is the large end, z = faceWidth the small end
+                deform: (x, y, z) => {
+                    const s = 1.0 - (1.0 - taperFactor) * (z / faceWidth);
+                    return [x * s, y * s];
+                }
             });
-
-            const gearMesh = new THREE.Mesh(geometry, material);
-            gearMesh.castShadow = true;
-            gearMesh.receiveShadow = true;
-
-            console.log('Bevel gear created successfully');
-            return gearMesh;
-
+            return this._createMesh(geometry, color);
         } catch (error) {
             console.error('Error creating bevel gear:', error);
             return null;
@@ -211,74 +57,20 @@ class GearRenderer {
     }
 
     createWormGear(gearData, color = '#3498db', quality = 'medium') {
-        console.log('Creating worm gear with high twist...', gearData);
-
         try {
-            const gearShape = this.createCorrectedGearShape(gearData, quality);
-
-            // Calculate total twist angle (in radians)
-            // leadAngle is gamma
-            // Lead L = PI * d * tan(gamma)
-            // Twist angle for faceWidth = (faceWidth / L) * 2 * PI
-            // twist = (faceWidth / (PI * d * tan(gamma))) * 2 * PI = 2 * faceWidth / (d * tan(gamma))
+            // twist = 2 * faceWidth / (d * tan(gamma)); a zero lead angle gives a straight worm.
             const gamma = gearData.leadAngle * Math.PI / 180;
-            const d = gearData.pitchDiameter;
             const tanGamma = Math.tan(gamma);
-            // A zero lead angle is valid (straight worm); avoid dividing by zero.
             const twistAngle = Math.abs(tanGamma) > 1e-6
-                ? (2 * gearData.faceWidth) / (d * tanGamma)
+                ? (2 * gearData.faceWidth) / (gearData.pitchDiameter * tanGamma)
                 : 0;
 
-            const steps = quality === 'high' ? 64 : (quality === 'medium' ? 32 : 16);
-            const extrudeSettings = {
-                depth: gearData.faceWidth,
-                steps: steps,
-                bevelEnabled: true,
-                bevelThickness: Math.min(0.2, gearData.module * 0.1),
-                bevelSize: Math.min(0.2, gearData.module * 0.1),
-                bevelSegments: 2,
-                curveSegments: 24
-            };
-
-            const geometry = new THREE.ExtrudeGeometry(gearShape, extrudeSettings);
-            geometry.center();
-
-            // Apply helical twist
-            const positions = geometry.attributes.position;
-            const faceWidth = gearData.faceWidth;
-
-            for (let i = 0; i < positions.count; i++) {
-                const x = positions.getX(i);
-                const y = positions.getY(i);
-                const z = positions.getZ(i);
-
-                const angle = (z / faceWidth) * twistAngle;
-                const cosA = Math.cos(angle);
-                const sinA = Math.sin(angle);
-
-                const newX = x * cosA - y * sinA;
-                const newY = x * sinA + y * cosA;
-
-                positions.setXY(i, newX, newY);
-            }
-
-            geometry.computeVertexNormals();
-            geometry.rotateX(Math.PI / 2);
-
-            const material = new THREE.MeshPhongMaterial({
-                color: color,
-                shininess: 60,
-                specular: 0x222222,
-                flatShading: false
+            const geometry = this._buildGearGeometry(gearData, {
+                chamfer: Math.min(0.2, gearData.module * 0.1),
+                steps: quality === 'high' ? 64 : (quality === 'medium' ? 32 : 16),
+                deform: this._twist(twistAngle, gearData.faceWidth)
             });
-
-            const gearMesh = new THREE.Mesh(geometry, material);
-            gearMesh.castShadow = true;
-            gearMesh.receiveShadow = true;
-
-            console.log('Worm gear created successfully');
-            return gearMesh;
-
+            return this._createMesh(geometry, color);
         } catch (error) {
             console.error('Error creating worm gear:', error);
             return null;
@@ -286,8 +78,6 @@ class GearRenderer {
     }
 
     createRackGear(gearData, color = '#3498db', quality = 'medium') {
-        console.log('Creating rack gear with linear layout...', gearData);
-
         try {
             const { teeth, displayPoints, module, circularPitch, faceWidth } = gearData;
             const shape = new THREE.Shape();
@@ -320,32 +110,14 @@ class GearRenderer {
             shape.lineTo(startX, rootY - baseDepth);
             shape.closePath();
 
-            const extrudeSettings = {
-                depth: faceWidth,
-                bevelEnabled: true,
-                bevelThickness: Math.min(0.2, module * 0.1),
-                bevelSize: Math.min(0.2, module * 0.1),
-                bevelSegments: 2,
-                curveSegments: 12
-            };
-
-            const geometry = new THREE.ExtrudeGeometry(shape, extrudeSettings);
+            const geometry = new THREE.ExtrudeGeometry(
+                shape,
+                this._nominalExtrudeSettings(faceWidth, Math.min(0.2, module * 0.1), 12)
+            );
             geometry.center();
             geometry.rotateX(Math.PI / 2);
 
-            const material = new THREE.MeshPhongMaterial({
-                color: color,
-                shininess: 60,
-                specular: 0x222222
-            });
-
-            const gearMesh = new THREE.Mesh(geometry, material);
-            gearMesh.castShadow = true;
-            gearMesh.receiveShadow = true;
-
-            console.log('Rack gear created successfully');
-            return gearMesh;
-
+            return this._createMesh(geometry, color);
         } catch (error) {
             console.error('Error creating rack gear:', error);
             return null;
@@ -353,65 +125,8 @@ class GearRenderer {
     }
 
     createInternalGear(gearData, color = '#3498db', quality = 'medium') {
-        console.log('Creating internal gear (ring) from constructive loop...', gearData);
-
         try {
-            const { displayPoints, rimRadius, module, faceWidth } = gearData;
-
-            // Outer ring (CCW)
-            const ringShape = new THREE.Shape();
-            const outerR = rimRadius || (gearData.rootRadius + 2 * module);
-
-            const segments = 120; // Smoother outer ring
-            for (let i = 0; i < segments; i++) {
-                const theta = (i / segments) * Math.PI * 2;
-                const x = outerR * Math.cos(theta);
-                const y = outerR * Math.sin(theta);
-                if (i === 0) ringShape.moveTo(x, y);
-                else ringShape.lineTo(x, y);
-            }
-            ringShape.closePath();
-
-            // Inner teeth hole (CW)
-            // The displayPoints provided by generateFullInternalProfile is already CW
-            const teethHole = new THREE.Path();
-            if (displayPoints.length > 0) {
-                teethHole.moveTo(displayPoints[0].x, displayPoints[0].y);
-                for (let i = 1; i < displayPoints.length; i++) {
-                    teethHole.lineTo(displayPoints[i].x, displayPoints[i].y);
-                }
-                teethHole.closePath();
-            }
-
-            ringShape.holes.push(teethHole);
-
-            const extrudeSettings = {
-                depth: faceWidth,
-                bevelEnabled: true,
-                bevelThickness: Math.min(0.1, module * 0.05),
-                bevelSize: Math.min(0.1, module * 0.05),
-                bevelSegments: 2,
-                curveSegments: 24
-            };
-
-            const geometry = new THREE.ExtrudeGeometry(ringShape, extrudeSettings);
-            geometry.center();
-            geometry.rotateX(Math.PI / 2);
-
-            const material = new THREE.MeshPhongMaterial({
-                color: color,
-                shininess: 60,
-                specular: 0x222222,
-                side: THREE.DoubleSide
-            });
-
-            const gearMesh = new THREE.Mesh(geometry, material);
-            gearMesh.castShadow = true;
-            gearMesh.receiveShadow = true;
-
-            console.log('Internal gear created successfully');
-            return gearMesh;
-
+            return this._createInternalMesh(gearData, color, 0x222222);
         } catch (error) {
             console.error('Error creating internal gear:', error);
             return null;
@@ -419,26 +134,21 @@ class GearRenderer {
     }
 
     createPlanetaryGear(assemblyData, color = '#3498db', quality = 'medium') {
-        console.log('Assembling planetary system...', assemblyData);
-
         try {
             const group = new THREE.Group();
             const { sun, planet, ring, planetCount, centerDistance } = assemblyData;
 
-            // 1. Create Sun Mesh
-            // We use a internal helper to avoid adding to scene immediately
-            const sunMesh = this._createRawGearMesh(sun, color, quality);
-            group.add(sunMesh);
+            // 1. Sun
+            group.add(this._createPlanetarySpurMesh(sun, color));
 
-            // 2. Create Ring Mesh
-            const ringMesh = this._createRawInternalMesh(ring, color, quality);
-            group.add(ringMesh);
+            // 2. Ring
+            group.add(this._createInternalMesh(ring, color));
 
-            // 3. Create Planet Meshes
+            // 3. Planets
             const planetColor = new THREE.Color(color).multiplyScalar(0.8);
             for (let i = 0; i < planetCount; i++) {
                 const angle = (i / planetCount) * Math.PI * 2;
-                const planetMesh = this._createRawGearMesh(planet, planetColor, quality);
+                const planetMesh = this._createPlanetarySpurMesh(planet, planetColor);
 
                 planetMesh.position.x = centerDistance * Math.cos(angle);
                 planetMesh.position.z = centerDistance * Math.sin(angle);
@@ -449,38 +159,24 @@ class GearRenderer {
                 group.add(planetMesh);
             }
 
-            console.log('Planetary assembly created successfully');
             return group;
-
         } catch (error) {
             console.error('Error creating planetary gear:', error);
             return null;
         }
     }
 
-    // Raw mesh creation helpers (don't add to scene manager automatically)
-    _createRawGearMesh(gearData, color, quality) {
-        const shape = this.createCorrectedGearShape(gearData, quality);
-        const extrudeSettings = {
-            depth: gearData.faceWidth,
-            bevelEnabled: true,
-            bevelThickness: Math.min(0.2, gearData.module * 0.1),
-            bevelSize: Math.min(0.2, gearData.module * 0.1),
-            bevelSegments: 2,
-            curveSegments: 12
-        };
-        const geometry = new THREE.ExtrudeGeometry(shape, extrudeSettings);
-        geometry.center();
-        geometry.rotateX(Math.PI / 2);
-        const material = new THREE.MeshPhongMaterial({ color, shininess: 60 });
-        const mesh = new THREE.Mesh(geometry, material);
-        mesh.castShadow = true;
-        mesh.receiveShadow = true;
-        return mesh;
+    _createPlanetarySpurMesh(gearData, color) {
+        const geometry = this._buildGearGeometry(gearData, {
+            chamfer: Math.min(0.2, gearData.module * 0.1)
+        });
+        return this._createMesh(geometry, color, null);
     }
 
-    _createRawInternalMesh(gearData, color, quality) {
+    _createInternalMesh(gearData, color, specular = null) {
         const { displayPoints, rimRadius, module, faceWidth } = gearData;
+
+        // Outer ring (CCW)
         const ringShape = new THREE.Shape();
         const outerR = rimRadius || (gearData.rootRadius + 2 * module);
         const segments = 120;
@@ -492,6 +188,8 @@ class GearRenderer {
             else ringShape.lineTo(x, y);
         }
         ringShape.closePath();
+
+        // Inner teeth hole: displayPoints from generateFullInternalProfile is already CW
         const teethHole = new THREE.Path();
         displayPoints.forEach((pt, index) => {
             if (index === 0) teethHole.moveTo(pt.x, pt.y);
@@ -499,86 +197,186 @@ class GearRenderer {
         });
         teethHole.closePath();
         ringShape.holes.push(teethHole);
-        const extrudeSettings = {
-            depth: faceWidth,
-            bevelEnabled: true,
-            bevelThickness: Math.min(0.1, module * 0.05),
-            bevelSize: Math.min(0.1, module * 0.05),
-            bevelSegments: 2,
-            curveSegments: 24
-        };
-        const geometry = new THREE.ExtrudeGeometry(ringShape, extrudeSettings);
-        geometry.center();
+
+        const settings = this._nominalExtrudeSettings(faceWidth, Math.min(0.1, module * 0.05), 24);
+        const geometry = new THREE.ExtrudeGeometry(ringShape, settings);
+        geometry.translate(0, 0, -settings.depth / 2);
         geometry.rotateX(Math.PI / 2);
-        const material = new THREE.MeshPhongMaterial({ color, shininess: 60, side: THREE.DoubleSide });
-        const mesh = new THREE.Mesh(geometry, material);
+
+        return this._createMesh(geometry, color, specular, THREE.DoubleSide);
+    }
+
+    _createMesh(geometry, color, specular = 0x222222, side = THREE.FrontSide) {
+        const options = { color, shininess: 60, side };
+        if (specular !== null) options.specular = specular;
+        const mesh = new THREE.Mesh(geometry, new THREE.MeshPhongMaterial(options));
         mesh.castShadow = true;
         mesh.receiveShadow = true;
         return mesh;
     }
 
-    createCorrectedGearShape(gearData, quality) {
-        const shape = new THREE.Shape();
-        const { teeth, displayPoints } = gearData;
-        const toothAngle = 2 * Math.PI / teeth;
-
-        if (!displayPoints || displayPoints.length === 0) {
-            console.warn('No display points, using fallback');
-            return this.createSimpleGearShape(gearData);
-        }
-
-        // Start at first point
-        const firstPoint = displayPoints[0];
-        shape.moveTo(firstPoint.x, firstPoint.y);
-
-        // Create teeth by duplicating and rotating the profile
-        for (let tooth = 0; tooth < teeth; tooth++) {
-            const rotation = tooth * toothAngle;
-
-            // Add points for this tooth
-            for (let i = 0; i < displayPoints.length; i++) {
-                const point = displayPoints[i];
-
-                // Skip the very first point of the first tooth as we already moved there
-                if (tooth === 0 && i === 0) continue;
-
-                // Rotate point
-                const cosR = Math.cos(rotation);
-                const sinR = Math.sin(rotation);
-                const x = point.x * cosR - point.y * sinR;
-                const y = point.x * sinR + point.y * cosR;
-
-                // Use lineTo for simplicity (smoother than trying curves)
-                shape.lineTo(x, y);
-            }
-        }
-
-        // Close the shape
-        shape.closePath();
-
-        // Add bore hole if specified (explicit CW circle for robustness)
-        if (gearData.boreDiameter > 0) {
-            const boreRadius = gearData.boreDiameter / 2;
-            const borePath = new THREE.Path();
-            const segments = 64;
-            for (let i = 0; i <= segments; i++) {
-                const a = (i / segments) * Math.PI * 2;
-                // clockwise: decreasing angle
-                const x = boreRadius * Math.cos(-a);
-                const y = boreRadius * Math.sin(-a);
-                if (i === 0) borePath.moveTo(x, y);
-                else borePath.lineTo(x, y);
-            }
-            borePath.closePath();
-            shape.holes.push(borePath);
-        }
-
-        return shape;
+    // ExtrudeGeometry grows the outline by bevelSize and the depth by 2 * bevelThickness.
+    // A negative bevelOffset keeps the body on the outline, and a reduced depth keeps the total on faceWidth.
+    _nominalExtrudeSettings(faceWidth, chamfer, curveSegments) {
+        const c = Math.min(chamfer, faceWidth / 4);
+        return {
+            depth: faceWidth - 2 * c,
+            bevelEnabled: true,
+            bevelThickness: c,
+            bevelSize: c,
+            bevelOffset: -c,
+            bevelSegments: 2,
+            curveSegments
+        };
     }
 
-}
+    _twist(twistAngle, faceWidth) {
+        return (x, y, z) => {
+            const angle = (z / faceWidth - 0.5) * twistAngle;
+            const cosA = Math.cos(angle);
+            const sinA = Math.sin(angle);
+            return [x * cosA - y * sinA, x * sinA + y * cosA];
+        };
+    }
 
-// Initialize gear renderer
-document.addEventListener('DOMContentLoaded', () => {
-    window.gearRenderer = new GearRenderer();
-});
+    // Closed outline of all teeth, counter-clockwise, without repeated points.
+    _gearContour(gearData) {
+        const { teeth, displayPoints } = gearData;
+        if (!displayPoints || displayPoints.length === 0) {
+            throw new Error('Gear contour: gearData has no displayPoints');
+        }
+
+        const toothAngle = 2 * Math.PI / teeth;
+        const contour = [];
+        const isSame = (a, b) => Math.hypot(a.x - b.x, a.y - b.y) < 1e-9;
+
+        for (let tooth = 0; tooth < teeth; tooth++) {
+            const cosR = Math.cos(tooth * toothAngle);
+            const sinR = Math.sin(tooth * toothAngle);
+            displayPoints.forEach(pt => {
+                const point = { x: pt.x * cosR - pt.y * sinR, y: pt.x * sinR + pt.y * cosR };
+                if (contour.length === 0 || !isSame(contour[contour.length - 1], point)) {
+                    contour.push(point);
+                }
+            });
+        }
+        if (isSame(contour[0], contour[contour.length - 1])) contour.pop();
+
+        return THREE.ShapeUtils.isClockWise(contour) ? contour.reverse() : contour;
+    }
+
+    // Builds a closed mesh from rings that share their vertices:
+    //   - toothed wall, from z = 0 to z = faceWidth, with a tip chamfer at both ends;
+    //   - cylindrical bore through the whole part;
+    //   - optional hub on the z < 0 side, of diameter hubDiameter and length faceWidth / 2.
+    // `deform` (twist, taper) applies to the toothed wall only: bore and hub stay true cylinders.
+    _buildGearGeometry(gearData, { chamfer = 0, steps = 1, deform = null } = {}) {
+        const F = gearData.faceWidth;
+        const tipR = gearData.outerRadius;
+        const positions = [];
+
+        const c = Math.max(0, Math.min(chamfer, F / 4, (tipR - gearData.rootRadius) / 2));
+
+        // A ring is a list of { x, y, z } points.
+        const addWall = (lower, upper) => {
+            const n = lower.length;
+            for (let i = 0; i < n; i++) {
+                const j = (i + 1) % n;
+                const a = lower[i], b = lower[j], d = upper[j], e = upper[i];
+                positions.push(a.x, a.y, a.z, b.x, b.y, b.z, d.x, d.y, d.z);
+                positions.push(a.x, a.y, a.z, d.x, d.y, d.z, e.x, e.y, e.z);
+            }
+        };
+
+        const addLid = (outer, hole, faceUp) => {
+            const toV2 = ring => ring.map(p => new THREE.Vector2(p.x, p.y));
+            const faces = THREE.ShapeUtils.triangulateShape(toV2(outer), hole ? [toV2(hole)] : []);
+            const all = hole ? outer.concat(hole) : outer;
+            faces.forEach(([i0, i1, i2]) => {
+                const a = all[i0], b = all[i1], d = all[i2];
+                const isUp = (b.x - a.x) * (d.y - a.y) - (b.y - a.y) * (d.x - a.x) > 0;
+                const [p, q, r] = isUp === faceUp ? [a, b, d] : [a, d, b];
+                positions.push(p.x, p.y, p.z, q.x, q.y, q.z, r.x, r.y, r.z);
+            });
+        };
+
+        // Clockwise for walls facing the axis (bore), counter-clockwise for walls facing outwards (hub).
+        const circle = (radius, z, clockwise) => {
+            const segments = 64;
+            const ring = [];
+            for (let i = 0; i < segments; i++) {
+                const a = (i / segments) * Math.PI * 2 * (clockwise ? -1 : 1);
+                ring.push({ x: radius * Math.cos(a), y: radius * Math.sin(a), z });
+            }
+            return ring;
+        };
+
+        // Toothed wall: at each end the outline is cut by a smaller tip circle, so flanks stay on profile.
+        const contour = this._gearContour(gearData);
+        const toothedRing = (z, maxRadius) => contour.map(p => {
+            const r = Math.hypot(p.x, p.y);
+            const k = r > maxRadius ? maxRadius / r : 1;
+            const [x, y] = deform ? deform(p.x * k, p.y * k, z) : [p.x * k, p.y * k];
+            return { x, y, z };
+        });
+
+        const zLevels = [];
+        if (c > 0) zLevels.push({ z: 0, maxRadius: tipR - c });
+        for (let i = 0; i <= steps; i++) {
+            zLevels.push({ z: c + (F - 2 * c) * (i / steps), maxRadius: tipR });
+        }
+        if (c > 0) zLevels.push({ z: F, maxRadius: tipR - c });
+
+        const rings = zLevels.map(level => toothedRing(level.z, level.maxRadius));
+        for (let i = 0; i < rings.length - 1; i++) addWall(rings[i], rings[i + 1]);
+
+        const bottomRing = rings[0];
+        const topRing = rings[rings.length - 1];
+        const minRadius = ring => ring.reduce((min, p) => Math.min(min, Math.hypot(p.x, p.y)), Infinity);
+
+        // Bore and hub: the validator reports the values that cannot be built.
+        const boreR = (gearData.boreDiameter || 0) / 2;
+        const requestedHubR = (gearData.hubDiameter || 0) / 2;
+        const hasHub = requestedHubR > boreR && requestedHubR < minRadius(bottomRing);
+        const hubLength = F / 2;
+
+        const roomForBoreChamfer = Math.min(minRadius(topRing), hasHub ? requestedHubR : minRadius(bottomRing)) - boreR;
+        const boreChamfer = boreR > 0 ? Math.max(0, Math.min(c, roomForBoreChamfer / 4)) : 0;
+        const zStart = hasHub ? -hubLength : 0;
+
+        const boreBottom = boreR > 0 ? circle(boreR + boreChamfer, zStart, true) : null;
+        const boreTop = boreR > 0 ? circle(boreR + boreChamfer, F, true) : null;
+
+        if (boreR > 0) {
+            const lower = circle(boreR, zStart + boreChamfer, true);
+            const upper = circle(boreR, F - boreChamfer, true);
+            addWall(boreBottom, lower);
+            addWall(lower, upper);
+            addWall(upper, boreTop);
+        }
+
+        addLid(topRing, boreTop, true);
+
+        if (hasHub) {
+            const hubChamfer = Math.min(c, (requestedHubR - boreR) / 4, hubLength / 4);
+            const hubEnd = circle(requestedHubR - hubChamfer, -hubLength, false);
+            const hubBody = circle(requestedHubR, -hubLength + hubChamfer, false);
+            const hubBase = circle(requestedHubR, 0, false);
+            addWall(hubEnd, hubBody);
+            addWall(hubBody, hubBase);
+            addLid(hubEnd, boreBottom, false);
+            addLid(bottomRing, hubBase, false);
+        } else {
+            addLid(bottomRing, boreBottom, false);
+        }
+
+        const geometry = new THREE.BufferGeometry();
+        geometry.setAttribute('position', new THREE.Float32BufferAttribute(positions, 3));
+        geometry.computeVertexNormals();
+
+        // Teeth centred on the origin along the axis, then scene orientation (axis on Y).
+        geometry.translate(0, 0, -F / 2);
+        geometry.rotateX(Math.PI / 2);
+        return geometry;
+    }
+}

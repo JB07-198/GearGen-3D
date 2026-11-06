@@ -5,10 +5,6 @@
 // ==========================================================================
 
 class DXFExporter {
-    constructor() {
-        console.log('DXF exporter initialized');
-    }
-
     exportCurrentGear(params = {}) {
         if (params.type && params.type !== 'spur') {
             alert('DXF export is only available for spur gears.');
@@ -21,7 +17,6 @@ class DXFExporter {
             const filename = this.buildFilename(params);
 
             this.downloadDXF(dxf, filename);
-            console.log(`DXF export successful: ${filename}`);
             return filename;
         } catch (error) {
             console.error('DXF export error:', error);

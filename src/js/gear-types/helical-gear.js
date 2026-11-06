@@ -1,9 +1,5 @@
 // Helical Gear Generator
 class HelicalGear {
-    constructor() {
-        console.log('Helical gear generator initialized');
-    }
-
     // Generate helical gear geometry data
     generateGeometry(params) {
         const {
@@ -16,8 +12,6 @@ class HelicalGear {
             boreDiameter,
             quality
         } = params;
-
-        console.log(`Generating helical gear: ${teeth} teeth, helix angle ${helixAngle}°`);
 
         // Use GearMath to produce a correct involute tooth profile
         const gearData = GearMath.calculateToothProfile(module, teeth, pressureAngle);

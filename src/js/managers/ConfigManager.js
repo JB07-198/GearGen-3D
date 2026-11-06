@@ -6,7 +6,7 @@ class ConfigManager {
 
     exportJSON() {
         if (!this.app || !this.app.currentGearType) return;
-        const params = window.parameterUI ? window.parameterUI.getAllParameters() : this.app.gearParameters;
+        const params = window.parameterUI.getAllParameters();
         const payload = {
             schema_version: '1.0',
             timestamp: new Date().toISOString(),
@@ -26,22 +26,31 @@ class ConfigManager {
         if (!file) return false;
         const text = await file.text();
         let data;
+        const t = (key, params) => (window.i18n ? window.i18n.translate(key, params) : key);
         try {
             data = JSON.parse(text);
         } catch (e) {
-            alert('Invalid JSON file.');
+            alert(t('config.invalidJson'));
             return false;
         }
         if (!data || data.schema_version !== '1.0' || !data.gearType || !data.parameters) {
-            alert('Unsupported or invalid config schema.');
+            alert(t('config.invalidSchema'));
+            return false;
+        }
+        if (!GearValidator.isKnownType(data.gearType)) {
+            alert(t('config.unknownType'));
+            return false;
+        }
+        // A file is an explicit action: it is applied in full or refused, never partly.
+        const { parameters, invalid } = GearValidator.sanitizeParameters(data.parameters, window.parameterUI.getParameterRules());
+        if (invalid.length > 0) {
+            alert(t('config.invalidParams', { fields: invalid.join(', ') }));
             return false;
         }
         if (this.app && typeof this.app.setGearType === 'function') {
             this.app.setGearType(data.gearType, { generate: false });
         }
-        if (window.parameterUI && typeof window.parameterUI.setParameters === 'function') {
-            window.parameterUI.setParameters(data.parameters);
-        }
+        window.parameterUI.setParameters(parameters);
         if (this.app && typeof this.app.generateGear === 'function') {
             this.app.generateGear();
         }
@@ -50,7 +59,7 @@ class ConfigManager {
 
     saveToLocalStorage() {
         if (!this.app || !this.app.currentGearType) return;
-        const params = window.parameterUI ? window.parameterUI.getAllParameters() : this.app.gearParameters;
+        const params = window.parameterUI.getAllParameters();
         const payload = {
             schema_version: '1.0',
             gearType: this.app.currentGearType,
@@ -69,8 +78,9 @@ class ConfigManager {
             const raw = localStorage.getItem('geargen-last-config');
             if (!raw) return null;
             const data = JSON.parse(raw);
-            if (!data || data.schema_version !== '1.0' || !data.gearType || !data.parameters) return null;
-            return data;
+            if (!data || data.schema_version !== '1.0' || !GearValidator.isKnownType(data.gearType)) return null;
+            const { parameters, invalid } = GearValidator.sanitizeParameters(data.parameters, window.parameterUI.getParameterRules());
+            return { gearType: data.gearType, parameters, ignored: invalid };
         } catch (e) {
             return null;
         }
